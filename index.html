@@ -535,6 +535,32 @@
       box-shadow: 0 0 25px rgba(31,134,255,0.18);
     }
 
+    .project-cover img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: top center;
+    }
+
+    .project-cover::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      width: auto;
+      height: auto;
+      right: auto;
+      top: auto;
+      transform: none;
+      background: linear-gradient(180deg, transparent 58%, rgba(2, 7, 15, 0.34));
+      box-shadow: none;
+      pointer-events: none;
+    }
+
+    .project-cover::after {
+      display: none;
+    }
+
     .project-info {
       display: flex;
       flex-direction: column;
@@ -1162,52 +1188,52 @@
 
         <div class="projects-grid">
           <a class="project-card" href="https://pak-page-rebuild.vercel.app" target="_blank" rel="noopener noreferrer" aria-label="Open Pak and Page website project">
-            <div class="project-cover"><span>Add Project Cover</span></div>
+            <div class="project-cover"><img src="hero-pak-&-page.webp" alt="Pak &amp; Page website preview" loading="lazy" /></div>
             <div class="project-info"><span>Shipping &amp; Business Services</span><strong>Pak &amp; Page</strong><em>Live Preview ↗</em></div>
           </a>
 
           <a class="project-card" href="https://oakhurst-business-center.vercel.app" target="_blank" rel="noopener noreferrer" aria-label="Open Oakhurst Business Center website project">
-            <div class="project-cover"><span>Add Project Cover</span></div>
+            <div class="project-cover"><img src="hero-oakhurst-business-center.webp" alt="Oakhurst Business Center website preview" loading="lazy" /></div>
             <div class="project-info"><span>Business Services</span><strong>Oakhurst Business Center</strong><em>Live Preview ↗</em></div>
           </a>
 
           <a class="project-card" href="https://oakhurst-beauty-supply-hair-designe.vercel.app" target="_blank" rel="noopener noreferrer" aria-label="Open Oakhurst Beauty Supply and Hair Designer website project">
-            <div class="project-cover"><span>Add Project Cover</span></div>
+            <div class="project-cover"><img src="hero-oakhurst-beauty-supply.webp" alt="Oakhurst Beauty Supply website preview" loading="lazy" /></div>
             <div class="project-info"><span>Beauty &amp; Hair</span><strong>Oakhurst Beauty Supply</strong><em>Live Preview ↗</em></div>
           </a>
 
           <a class="project-card" href="https://wonderful-treasures-thrift-shop-web.vercel.app" target="_blank" rel="noopener noreferrer" aria-label="Open Wonderful Treasures Thrift Shop website project">
-            <div class="project-cover"><span>Add Project Cover</span></div>
+            <div class="project-cover"><img src="hero-wonderful-treasures.webp" alt="Wonderful Treasures website preview" loading="lazy" /></div>
             <div class="project-info"><span>Thrift &amp; Retail</span><strong>Wonderful Treasures</strong><em>Live Preview ↗</em></div>
           </a>
 
           <a class="project-card" href="https://good-ol-things-website.vercel.app" target="_blank" rel="noopener noreferrer" aria-label="Open Good Ol Things website project">
-            <div class="project-cover"><span>Add Project Cover</span></div>
+            <div class="project-cover"><img src="hero-good-ol-things.webp" alt="Good Ol' Things website preview" loading="lazy" /></div>
             <div class="project-info"><span>Antiques &amp; Collectibles</span><strong>Good Ol' Things</strong><em>Live Preview ↗</em></div>
           </a>
 
           <a class="project-card" href="https://alpenglow-pearl.vercel.app" target="_blank" rel="noopener noreferrer" aria-label="Open Alpenglow Consignment website project">
-            <div class="project-cover"><span>Add Project Cover</span></div>
+            <div class="project-cover"><img src="hero-alpenglow.webp" alt="Alpenglow Consignment website preview" loading="lazy" /></div>
             <div class="project-info"><span>Outdoor Retail</span><strong>Alpenglow Consignment</strong><em>Live Preview ↗</em></div>
           </a>
 
           <a class="project-card" href="https://sierra-merciantile-website.vercel.app/" target="_blank" rel="noopener noreferrer" aria-label="Open Sierra Mercantile website project">
-            <div class="project-cover"><span>Add Project Cover</span></div>
+            <div class="project-cover"><img src="hero-sierra-mercantile.webp" alt="Sierra Mercantile website preview" loading="lazy" /></div>
             <div class="project-info"><span>Local Retail</span><strong>Sierra Mercantile</strong><em>Live Preview ↗</em></div>
           </a>
 
           <a class="project-card" href="https://ec-lec-tic-website.vercel.app" target="_blank" rel="noopener noreferrer" aria-label="Open Eclectic website project">
-            <div class="project-cover"><span>Add Project Cover</span></div>
+            <div class="project-cover"><img src="hero-ec.lec.tic.webp" alt="Ec.lec.tic website preview" loading="lazy" /></div>
             <div class="project-info"><span>Gifts &amp; Retail</span><strong>Ec.lec.tic</strong><em>Live Preview ↗</em></div>
           </a>
 
           <a class="project-card" href="https://7-rivers-pickers-website.vercel.app" target="_blank" rel="noopener noreferrer" aria-label="Open Seven Rivers Pickers website project">
-            <div class="project-cover"><span>Add Project Cover</span></div>
+            <div class="project-cover"><img src="hero-7-rivers-pickers.webp" alt="7 Rivers Pickers website preview" loading="lazy" /></div>
             <div class="project-info"><span>Antiques &amp; Vintage</span><strong>7 Rivers Pickers</strong><em>Live Preview ↗</em></div>
           </a>
 
           <a class="project-card" href="https://oakhurst-office-supply-and-decor-we.vercel.app" target="_blank" rel="noopener noreferrer" aria-label="Open Oakhurst Office Supply and Decor website project">
-            <div class="project-cover"><span>Add Project Cover</span></div>
+            <div class="project-cover"><img src="hero-oakhurst-office-supply.webp" alt="Oakhurst Office Supply &amp; Decor website preview" loading="lazy" /></div>
             <div class="project-info"><span>Office &amp; Home Retail</span><strong>Oakhurst Office Supply &amp; Decor</strong><em>Live Preview ↗</em></div>
           </a>
         </div>
