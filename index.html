@@ -1,0 +1,1393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Bluvixa Web Design creates distinctive, mobile-friendly websites for local businesses in Oakhurst, California and beyond." />
+  <meta name="theme-color" content="#02050b" />
+  <title>Bluvixa Web Design | Professional Websites for Local Businesses</title>
+
+  <style>
+    :root {
+      --bg: #02050b;
+      --bg-soft: #07101e;
+      --panel: rgba(7, 14, 29, 0.88);
+      --panel-strong: rgba(4, 11, 24, 0.97);
+      --line: rgba(83, 157, 255, 0.4);
+      --line-bright: rgba(110, 204, 255, 0.82);
+      --line-soft: rgba(255, 255, 255, 0.08);
+      --blue: #1688ff;
+      --blue-deep: #0755d8;
+      --blue-light: #72d0ff;
+      --white: #f7fbff;
+      --muted: #aebbd0;
+      --muted-2: #7f8da5;
+      --success: #73e6b0;
+      --radius-xl: 34px;
+      --radius-lg: 25px;
+      --radius-md: 18px;
+      --shadow: 0 26px 90px rgba(0, 0, 0, 0.46);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 110px;
+    }
+
+    body {
+      min-height: 100vh;
+      overflow-x: hidden;
+      color: var(--white);
+      background:
+        radial-gradient(circle at 50% -15%, rgba(31, 103, 255, 0.25), transparent 33%),
+        radial-gradient(circle at 98% 35%, rgba(38, 134, 255, 0.14), transparent 29%),
+        linear-gradient(180deg, #07101e 0%, #02050b 56%, #010307 100%);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      opacity: 0.24;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px);
+      background-size: 52px 52px;
+      mask-image: linear-gradient(to bottom, black, transparent 82%);
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button,
+    a {
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    img {
+      max-width: 100%;
+      display: block;
+    }
+
+    .page-shell {
+      width: min(1480px, calc(100% - 36px));
+      margin: 18px auto 36px;
+    }
+
+    .bubble-header {
+      position: sticky;
+      top: 14px;
+      z-index: 50;
+      min-height: 82px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 22px;
+      padding: 14px 18px 14px 16px;
+      margin-bottom: 22px;
+      border: 1px solid rgba(122, 190, 255, 0.34);
+      border-radius: 999px;
+      background:
+        linear-gradient(120deg, rgba(255,255,255,0.08), transparent 22%),
+        rgba(4, 12, 27, 0.82);
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,0.03) inset,
+        0 18px 55px rgba(0,0,0,0.36),
+        0 0 36px rgba(26, 132, 255, 0.12);
+      backdrop-filter: blur(18px);
+      overflow: hidden;
+    }
+
+    .bubble-header::before {
+      content: "";
+      position: absolute;
+      top: -180%;
+      left: -18%;
+      width: 40%;
+      height: 430%;
+      transform: rotate(22deg);
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+      animation: headerShine 7s linear infinite;
+      pointer-events: none;
+    }
+
+    .bubble-header::after {
+      content: "";
+      position: absolute;
+      width: 300px;
+      height: 120px;
+      right: 7%;
+      top: -70px;
+      border-radius: 50%;
+      background: rgba(22,136,255,0.25);
+      filter: blur(36px);
+      pointer-events: none;
+    }
+
+    @keyframes headerShine {
+      0% { left: -35%; opacity: 0; }
+      10% { opacity: 1; }
+      45% { opacity: 0.8; }
+      65%, 100% { left: 120%; opacity: 0; }
+    }
+
+    .brand {
+      position: relative;
+      z-index: 1;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      width: 50px;
+      height: 50px;
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      border-radius: 18px;
+      font-family: "Trebuchet MS", Arial, sans-serif;
+      font-size: 14px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      background:
+        radial-gradient(circle at 32% 24%, #d4f1ff 0, #54b6ff 13%, #0966ef 47%, #042661 100%);
+      border: 1px solid rgba(190,226,255,0.65);
+      box-shadow: 0 0 28px rgba(25,138,255,0.55);
+    }
+
+    .brand-copy {
+      display: grid;
+      line-height: 1.05;
+    }
+
+    .brand-copy strong {
+      font-family: "Trebuchet MS", Arial, sans-serif;
+      font-size: 17px;
+      letter-spacing: 0.02em;
+    }
+
+    .brand-copy small {
+      margin-top: 5px;
+      color: var(--blue-light);
+      font-size: 10px;
+      letter-spacing: 0.11em;
+      text-transform: uppercase;
+    }
+
+    .header-nav {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .header-nav a {
+      padding: 11px 15px;
+      border-radius: 999px;
+      color: #cbd7e8;
+      font-size: 13px;
+      font-weight: 800;
+      transition: 180ms ease;
+    }
+
+    .header-nav a:hover {
+      color: white;
+      background: rgba(255,255,255,0.07);
+    }
+
+    .call-button,
+    .primary-button {
+      border: 1px solid rgba(101,183,255,0.58);
+      background: linear-gradient(180deg, rgba(49,157,255,0.42), rgba(9,82,190,0.36));
+      box-shadow: 0 0 26px rgba(20,123,255,0.24);
+    }
+
+    main {
+      display: grid;
+      gap: 22px;
+    }
+
+    .panel {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(108,177,255,0.38);
+      border-radius: var(--radius-xl);
+      background:
+        radial-gradient(circle at 45% 0%, rgba(34,105,255,0.21), transparent 27%),
+        linear-gradient(145deg, rgba(5,14,31,0.97), rgba(2,7,15,0.98));
+      box-shadow:
+        var(--shadow),
+        0 0 0 1px rgba(255,255,255,0.025) inset,
+        0 0 44px rgba(25,118,255,0.12);
+    }
+
+    .panel::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: linear-gradient(110deg, transparent 15%, rgba(255,255,255,0.045) 30%, transparent 43%);
+      transform: translateX(-80%);
+      animation: panelShine 11s ease-in-out infinite;
+    }
+
+    @keyframes panelShine {
+      0%, 32% { transform: translateX(-80%); opacity: 0; }
+      47% { opacity: 1; }
+      66%, 100% { transform: translateX(90%); opacity: 0; }
+    }
+
+    .hero {
+      min-height: 680px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(330px, 0.85fr);
+      align-items: center;
+      gap: 56px;
+      padding: clamp(42px, 7vw, 96px);
+    }
+
+    .hero-copy,
+    .hero-visual {
+      position: relative;
+      z-index: 1;
+    }
+
+    .eyebrow {
+      margin-bottom: 18px;
+      color: #4baeff;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    h3 {
+      font-family: "Trebuchet MS", Arial, sans-serif;
+    }
+
+    h1 {
+      max-width: 820px;
+      font-size: clamp(48px, 7vw, 94px);
+      line-height: 0.94;
+      letter-spacing: -0.055em;
+    }
+
+    .hero-lead {
+      max-width: 690px;
+      margin-top: 28px;
+      color: #bdc9db;
+      font-size: clamp(17px, 1.6vw, 21px);
+      line-height: 1.72;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 34px;
+    }
+
+    .button {
+      min-height: 52px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      padding: 0 22px;
+      border: 1px solid rgba(123,182,255,0.42);
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 900;
+      transition: transform 180ms ease, border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
+    }
+
+    .button:hover {
+      transform: translateY(-3px);
+      border-color: var(--line-bright);
+      box-shadow: 0 16px 34px rgba(0,0,0,0.3), 0 0 30px rgba(22,136,255,0.2);
+    }
+
+    .secondary-button {
+      background: rgba(255,255,255,0.045);
+    }
+
+    .hero-visual {
+      min-height: 430px;
+      display: grid;
+      place-items: center;
+    }
+
+    .browser-card {
+      width: min(100%, 520px);
+      padding: 14px;
+      border: 1px solid rgba(120,192,255,0.45);
+      border-radius: 28px;
+      background: rgba(2,8,18,0.78);
+      box-shadow: 0 30px 80px rgba(0,0,0,0.46), 0 0 55px rgba(21,129,255,0.18);
+      transform: rotate(2deg);
+    }
+
+    .browser-top {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      height: 34px;
+      padding: 0 8px;
+    }
+
+    .browser-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(114,208,255,0.55);
+    }
+
+    .browser-screen {
+      min-height: 355px;
+      display: grid;
+      align-content: space-between;
+      padding: 28px;
+      border-radius: 20px;
+      background:
+        radial-gradient(circle at 78% 20%, rgba(86,183,255,0.8), transparent 18%),
+        linear-gradient(145deg, #061b43, #05101f 60%, #020711);
+      border: 1px solid rgba(255,255,255,0.08);
+      overflow: hidden;
+    }
+
+    .mock-logo {
+      width: 110px;
+      height: 18px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #d9f2ff, #4bb4ff);
+      box-shadow: 0 0 22px rgba(75,180,255,0.32);
+    }
+
+    .mock-title {
+      width: 82%;
+      height: 84px;
+      border-radius: 18px;
+      background:
+        linear-gradient(rgba(255,255,255,0.92), rgba(255,255,255,0.92)) 0 0/100% 22px no-repeat,
+        linear-gradient(rgba(255,255,255,0.68), rgba(255,255,255,0.68)) 0 36px/78% 18px no-repeat,
+        linear-gradient(rgba(255,255,255,0.38), rgba(255,255,255,0.38)) 0 66px/55% 12px no-repeat;
+    }
+
+    .mock-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .mock-cards span {
+      min-height: 82px;
+      border-radius: 15px;
+      border: 1px solid rgba(115,198,255,0.25);
+      background: rgba(255,255,255,0.055);
+    }
+
+    .trust-bar {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      padding: 18px;
+      border-top: 1px solid var(--line-soft);
+      background: rgba(2,8,18,0.45);
+    }
+
+    .trust-item {
+      min-height: 64px;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 12px;
+      color: #d5e4f7;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .trust-item span {
+      color: var(--success);
+      margin-right: 6px;
+    }
+
+    .section-wrap {
+      padding: clamp(34px, 5vw, 72px);
+    }
+
+    .section-heading {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: minmax(0, 1.3fr) minmax(260px, 0.7fr);
+      align-items: end;
+      gap: 42px;
+      margin-bottom: 34px;
+    }
+
+    .section-heading h2 {
+      max-width: 780px;
+      font-size: clamp(38px, 5vw, 70px);
+      line-height: 0.98;
+      letter-spacing: -0.05em;
+    }
+
+    .section-note {
+      max-width: 480px;
+      color: #b9c6d9;
+      font-size: 16px;
+      line-height: 1.7;
+    }
+
+    .projects-grid {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 20px;
+    }
+
+    .project-card {
+      min-height: 255px;
+      display: grid;
+      grid-template-columns: minmax(210px, 1fr) minmax(220px, 0.92fr);
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      background: rgba(5, 13, 28, 0.82);
+      box-shadow: 0 18px 45px rgba(0,0,0,0.28), 0 0 0 1px rgba(255,255,255,0.02) inset;
+      transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
+    }
+
+    .project-card:hover {
+      transform: translateY(-6px);
+      border-color: rgba(107,204,255,0.84);
+      box-shadow: 0 26px 60px rgba(0,0,0,0.42), 0 0 34px rgba(21,129,255,0.2);
+    }
+
+    .project-cover {
+      position: relative;
+      min-height: 255px;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      border-right: 1px solid rgba(91,164,255,0.26);
+      background:
+        radial-gradient(circle at 72% 32%, rgba(40,176,255,0.98) 0, rgba(14,109,255,0.52) 9%, transparent 30%),
+        radial-gradient(circle at 80% 36%, rgba(0,117,255,0.5), transparent 25%),
+        linear-gradient(145deg, #04112a, #061b4b 56%, #031020);
+    }
+
+    .project-cover::before {
+      content: "";
+      position: absolute;
+      width: 70%;
+      height: 1px;
+      right: -5%;
+      top: 52%;
+      transform: rotate(-14deg);
+      background: linear-gradient(90deg, transparent, #1688ff, transparent);
+      box-shadow: 0 0 15px #1688ff;
+    }
+
+    .project-cover::after {
+      content: "";
+      position: absolute;
+      width: 220px;
+      height: 220px;
+      right: -78px;
+      top: 15px;
+      border: 1px solid rgba(60,143,255,0.2);
+      border-radius: 50%;
+    }
+
+    .project-cover span {
+      position: relative;
+      z-index: 2;
+      padding: 10px 14px;
+      border: 1px solid rgba(112,190,255,0.55);
+      border-radius: 999px;
+      color: #eaf7ff;
+      background: rgba(3,11,24,0.62);
+      font-size: 11px;
+      font-weight: 900;
+      box-shadow: 0 0 25px rgba(31,134,255,0.18);
+    }
+
+    .project-info {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 30px;
+    }
+
+    .project-info span {
+      margin-bottom: 25px;
+      color: #48aaff;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
+    .project-info strong {
+      max-width: 280px;
+      font-family: "Trebuchet MS", Arial, sans-serif;
+      font-size: clamp(22px, 2vw, 31px);
+      line-height: 1.07;
+    }
+
+    .project-info em {
+      margin-top: auto;
+      padding-top: 30px;
+      color: #55b9ff;
+      font-size: 13px;
+      font-style: normal;
+      font-weight: 900;
+    }
+
+    .feature-grid {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    .feature-card {
+      min-height: 245px;
+      padding: 28px;
+      border: 1px solid rgba(97,171,255,0.28);
+      border-radius: var(--radius-lg);
+      background: rgba(5,13,28,0.7);
+      transition: transform 180ms ease, border-color 180ms ease;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-5px);
+      border-color: var(--line-bright);
+    }
+
+    .feature-icon {
+      width: 52px;
+      height: 52px;
+      display: grid;
+      place-items: center;
+      margin-bottom: 28px;
+      border: 1px solid rgba(115,198,255,0.42);
+      border-radius: 17px;
+      background: rgba(22,136,255,0.13);
+      font-size: 24px;
+      box-shadow: 0 0 28px rgba(22,136,255,0.16);
+    }
+
+    .feature-card h3 {
+      font-size: 23px;
+      margin-bottom: 13px;
+    }
+
+    .feature-card p {
+      color: #acb9cc;
+      line-height: 1.65;
+      font-size: 14px;
+    }
+
+    .pricing-layout {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: minmax(0, 0.9fr) minmax(380px, 1.1fr);
+      gap: 22px;
+    }
+
+    .price-card,
+    .payment-card {
+      padding: clamp(30px, 5vw, 58px);
+      border: 1px solid rgba(108,187,255,0.42);
+      border-radius: 30px;
+      background: rgba(4,12,26,0.82);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.32);
+    }
+
+    .price-label {
+      color: #61bdff;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
+    .price {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      margin: 18px 0 8px;
+      font-family: "Trebuchet MS", Arial, sans-serif;
+      line-height: 1;
+    }
+
+    .price sup {
+      padding-top: 12px;
+      color: var(--blue-light);
+      font-size: 26px;
+    }
+
+    .price strong {
+      font-size: clamp(78px, 9vw, 132px);
+      letter-spacing: -0.07em;
+    }
+
+    .flat-rate {
+      color: #b8c5d7;
+      font-size: 15px;
+      font-weight: 800;
+    }
+
+    .included-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap: 14px 20px;
+      margin-top: 32px;
+      list-style: none;
+    }
+
+    .included-list li {
+      position: relative;
+      padding-left: 25px;
+      color: #d2deee;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .included-list li::before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      color: var(--success);
+      font-weight: 900;
+    }
+
+    .pricing-note {
+      margin-top: 28px;
+      padding-top: 22px;
+      border-top: 1px solid var(--line-soft);
+      color: #8594aa;
+      font-size: 13px;
+      line-height: 1.65;
+    }
+
+    .payment-card {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      background:
+        radial-gradient(circle at 90% 10%, rgba(28,121,255,0.32), transparent 32%),
+        linear-gradient(145deg, rgba(8,25,58,0.96), rgba(3,10,22,0.95));
+    }
+
+    .payment-card h3 {
+      margin-top: 14px;
+      font-size: clamp(34px, 4vw, 58px);
+      line-height: 1;
+      letter-spacing: -0.04em;
+    }
+
+    .payment-card p {
+      max-width: 610px;
+      margin-top: 20px;
+      color: #bdc9db;
+      font-size: 16px;
+      line-height: 1.7;
+    }
+
+    .venmo-button {
+      min-height: 62px;
+      width: 100%;
+      margin-top: 28px;
+      font-size: 16px;
+      border-radius: 18px;
+    }
+
+    .payment-fineprint {
+      margin-top: 14px !important;
+      color: #8291a7 !important;
+      font-size: 12px !important;
+    }
+
+    .process-grid {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    .step-card {
+      min-height: 210px;
+      padding: 26px;
+      border-top: 1px solid rgba(90,173,255,0.46);
+      background: rgba(255,255,255,0.025);
+    }
+
+    .step-number {
+      color: #3da8ff;
+      font-family: "Trebuchet MS", Arial, sans-serif;
+      font-size: 38px;
+      font-weight: 900;
+    }
+
+    .step-card h3 {
+      margin-top: 28px;
+      font-size: 22px;
+    }
+
+    .step-card p {
+      margin-top: 12px;
+      color: #aab8cc;
+      font-size: 14px;
+      line-height: 1.65;
+    }
+
+    .faq-list {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      gap: 12px;
+    }
+
+    details {
+      border: 1px solid rgba(95,167,255,0.28);
+      border-radius: 19px;
+      background: rgba(5,13,28,0.67);
+      overflow: hidden;
+    }
+
+    summary {
+      cursor: pointer;
+      list-style: none;
+      padding: 22px 24px;
+      font-weight: 900;
+    }
+
+    summary::-webkit-details-marker {
+      display: none;
+    }
+
+    summary::after {
+      content: "+";
+      float: right;
+      color: #59baff;
+      font-size: 20px;
+    }
+
+    details[open] summary::after {
+      content: "−";
+    }
+
+    details p {
+      padding: 0 24px 24px;
+      color: #acb9cc;
+      line-height: 1.7;
+      font-size: 14px;
+    }
+
+    .contact-panel {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 46px;
+      padding: clamp(34px, 6vw, 78px);
+      background:
+        radial-gradient(circle at 14% 18%, rgba(33,109,255,0.34), transparent 34%),
+        radial-gradient(circle at 100% 100%, rgba(24,92,255,0.32), transparent 27%),
+        rgba(5,13,27,0.92);
+    }
+
+    .contact-copy,
+    .contact-actions {
+      position: relative;
+      z-index: 1;
+    }
+
+    .contact-copy h2 {
+      max-width: 650px;
+      font-size: clamp(42px, 5.5vw, 76px);
+      line-height: 0.96;
+      letter-spacing: -0.05em;
+    }
+
+    .contact-copy p:last-child {
+      max-width: 600px;
+      margin-top: 24px;
+      color: #b8c5da;
+      font-size: 16px;
+      line-height: 1.7;
+    }
+
+    .contact-actions {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .contact-link {
+      display: grid;
+      grid-template-columns: 120px minmax(0, 1fr);
+      gap: 18px;
+      align-items: center;
+      padding: 24px 4px;
+      border-bottom: 1px solid rgba(255,255,255,0.09);
+      transition: padding-left 180ms ease;
+    }
+
+    .contact-link:hover {
+      padding-left: 10px;
+    }
+
+    .contact-link:last-child {
+      border-bottom: 0;
+    }
+
+    .contact-link span {
+      color: #48aaff;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+
+    .contact-link strong {
+      text-align: right;
+      overflow-wrap: anywhere;
+      font-size: clamp(14px, 1.5vw, 19px);
+    }
+
+    .floating-start {
+      position: fixed;
+      right: 22px;
+      bottom: 22px;
+      z-index: 40;
+      min-height: 52px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 20px;
+      border: 1px solid rgba(130,208,255,0.65);
+      border-radius: 999px;
+      background: linear-gradient(180deg, #249aff, #075bd4);
+      box-shadow: 0 18px 42px rgba(0,0,0,0.42), 0 0 28px rgba(20,123,255,0.36);
+      color: white;
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .site-footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 22px 10px 4px;
+      color: #76849a;
+      font-size: 12px;
+    }
+
+    @media (max-width: 1100px) {
+      .hero,
+      .pricing-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .hero {
+        min-height: auto;
+      }
+
+      .hero-visual {
+        min-height: 360px;
+      }
+
+      .feature-grid,
+      .process-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .trust-bar {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (max-width: 820px) {
+      .page-shell {
+        width: min(100% - 20px, 1480px);
+        margin-top: 10px;
+      }
+
+      .bubble-header {
+        position: relative;
+        top: 0;
+        min-height: auto;
+        border-radius: 26px;
+        padding: 14px;
+      }
+
+      .header-nav {
+        gap: 4px;
+      }
+
+      .header-nav a:not(.call-button) {
+        display: none;
+      }
+
+      .hero,
+      .section-heading,
+      .contact-panel {
+        grid-template-columns: 1fr;
+      }
+
+      .hero {
+        gap: 28px;
+        padding: 46px 24px;
+      }
+
+      .section-heading {
+        gap: 18px;
+      }
+
+      .projects-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .project-card {
+        grid-template-columns: 1fr;
+      }
+
+      .project-cover {
+        min-height: 230px;
+        border-right: 0;
+        border-bottom: 1px solid rgba(91,164,255,0.26);
+      }
+
+      .project-info {
+        min-height: 210px;
+      }
+
+      .contact-link {
+        grid-template-columns: 85px minmax(0,1fr);
+      }
+
+      .site-footer {
+        flex-direction: column;
+        padding-bottom: 80px;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .brand-copy small {
+        display: none;
+      }
+
+      .brand-mark {
+        width: 44px;
+        height: 44px;
+        border-radius: 15px;
+      }
+
+      .header-nav a {
+        padding: 10px 13px;
+      }
+
+      .panel {
+        border-radius: 27px;
+      }
+
+      .section-wrap {
+        padding: 30px 16px;
+      }
+
+      h1 {
+        font-size: clamp(45px, 15vw, 68px);
+      }
+
+      .hero-actions,
+      .hero-actions .button {
+        width: 100%;
+      }
+
+      .trust-bar,
+      .feature-grid,
+      .process-grid,
+      .included-list {
+        grid-template-columns: 1fr;
+      }
+
+      .browser-screen {
+        min-height: 300px;
+        padding: 20px;
+      }
+
+      .mock-cards {
+        grid-template-columns: 1fr;
+      }
+
+      .mock-cards span:nth-child(n+2) {
+        display: none;
+      }
+
+      .price-card,
+      .payment-card {
+        padding: 28px 20px;
+        border-radius: 24px;
+      }
+
+      .contact-panel {
+        padding: 34px 20px;
+      }
+
+      .contact-link {
+        grid-template-columns: 1fr;
+        gap: 7px;
+      }
+
+      .contact-link strong {
+        text-align: left;
+      }
+
+      .floating-start {
+        right: 12px;
+        left: 12px;
+        bottom: 12px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page-shell">
+    <header class="bubble-header">
+      <a class="brand" href="#home" aria-label="Bluvixa Web Design home">
+        
+        <span class="brand-copy">
+          <strong>Bluvixa</strong>
+          <small>Web Design • Oakhurst, CA</small>
+        </span>
+      </a>
+
+      <nav class="header-nav" aria-label="Primary navigation">
+        <a href="#projects">Projects</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#process">Process</a>
+        <a href="#contact">Contact</a>
+        <a class="call-button" href="tel:+15596763875">Call Now</a>
+      </nav>
+    </header>
+
+    <main>
+      <section id="home" class="panel">
+        <div class="hero">
+          <div class="hero-copy">
+            <p class="eyebrow">Distinctive websites for real businesses</p>
+            <h1>Professional websites built to make your business stand out.</h1>
+            <p class="hero-lead">
+              Bluvixa creates modern, mobile-friendly websites for local businesses and independent brands—without forcing every client into the same template.
+            </p>
+            <div class="hero-actions">
+              <a class="button primary-button" href="#projects">View My Work</a>
+              <a class="button secondary-button" href="#pricing">Start for $500</a>
+              <a class="button secondary-button" href="tel:+15596763875">Call (559) 676-3875</a>
+            </div>
+          </div>
+
+          <div class="hero-visual" aria-hidden="true">
+            <div class="browser-card">
+              <div class="browser-top">
+                <span class="browser-dot"></span>
+                <span class="browser-dot"></span>
+                <span class="browser-dot"></span>
+              </div>
+              <div class="browser-screen">
+                <div class="mock-logo"></div>
+                <div class="mock-title"></div>
+                <div class="mock-cards">
+                  <span></span><span></span><span></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="trust-bar" aria-label="Website service benefits">
+          <div class="trust-item"><span>✓</span> Custom Built</div>
+          <div class="trust-item"><span>✓</span> Mobile Friendly</div>
+          <div class="trust-item"><span>✓</span> Fast Loading</div>
+          <div class="trust-item"><span>✓</span> SEO Foundation</div>
+          <div class="trust-item"><span>✓</span> Launch Support</div>
+        </div>
+      </section>
+
+      <section id="projects" class="panel section-wrap">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Featured work</p>
+            <h2>Every website gets its own identity.</h2>
+          </div>
+          <p class="section-note">
+            A growing portfolio of custom website concepts created for businesses in and around Oakhurst, California.
+          </p>
+        </div>
+
+        <div class="projects-grid">
+          <a class="project-card" href="https://pak-page-rebuild.vercel.app" target="_blank" rel="noopener noreferrer" aria-label="Open Pak and Page website project">
+            <div class="project-cover"><span>Add Project Cover</span></div>
+            <div class="project-info"><span>Shipping &amp; Business Services</span><strong>Pak &amp; Page</strong><em>Live Preview ↗</em></div>
+          </a>
+
+          <a class="project-card" href="https://oakhurst-business-center.vercel.app" target="_blank" rel="noopener noreferrer" aria-label="Open Oakhurst Business Center website project">
+            <div class="project-cover"><span>Add Project Cover</span></div>
+            <div class="project-info"><span>Business Services</span><strong>Oakhurst Business Center</strong><em>Live Preview ↗</em></div>
+          </a>
+
+          <a class="project-card" href="https://oakhurst-beauty-supply-hair-designe.vercel.app" target="_blank" rel="noopener noreferrer" aria-label="Open Oakhurst Beauty Supply and Hair Designer website project">
+            <div class="project-cover"><span>Add Project Cover</span></div>
+            <div class="project-info"><span>Beauty &amp; Hair</span><strong>Oakhurst Beauty Supply</strong><em>Live Preview ↗</em></div>
+          </a>
+
+          <a class="project-card" href="https://wonderful-treasures-thrift-shop-web.vercel.app" target="_blank" rel="noopener noreferrer" aria-label="Open Wonderful Treasures Thrift Shop website project">
+            <div class="project-cover"><span>Add Project Cover</span></div>
+            <div class="project-info"><span>Thrift &amp; Retail</span><strong>Wonderful Treasures</strong><em>Live Preview ↗</em></div>
+          </a>
+
+          <a class="project-card" href="https://good-ol-things-website.vercel.app" target="_blank" rel="noopener noreferrer" aria-label="Open Good Ol Things website project">
+            <div class="project-cover"><span>Add Project Cover</span></div>
+            <div class="project-info"><span>Antiques &amp; Collectibles</span><strong>Good Ol' Things</strong><em>Live Preview ↗</em></div>
+          </a>
+
+          <a class="project-card" href="https://alpenglow-pearl.vercel.app" target="_blank" rel="noopener noreferrer" aria-label="Open Alpenglow Consignment website project">
+            <div class="project-cover"><span>Add Project Cover</span></div>
+            <div class="project-info"><span>Outdoor Retail</span><strong>Alpenglow Consignment</strong><em>Live Preview ↗</em></div>
+          </a>
+
+          <a class="project-card" href="https://sierra-mercantile-website.vercel.app" target="_blank" rel="noopener noreferrer" aria-label="Open Sierra Mercantile website project">
+            <div class="project-cover"><span>Add Project Cover</span></div>
+            <div class="project-info"><span>Local Retail</span><strong>Sierra Mercantile</strong><em>Live Preview ↗</em></div>
+          </a>
+
+          <a class="project-card" href="https://ec-lec-tic-website.vercel.app" target="_blank" rel="noopener noreferrer" aria-label="Open Eclectic website project">
+            <div class="project-cover"><span>Add Project Cover</span></div>
+            <div class="project-info"><span>Gifts &amp; Retail</span><strong>Ec.lec.tic</strong><em>Live Preview ↗</em></div>
+          </a>
+
+          <a class="project-card" href="https://7-rivers-pickers-website.vercel.app" target="_blank" rel="noopener noreferrer" aria-label="Open Seven Rivers Pickers website project">
+            <div class="project-cover"><span>Add Project Cover</span></div>
+            <div class="project-info"><span>Antiques &amp; Vintage</span><strong>7 Rivers Pickers</strong><em>Live Preview ↗</em></div>
+          </a>
+
+          <a class="project-card" href="https://oakhurst-office-supply-and-decor-we.vercel.app" target="_blank" rel="noopener noreferrer" aria-label="Open Oakhurst Office Supply and Decor website project">
+            <div class="project-cover"><span>Add Project Cover</span></div>
+            <div class="project-info"><span>Office &amp; Home Retail</span><strong>Oakhurst Office Supply &amp; Decor</strong><em>Live Preview ↗</em></div>
+          </a>
+        </div>
+      </section>
+
+      <section class="panel section-wrap" aria-labelledby="why-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Why Bluvixa</p>
+            <h2 id="why-title">Designed around your business—not a template.</h2>
+          </div>
+          <p class="section-note">
+            Your website should look intentional, feel easy to use, and give customers a clear reason to contact you.
+          </p>
+        </div>
+
+        <div class="feature-grid">
+          <article class="feature-card">
+            <div class="feature-icon">⚡</div>
+            <h3>Fast Turnaround</h3>
+            <p>A focused build process keeps your project moving without sacrificing the details that make it feel custom.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon">✦</div>
+            <h3>Unique Design</h3>
+            <p>Each business receives its own visual identity instead of another copy-and-paste website.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon">▣</div>
+            <h3>Mobile First</h3>
+            <p>Your site is designed to look polished and remain easy to use on phones, tablets, and desktops.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon">⌁</div>
+            <h3>Simple &amp; Secure</h3>
+            <p>Lean static builds reduce unnecessary maintenance and avoid the plugin clutter found in many site builders.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="pricing" class="panel section-wrap">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Simple pricing</p>
+            <h2>One clear price to get your business online.</h2>
+          </div>
+          <p class="section-note">
+            A professional business website starts at $500. Larger features such as online stores, member accounts, or custom backends are quoted separately.
+          </p>
+        </div>
+
+        <div class="pricing-layout">
+          <article class="price-card">
+            <span class="price-label">Professional Business Website</span>
+            <div class="price"><sup>$</sup><strong>500</strong></div>
+            <p class="flat-rate">Starting flat rate</p>
+
+            <ul class="included-list">
+              <li>Custom visual design</li>
+              <li>Mobile responsive layout</li>
+              <li>Contact information and calls-to-action</li>
+              <li>Google Maps integration</li>
+              <li>Social media links</li>
+              <li>Basic SEO foundation</li>
+              <li>Launch and publishing assistance</li>
+              <li>Reasonable revisions during the build</li>
+            </ul>
+
+            <p class="pricing-note">
+              The $500 package is intended for a focused small-business website. Advanced databases, payment processing, booking systems, e-commerce, ongoing management, and other custom features may require a separate quote.
+            </p>
+          </article>
+
+          <article class="payment-card">
+            <span class="price-label">Start your project</span>
+            <h3>Ready to reserve your website?</h3>
+            <p>
+              Contact me first so we can confirm the project scope. Once everything is agreed upon, you can use Venmo to submit your project payment and begin the build.
+            </p>
+
+            <a class="button primary-button venmo-button" href="https://venmo.com/u/RickeyB1218" target="_blank" rel="noopener noreferrer">
+              Pay securely with Venmo ↗
+            </a>
+            <p class="payment-fineprint">Do not send payment until the project details and start date have been confirmed.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="process" class="panel section-wrap">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">How it works</p>
+            <h2>A straightforward path from idea to launch.</h2>
+          </div>
+          <p class="section-note">
+            You stay involved throughout the process while I handle the design, responsive layout, and final presentation.
+          </p>
+        </div>
+
+        <div class="process-grid">
+          <article class="step-card"><span class="step-number">01</span><h3>Tell Me About It</h3><p>We discuss your business, goals, preferred style, content, and the pages your website needs.</p></article>
+          <article class="step-card"><span class="step-number">02</span><h3>Confirm &amp; Pay</h3><p>Once the scope is clear, we confirm the price and you reserve the project through Venmo.</p></article>
+          <article class="step-card"><span class="step-number">03</span><h3>Review the Build</h3><p>You receive a working website preview and can request reasonable changes before launch.</p></article>
+          <article class="step-card"><span class="step-number">04</span><h3>Go Live</h3><p>The finished website is prepared for publishing and connected to your domain.</p></article>
+        </div>
+      </section>
+
+      <section class="panel section-wrap" aria-labelledby="faq-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Frequently asked questions</p>
+            <h2 id="faq-title">Clear answers before we begin.</h2>
+          </div>
+          <p class="section-note">These are the most common questions businesses ask before starting a website project.</p>
+        </div>
+
+        <div class="faq-list">
+          <details>
+            <summary>What is included in the $500 website?</summary>
+            <p>A focused custom website for a small business, including responsive design, core business information, calls-to-action, social links, maps when needed, and launch assistance.</p>
+          </details>
+          <details>
+            <summary>Do I own the finished website?</summary>
+            <p>Yes. Once the project is paid for, you receive the completed website files. Domain, hosting, and third-party service accounts remain under the account holder's control.</p>
+          </details>
+          <details>
+            <summary>Can you redesign an existing website?</summary>
+            <p>Yes. Existing content can often be reorganized and rebuilt into a cleaner, faster, and more modern design.</p>
+          </details>
+          <details>
+            <summary>Are online stores and booking systems included?</summary>
+            <p>Not in the standard $500 package. E-commerce, booking, user accounts, databases, and other advanced features require a separate quote based on complexity.</p>
+          </details>
+          <details>
+            <summary>How quickly can the website be completed?</summary>
+            <p>Timing depends on the scope and how quickly content is supplied. A focused static business website can often move from planning to launch quickly once all materials are ready.</p>
+          </details>
+        </div>
+      </section>
+
+      <section id="contact" class="panel contact-panel">
+        <div class="contact-copy">
+          <p class="eyebrow">Start a project</p>
+          <h2>Let’s build something your business can be proud of.</h2>
+          <p>
+            Call or email to discuss your business, your goals, and the kind of website you want to create. We will confirm the details before any payment is made.
+          </p>
+        </div>
+
+        <div class="contact-actions">
+          <a href="tel:+15596763875" class="contact-link">
+            <span>Phone</span>
+            <strong>(559) 676-3875</strong>
+          </a>
+          <a href="mailto:Brown.Rickey95@gmail.com?subject=Bluvixa%20Website%20Project" class="contact-link">
+            <span>Email</span>
+            <strong>Brown.Rickey95@gmail.com</strong>
+          </a>
+          <a href="https://www.google.com/maps/search/?api=1&query=Oakhurst%2C%20CA" target="_blank" rel="noopener" class="contact-link">
+            <span>Location</span>
+            <strong>Oakhurst, CA</strong>
+          </a>
+          <a href="#pricing" class="contact-link">
+            <span>Pricing</span>
+            <strong>Websites starting at $500</strong>
+          </a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span>© <span id="year"></span> Bluvixa Web Design</span>
+      <span>Custom website design • Oakhurst, California</span>
+    </footer>
+  </div>
+
+  <a class="floating-start" href="#pricing">Start Your $500 Website</a>
+
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+
+  </script>
+</body>
+</html>
