@@ -640,21 +640,47 @@
       font-size: 14px;
     }
 
-    .pricing-layout {
+    .pricing-grid {
       position: relative;
       z-index: 1;
       display: grid;
-      grid-template-columns: minmax(0, 0.9fr) minmax(380px, 1.1fr);
-      gap: 22px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
     }
 
-    .price-card,
-    .payment-card {
-      padding: clamp(30px, 5vw, 58px);
-      border: 1px solid rgba(108,187,255,0.42);
+    .tier-card {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      min-height: 100%;
+      padding: clamp(28px, 4vw, 44px);
+      border: 1px solid rgba(108,187,255,0.36);
       border-radius: 30px;
-      background: rgba(4,12,26,0.82);
-      box-shadow: 0 20px 60px rgba(0,0,0,0.32);
+      background: rgba(4,12,26,0.84);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      overflow: hidden;
+    }
+
+    .tier-card.featured {
+      border-color: rgba(114,208,255,0.84);
+      background:
+        radial-gradient(circle at 88% 4%, rgba(34,132,255,0.35), transparent 30%),
+        linear-gradient(145deg, rgba(8,28,64,0.97), rgba(3,10,22,0.96));
+      box-shadow: 0 25px 70px rgba(0,0,0,0.38), 0 0 42px rgba(22,136,255,0.19);
+    }
+
+    .tier-badge {
+      align-self: flex-start;
+      margin-bottom: 22px;
+      padding: 8px 12px;
+      border: 1px solid rgba(109,199,255,0.48);
+      border-radius: 999px;
+      color: #dff5ff;
+      background: rgba(22,136,255,0.14);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
     }
 
     .price-label {
@@ -665,37 +691,58 @@
       text-transform: uppercase;
     }
 
+    .tier-card h3 {
+      margin-top: 12px;
+      font-size: clamp(28px, 3vw, 43px);
+      line-height: 1;
+      letter-spacing: -0.04em;
+    }
+
     .price {
       display: flex;
       align-items: flex-start;
-      gap: 8px;
-      margin: 18px 0 8px;
+      gap: 6px;
+      margin: 22px 0 7px;
       font-family: "Trebuchet MS", Arial, sans-serif;
       line-height: 1;
     }
 
     .price sup {
-      padding-top: 12px;
+      padding-top: 8px;
       color: var(--blue-light);
-      font-size: 26px;
+      font-size: 22px;
     }
 
     .price strong {
-      font-size: clamp(78px, 9vw, 132px);
+      font-size: clamp(55px, 6vw, 82px);
       letter-spacing: -0.07em;
+    }
+
+    .price .plus {
+      align-self: flex-end;
+      padding-bottom: 9px;
+      color: #9fcfff;
+      font-size: 18px;
+      font-weight: 900;
     }
 
     .flat-rate {
       color: #b8c5d7;
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 800;
+    }
+
+    .tier-summary {
+      margin-top: 20px;
+      color: #aebcd0;
+      font-size: 14px;
+      line-height: 1.65;
     }
 
     .included-list {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0,1fr));
-      gap: 14px 20px;
-      margin-top: 32px;
+      gap: 12px;
+      margin-top: 26px;
       list-style: none;
     }
 
@@ -715,23 +762,107 @@
       font-weight: 900;
     }
 
-    .pricing-note {
-      margin-top: 28px;
-      padding-top: 22px;
-      border-top: 1px solid var(--line-soft);
-      color: #8594aa;
-      font-size: 13px;
-      line-height: 1.65;
+    .tier-note {
+      margin-top: auto;
+      padding-top: 24px;
+      color: #8190a6;
+      font-size: 12px;
+      line-height: 1.6;
     }
+
+    .tier-button {
+      width: 100%;
+      margin-top: 24px;
+      border-radius: 16px;
+    }
+
+    .value-strip {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .value-item {
+      padding: 18px;
+      border: 1px solid rgba(92,167,255,0.24);
+      border-radius: 18px;
+      background: rgba(255,255,255,0.025);
+      text-align: center;
+    }
+
+    .value-item strong {
+      display: block;
+      color: #eff8ff;
+      font-size: 15px;
+    }
+
+    .value-item span {
+      display: block;
+      margin-top: 6px;
+      color: #8493aa;
+      font-size: 11px;
+      line-height: 1.45;
+    }
+
+    .extras-layout {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    .extras-card {
+      padding: clamp(28px, 4vw, 46px);
+      border: 1px solid rgba(108,187,255,0.34);
+      border-radius: 28px;
+      background: rgba(4,12,26,0.78);
+    }
+
+    .extras-card h3 {
+      margin-top: 12px;
+      font-size: clamp(30px, 3.5vw, 48px);
+      line-height: 1;
+      letter-spacing: -0.04em;
+    }
+
+    .extras-card > p {
+      margin-top: 18px;
+      color: #aebbd0;
+      line-height: 1.68;
+    }
+
+    .menu-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 24px;
+    }
+
+    .menu-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 15px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .menu-row:last-child { border-bottom: 0; }
+    .menu-row span { color: #c9d6e8; }
+    .menu-row strong { color: #68c2ff; text-align: right; }
 
     .payment-card {
       position: relative;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
+      margin-top: 20px;
+      padding: clamp(30px, 5vw, 58px);
+      border: 1px solid rgba(108,187,255,0.42);
+      border-radius: 30px;
       background:
         radial-gradient(circle at 90% 10%, rgba(28,121,255,0.32), transparent 32%),
         linear-gradient(145deg, rgba(8,25,58,0.96), rgba(3,10,22,0.95));
+      box-shadow: 0 20px 60px rgba(0,0,0,0.32);
     }
 
     .payment-card h3 {
@@ -742,23 +873,27 @@
     }
 
     .payment-card p {
-      max-width: 610px;
+      max-width: 760px;
       margin-top: 20px;
       color: #bdc9db;
       font-size: 16px;
       line-height: 1.7;
     }
 
+    .payment-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 28px;
+    }
+
     .venmo-button {
       min-height: 62px;
-      width: 100%;
-      margin-top: 28px;
       font-size: 16px;
       border-radius: 18px;
     }
 
     .payment-fineprint {
-      margin-top: 14px !important;
       color: #8291a7 !important;
       font-size: 12px !important;
     }
@@ -939,8 +1074,7 @@
     }
 
     @media (max-width: 1100px) {
-      .hero,
-      .pricing-layout {
+      .hero {
         grid-template-columns: 1fr;
       }
 
@@ -954,6 +1088,18 @@
 
       .feature-grid,
       .process-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .pricing-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .extras-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .value-strip {
         grid-template-columns: repeat(2, 1fr);
       }
 
@@ -1062,7 +1208,7 @@
       .trust-bar,
       .feature-grid,
       .process-grid,
-      .included-list {
+      .value-strip {
         grid-template-columns: 1fr;
       }
 
@@ -1079,7 +1225,8 @@
         display: none;
       }
 
-      .price-card,
+      .tier-card,
+      .extras-card,
       .payment-card {
         padding: 28px 20px;
         border-radius: 24px;
@@ -1137,13 +1284,13 @@
         <div class="hero">
           <div class="hero-copy">
             <p class="eyebrow">Distinctive websites for real businesses</p>
-            <h1>Professional websites built to make your business stand out.</h1>
+            <h1>Custom websites built to help your business look established, earn trust, and grow.</h1>
             <p class="hero-lead">
-              Bluvixa creates modern, mobile-friendly websites for local businesses and independent brands—without forcing every client into the same template.
+              Bluvixa creates distinctive, mobile-friendly websites for local businesses and independent brands. Choose a focused one-page launch, a complete multi-page presence, or a fully custom build tailored to your goals.
             </p>
             <div class="hero-actions">
               <a class="button primary-button" href="#projects">View My Work</a>
-              <a class="button secondary-button" href="#pricing">Start for $500</a>
+              <a class="button secondary-button" href="#pricing">Compare Packages</a>
               <a class="button secondary-button" href="tel:+15596763875">Call (559) 676-3875</a>
             </div>
           </div>
@@ -1223,7 +1370,7 @@
           </a>
 
           <a class="project-card" href="https://ec-lec-tic-website.vercel.app" target="_blank" rel="noopener noreferrer" aria-label="Open Eclectic website project">
-            <div class="project-cover"><img src="hero-ec.lec.tic.webp" alt="Ec.lec.tic website preview" loading="lazy" /></div>
+            <div class="project-cover"><img src="hero-eclectic.webp" alt="Ec.lec.tic website preview" loading="lazy" /></div>
             <div class="project-info"><span>Gifts &amp; Retail</span><strong>Ec.lec.tic</strong><em>Live Preview ↗</em></div>
           </a>
 
@@ -1277,49 +1424,127 @@
       <section id="pricing" class="panel section-wrap">
         <div class="section-heading">
           <div>
-            <p class="eyebrow">Simple pricing</p>
-            <h2>One clear price to get your business online.</h2>
+            <p class="eyebrow">Website packages</p>
+            <h2>Choose the level that fits your business now.</h2>
           </div>
           <p class="section-note">
-            A professional business website starts at $500. Larger features such as online stores, member accounts, or custom backends are quoted separately.
+            Every Bluvixa website is custom designed, mobile friendly, and built around your business. The package simply determines the size, depth, and functionality of the project.
           </p>
         </div>
 
-        <div class="pricing-layout">
-          <article class="price-card">
-            <span class="price-label">Professional Business Website</span>
+        <div class="pricing-grid">
+          <article class="tier-card">
+            <span class="price-label">Focused Launch</span>
+            <h3>One-Page Website</h3>
             <div class="price"><sup>$</sup><strong>500</strong></div>
-            <p class="flat-rate">Starting flat rate</p>
-
+            <p class="flat-rate">Flat-rate starter package</p>
+            <p class="tier-summary">A polished digital home for a small business that needs one clear, high-impact page.</p>
             <ul class="included-list">
-              <li>Custom visual design</li>
+              <li>Custom one-page visual design</li>
               <li>Mobile responsive layout</li>
-              <li>Contact information and calls-to-action</li>
-              <li>Google Maps integration</li>
-              <li>Social media links</li>
-              <li>Basic SEO foundation</li>
+              <li>Business overview and services</li>
+              <li>Phone, directions, and social links</li>
+              <li>Basic SEO page setup</li>
+              <li>One included revision round</li>
               <li>Launch and publishing assistance</li>
-              <li>Reasonable revisions during the build</li>
             </ul>
-
-            <p class="pricing-note">
-              The $500 package is intended for a focused small-business website. Advanced databases, payment processing, booking systems, e-commerce, ongoing management, and other custom features may require a separate quote.
-            </p>
+            <p class="tier-note">Best for independent professionals, new businesses, and local shops that need a strong online presence without unnecessary complexity.</p>
+            <a class="button secondary-button tier-button" href="#contact">Ask About the $500 Package</a>
           </article>
 
-          <article class="payment-card">
-            <span class="price-label">Start your project</span>
-            <h3>Ready to reserve your website?</h3>
-            <p>
-              Contact me first so we can confirm the project scope. Once everything is agreed upon, you can use Venmo to submit your project payment and begin the build.
-            </p>
+          <article class="tier-card featured">
+            <span class="tier-badge">Most Popular</span>
+            <span class="price-label">Growth Starter</span>
+            <h3>Multi-Page Business Site</h3>
+            <div class="price"><sup>$</sup><strong>1,200</strong><span class="plus">+</span></div>
+            <p class="flat-rate">Quoted by project scope</p>
+            <p class="tier-summary">A complete business presence with room to explain services, build trust, and guide customers toward action.</p>
+            <ul class="included-list">
+              <li>Up to five custom pages</li>
+              <li>Custom visual identity throughout</li>
+              <li>Expanded service and about pages</li>
+              <li>Image galleries or product showcases</li>
+              <li>Local SEO structure and metadata</li>
+              <li>Google Maps and contact pathways</li>
+              <li>Two included revision rounds</li>
+              <li>Launch and domain connection help</li>
+            </ul>
+            <p class="tier-note">Ideal for established local businesses that need more than a digital business card and want a website capable of supporting growth.</p>
+            <a class="button primary-button tier-button" href="#contact">Request a Growth Quote</a>
+          </article>
 
-            <a class="button primary-button venmo-button" href="https://venmo.com/u/RickeyB1218" target="_blank" rel="noopener noreferrer">
-              Pay securely with Venmo ↗
-            </a>
-            <p class="payment-fineprint">Do not send payment until the project details and start date have been confirmed.</p>
+          <article class="tier-card">
+            <span class="price-label">Professional Custom</span>
+            <h3>Advanced Website Build</h3>
+            <div class="price"><sup>$</sup><strong>2,500</strong><span class="plus">+</span></div>
+            <p class="flat-rate">Custom proposal required</p>
+            <p class="tier-summary">A deeper strategic build for businesses that need advanced content, integrations, or specialized customer journeys.</p>
+            <ul class="included-list">
+              <li>Expanded custom page system</li>
+              <li>Brand integration and design direction</li>
+              <li>Tailored conversion pathways</li>
+              <li>Advanced forms and integrations</li>
+              <li>Booking or third-party tools</li>
+              <li>Storefront planning or payment setup</li>
+              <li>Custom scope and launch plan</li>
+            </ul>
+            <p class="tier-note">E-commerce, member accounts, databases, dashboards, and custom backends are priced according to technical complexity and ongoing requirements.</p>
+            <a class="button secondary-button tier-button" href="#contact">Discuss a Custom Build</a>
           </article>
         </div>
+
+        <div class="value-strip" aria-label="What every Bluvixa website includes">
+          <div class="value-item"><strong>Custom Design</strong><span>No copy-and-paste template identity</span></div>
+          <div class="value-item"><strong>Mobile First</strong><span>Designed for phones, tablets, and desktops</span></div>
+          <div class="value-item"><strong>Lean &amp; Fast</strong><span>Static builds without plugin clutter</span></div>
+          <div class="value-item"><strong>Launch Support</strong><span>Help publishing and connecting your domain</span></div>
+        </div>
+      </section>
+
+      <section class="panel section-wrap" aria-labelledby="extras-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Optional support</p>
+            <h2 id="extras-title">Add only what your business actually needs.</h2>
+          </div>
+          <p class="section-note">Clear add-ons and ongoing support prevent surprises while giving your website room to evolve after launch.</p>
+        </div>
+
+        <div class="extras-layout">
+          <article class="extras-card">
+            <span class="price-label">Monthly care plans</span>
+            <h3>Stay supported after launch.</h3>
+            <p>Maintenance is optional. Businesses that prefer ongoing help can choose a plan based on how frequently they expect updates.</p>
+            <div class="menu-list">
+              <div class="menu-row"><span>Technical Check Plan</span><strong>$25/month</strong></div>
+              <div class="menu-row"><span>One Small Content Update</span><strong>$59/month</strong></div>
+              <div class="menu-row"><span>Priority Support + Up to 1 Hour</span><strong>$99/month</strong></div>
+            </div>
+          </article>
+
+          <article class="extras-card">
+            <span class="price-label">Common add-ons</span>
+            <h3>Expand your website deliberately.</h3>
+            <p>These starting prices help set expectations. The final quote depends on the platform, content, and technical requirements involved.</p>
+            <div class="menu-list">
+              <div class="menu-row"><span>Booking or Calendar Integration</span><strong>+$300–$500</strong></div>
+              <div class="menu-row"><span>Professional Copywriting</span><strong>+$100/page</strong></div>
+              <div class="menu-row"><span>E-commerce Setup</span><strong>Starting +$1,500</strong></div>
+              <div class="menu-row"><span>Custom Backend or Accounts</span><strong>Custom quote</strong></div>
+            </div>
+          </article>
+        </div>
+
+        <article class="payment-card">
+          <span class="price-label">Reserve your project</span>
+          <h3>We confirm the scope before payment.</h3>
+          <p>Call or email first so we can choose the right package, confirm the deliverables, set the start date, and agree on the final price. Once those details are clear, payment can be submitted through Venmo.</p>
+          <div class="payment-actions">
+            <a class="button primary-button venmo-button" href="https://venmo.com/u/RickeyB1218" target="_blank" rel="noopener noreferrer">Pay securely with Venmo ↗</a>
+            <a class="button secondary-button venmo-button" href="#contact">Contact Bluvixa First</a>
+          </div>
+          <p class="payment-fineprint">Do not send payment until your project details, package, price, and start date have been confirmed.</p>
+        </article>
       </section>
 
       <section id="process" class="panel section-wrap">
@@ -1335,7 +1560,7 @@
 
         <div class="process-grid">
           <article class="step-card"><span class="step-number">01</span><h3>Tell Me About It</h3><p>We discuss your business, goals, preferred style, content, and the pages your website needs.</p></article>
-          <article class="step-card"><span class="step-number">02</span><h3>Confirm &amp; Pay</h3><p>Once the scope is clear, we confirm the price and you reserve the project through Venmo.</p></article>
+          <article class="step-card"><span class="step-number">02</span><h3>Confirm &amp; Pay</h3><p>We select the right package, confirm the exact scope and price, then reserve the project through Venmo.</p></article>
           <article class="step-card"><span class="step-number">03</span><h3>Review the Build</h3><p>You receive a working website preview and can request reasonable changes before launch.</p></article>
           <article class="step-card"><span class="step-number">04</span><h3>Go Live</h3><p>The finished website is prepared for publishing and connected to your domain.</p></article>
         </div>
@@ -1353,7 +1578,7 @@
         <div class="faq-list">
           <details>
             <summary>What is included in the $500 website?</summary>
-            <p>A focused custom website for a small business, including responsive design, core business information, calls-to-action, social links, maps when needed, and launch assistance.</p>
+            <p>A focused custom one-page website for a small business, including responsive design, core business information, service highlights, calls-to-action, social links, maps when needed, one revision round, and launch assistance.</p>
           </details>
           <details>
             <summary>Do I own the finished website?</summary>
@@ -1365,11 +1590,15 @@
           </details>
           <details>
             <summary>Are online stores and booking systems included?</summary>
-            <p>Not in the standard $500 package. E-commerce, booking, user accounts, databases, and other advanced features require a separate quote based on complexity.</p>
+            <p>Not in the $500 one-page package. Booking tools may be added to larger packages, while e-commerce, user accounts, databases, dashboards, and custom backends require a separate quote based on complexity.</p>
           </details>
           <details>
             <summary>How quickly can the website be completed?</summary>
             <p>Timing depends on the scope and how quickly content is supplied. A focused static business website can often move from planning to launch quickly once all materials are ready.</p>
+          </details>
+          <details>
+            <summary>Do I have to purchase a monthly maintenance plan?</summary>
+            <p>No. Ongoing support is optional. You may manage the finished website yourself, request individual paid updates, or choose a monthly care plan when regular assistance is more convenient.</p>
           </details>
         </div>
       </section>
@@ -1398,7 +1627,7 @@
           </a>
           <a href="#pricing" class="contact-link">
             <span>Pricing</span>
-            <strong>Websites starting at $500</strong>
+            <strong>One-page sites from $500 • Multi-page from $1,200</strong>
           </a>
         </div>
       </section>
@@ -1410,7 +1639,7 @@
     </footer>
   </div>
 
-  <a class="floating-start" href="#pricing">Start Your $500 Website</a>
+  <a class="floating-start" href="#pricing">View Website Packages</a>
 
   <script>
     document.getElementById("year").textContent = new Date().getFullYear();
