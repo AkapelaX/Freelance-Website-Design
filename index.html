@@ -853,6 +853,56 @@
     .menu-row span { color: #c9d6e8; }
     .menu-row strong { color: #68c2ff; text-align: right; }
 
+
+    .service-explainer-grid {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      margin-top: 20px;
+    }
+
+    .service-explainer-card {
+      position: relative;
+      min-height: 100%;
+      padding: clamp(28px, 4vw, 42px);
+      border: 1px solid rgba(108,187,255,0.3);
+      border-radius: 28px;
+      background:
+        radial-gradient(circle at 100% 0%, rgba(24,116,255,0.18), transparent 34%),
+        rgba(4,12,26,0.78);
+      overflow: hidden;
+    }
+
+    .service-explainer-card h3 {
+      max-width: 560px;
+      margin-top: 12px;
+      font-size: clamp(26px, 3vw, 40px);
+      line-height: 1.03;
+      letter-spacing: -0.04em;
+    }
+
+    .service-explainer-card > p {
+      max-width: 650px;
+      margin-top: 18px;
+      color: #aebbd0;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .service-number {
+      position: absolute;
+      right: 24px;
+      top: 18px;
+      color: rgba(93,184,255,0.18);
+      font-family: "Trebuchet MS", Arial, sans-serif;
+      font-size: clamp(48px, 7vw, 88px);
+      font-weight: 900;
+      line-height: 1;
+      pointer-events: none;
+    }
+
     .payment-card {
       position: relative;
       margin-top: 20px;
@@ -1095,7 +1145,8 @@
         grid-template-columns: 1fr;
       }
 
-      .extras-layout {
+      .extras-layout,
+      .service-explainer-grid {
         grid-template-columns: 1fr;
       }
 
@@ -1227,6 +1278,7 @@
 
       .tier-card,
       .extras-card,
+      .service-explainer-card,
       .payment-card {
         padding: 28px 20px;
         border-radius: 24px;
@@ -1782,11 +1834,11 @@
               <li>Brand integration and design direction</li>
               <li>Tailored conversion pathways</li>
               <li>Advanced forms and integrations</li>
-              <li>Booking or third-party tools</li>
-              <li>Storefront planning or payment setup</li>
+              <li>Booking, scheduling, or third-party tools</li>
+              <li>Online store planning or payment setup</li>
               <li>Custom scope and launch plan</li>
             </ul>
-            <p class="tier-note">E-commerce, member accounts, databases, dashboards, and custom backends are priced according to technical complexity and ongoing requirements.</p>
+            <p class="tier-note">Online stores, customer portals, member logins, employee dashboards, databases, and custom business systems are priced according to technical complexity and ongoing requirements.</p>
             <a class="button secondary-button tier-button" href="#contact">Discuss a Custom Build</a>
           </article>
         </div>
@@ -1821,15 +1873,69 @@
           </article>
 
           <article class="extras-card">
-            <span class="price-label">Common add-ons</span>
-            <h3>Expand your website deliberately.</h3>
-            <p>These starting prices help set expectations. The final quote depends on the platform, content, and technical requirements involved.</p>
+            <span class="price-label">Business growth add-ons</span>
+            <h3>Add tools that make it easier for customers to take action.</h3>
+            <p>Choose only the features your business needs now. Every add-on is planned around your workflow, connected to the right service, and tested before launch.</p>
             <div class="menu-list">
-              <div class="menu-row"><span>Booking or Calendar Integration</span><strong>+$300–$500</strong></div>
-              <div class="menu-row"><span>Professional Copywriting</span><strong>+$100/page</strong></div>
-              <div class="menu-row"><span>E-commerce Setup</span><strong>Starting +$1,500</strong></div>
-              <div class="menu-row"><span>Custom Backend or Accounts</span><strong>Custom quote</strong></div>
+              <div class="menu-row"><span>Online Booking &amp; Appointment Scheduling</span><strong>+$300–$500</strong></div>
+              <div class="menu-row"><span>Professional Website Copy</span><strong>+$100/page</strong></div>
+              <div class="menu-row"><span>Online Store &amp; Payment Setup</span><strong>Starting +$1,500</strong></div>
+              <div class="menu-row"><span>Customer Portals, Member Logins &amp; Dashboards</span><strong>Custom quote</strong></div>
             </div>
+          </article>
+        </div>
+
+        <div class="service-explainer-grid" aria-label="How Bluvixa business add-ons work">
+          <article class="service-explainer-card">
+            <div class="service-number">01</div>
+            <span class="price-label">Booking &amp; scheduling</span>
+            <h3>Let customers book without calling.</h3>
+            <p>I can connect a trusted scheduling platform such as Calendly, Square Appointments, Acuity, Vagaro, or Google Calendar and place the booking experience directly on your website.</p>
+            <ul class="included-list">
+              <li>Account connection or guided setup</li>
+              <li>Service, availability, and contact configuration</li>
+              <li>Branded booking button or embedded calendar</li>
+              <li>Mobile testing and launch support</li>
+            </ul>
+          </article>
+
+          <article class="service-explainer-card">
+            <div class="service-number">02</div>
+            <span class="price-label">Website copywriting</span>
+            <h3>Turn what you do into clear customer-focused language.</h3>
+            <p>After a short interview, I organize your services, advantages, and story into polished website copy that helps visitors understand your business and know what to do next.</p>
+            <ul class="included-list">
+              <li>Client discovery questions</li>
+              <li>Page structure and headline direction</li>
+              <li>Service descriptions and calls-to-action</li>
+              <li>One copy revision round per page</li>
+            </ul>
+          </article>
+
+          <article class="service-explainer-card">
+            <div class="service-number">03</div>
+            <span class="price-label">Online store setup</span>
+            <h3>Sell products through a proven commerce platform.</h3>
+            <p>Rather than reinventing payment security, I can design and configure a storefront using an established platform such as Shopify, Square Online, Ecwid, or secure payment links.</p>
+            <ul class="included-list">
+              <li>Storefront design and platform configuration</li>
+              <li>Initial product and category setup</li>
+              <li>Payment, shipping, pickup, and tax settings</li>
+              <li>Testing and owner handoff</li>
+            </ul>
+          </article>
+
+          <article class="service-explainer-card">
+            <div class="service-number">04</div>
+            <span class="price-label">Custom business systems</span>
+            <h3>Give customers, members, or employees a secure place to sign in.</h3>
+            <p>For businesses that need more than a standard website, I can scope customer portals, member areas, employee dashboards, secure document workflows, databases, and custom internal tools.</p>
+            <ul class="included-list">
+              <li>Secure account and login planning</li>
+              <li>Custom dashboard or portal interface</li>
+              <li>Database, storage, and workflow requirements</li>
+              <li>Phased proposal based on complexity</li>
+            </ul>
           </article>
         </div>
 
@@ -1887,8 +1993,8 @@
             <p>Yes. Existing content can often be reorganized and rebuilt into a cleaner, faster, and more modern design.</p>
           </details>
           <details>
-            <summary>Are online stores and booking systems included?</summary>
-            <p>Not in the $500 one-page package. Booking tools may be added to larger packages, while e-commerce, user accounts, databases, dashboards, and custom backends require a separate quote based on complexity.</p>
+            <summary>Can you add booking, online payments, or customer logins?</summary>
+            <p>Yes. Booking and appointment tools can be connected as an add-on. Online stores, payment systems, customer portals, member logins, employee dashboards, and database-driven features are quoted separately according to the platform and technical requirements.</p>
           </details>
           <details>
             <summary>How quickly can the website be completed?</summary>
