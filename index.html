@@ -1615,6 +1615,107 @@
       .trust-item:last-child { border-bottom: 0; }
     }
 
+
+    /* Featured real-client case study */
+    .project-card.featured-client {
+      grid-column: 1 / -1;
+      grid-template-columns: minmax(320px, 0.9fr) minmax(420px, 1.1fr);
+      min-height: 430px;
+      border-color: rgba(83, 177, 255, .78);
+      background:
+        radial-gradient(circle at 92% 10%, rgba(17,137,255,.22), transparent 32%),
+        linear-gradient(145deg, rgba(4, 20, 43, .98), rgba(2, 8, 18, .99));
+      box-shadow: 0 30px 78px rgba(0,0,0,.46), 0 0 42px rgba(17,137,255,.18);
+    }
+
+    .featured-client .project-cover {
+      min-height: 430px;
+    }
+
+    .featured-client .project-info {
+      padding: clamp(30px, 4vw, 54px);
+      justify-content: flex-start;
+    }
+
+    .featured-client .client-badge {
+      display: inline-flex;
+      margin-bottom: 14px;
+      padding: 8px 11px;
+      border: 1px solid rgba(86,184,255,.55);
+      border-radius: 999px;
+      color: #dff4ff;
+      background: rgba(17,137,255,.13);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+
+    .featured-client .project-info > span:not(.client-badge) {
+      margin-bottom: 12px;
+    }
+
+    .featured-client .project-info strong {
+      max-width: none;
+      font-size: clamp(30px, 3.5vw, 48px);
+    }
+
+    .project-summary {
+      margin-top: 18px;
+      color: #b9c8dc;
+      font-size: 14px;
+      line-height: 1.65;
+    }
+
+    .project-improvements {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px 18px;
+      margin: 22px 0 4px;
+      padding: 0;
+      list-style: none;
+    }
+
+    .project-improvements li {
+      position: relative;
+      padding-left: 22px;
+      color: #d8e5f5;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .project-improvements li::before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      color: #56b8ff;
+      font-weight: 900;
+    }
+
+    .featured-client .project-info em {
+      margin-top: 24px;
+      padding-top: 0;
+      font-size: 14px;
+    }
+
+    @media (max-width: 900px) {
+      .project-card.featured-client {
+        grid-template-columns: 1fr;
+      }
+      .featured-client .project-cover {
+        min-height: 320px;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .project-improvements {
+        grid-template-columns: 1fr;
+      }
+      .featured-client .project-cover {
+        min-height: 260px;
+      }
+    }
+
   </style>
 </head>
 
@@ -1699,12 +1800,33 @@
             <div class="project-info"><span>Beauty &amp; Hair</span><strong>Oakhurst Beauty Supply</strong><em>Live Preview ↗</em></div>
           </a>
 
-          <a class="project-card" href="https://wonderful-treasures-thrift-shop-web.vercel.app" target="_blank" rel="noopener noreferrer" aria-label="Open Wonderful Treasures Thrift Shop website project">
-            <div class="project-cover"><img src="hero-wonderful-treasures.webp" alt="Wonderful Treasures website preview" loading="lazy" /></div>
-            <div class="project-info"><span>Thrift &amp; Retail</span><strong>Wonderful Treasures</strong><em>Live Preview ↗</em></div>
+          <a class="project-card featured-client" href="https://hero-andysmobileautorep.com" target="_blank" rel="noopener noreferrer" aria-label="Open Andy's Mobile Auto Repair live website">
+            <div class="project-cover">
+              <img src="hero-andysmobileautorep.jpg" alt="Andy&#39;s Mobile Auto Repair mobile website homepage" loading="lazy" />
+            </div>
+            <div class="project-info">
+              <span class="client-badge">Real Client Project</span>
+              <span>Mobile Auto Repair • Cabot &amp; Central Arkansas</span>
+              <strong>Andy&#39;s Mobile Auto Repair</strong>
+              <p class="project-summary">
+                Andy needed a stronger online presence that immediately explained his mobile service, built customer trust, and made it effortless to request help from a phone. Bluvixa rebuilt the experience around speed, clarity, and direct customer action.
+              </p>
+              <ul class="project-improvements" aria-label="Website improvements">
+                <li>Complete custom visual redesign</li>
+                <li>Mobile-first responsive layout</li>
+                <li>Clear service and coverage information</li>
+                <li>One-tap Call Now buttons</li>
+                <li>Simple service-request contact flow</li>
+                <li>Professional photo gallery</li>
+                <li>Trust signals and certification highlights</li>
+                <li>Fast, secure static hosting</li>
+                <li>SEO-ready page structure</li>
+                <li>Custom domain connection</li>
+              </ul>
+              <em>View Finished Live Website ↗</em>
+            </div>
           </a>
-
-          <a class="project-card" href="https://good-ol-things-website.vercel.app" target="_blank" rel="noopener noreferrer" aria-label="Open Good Ol Things website project">
+<a class="project-card" href="https://good-ol-things-website.vercel.app" target="_blank" rel="noopener noreferrer" aria-label="Open Good Ol Things website project">
             <div class="project-cover"><img src="hero-good-ol-things.webp" alt="Good Ol' Things website preview" loading="lazy" /></div>
             <div class="project-info"><span>Antiques &amp; Collectibles</span><strong>Good Ol' Things</strong><em>Live Preview ↗</em></div>
           </a>
@@ -1942,9 +2064,10 @@
         <article class="payment-card">
           <span class="price-label">Reserve your project</span>
           <h3>We confirm the scope before payment.</h3>
-          <p>Call or email first so we can choose the right package, confirm the deliverables, set the start date, and agree on the final price. Once those details are clear, payment can be submitted through Venmo.</p>
+          <p>Call or email first so we can choose the right package, confirm the deliverables, set the start date, and agree on the final price. Once those details are clear, payment can be submitted through Venmo or Cash App.</p>
           <div class="payment-actions">
             <a class="button primary-button venmo-button" href="https://venmo.com/u/RickeyB1218" target="_blank" rel="noopener noreferrer">Pay securely with Venmo ↗</a>
+            <a class="button primary-button venmo-button" href="https://cash.app/$sarahbear151822" target="_blank" rel="noopener noreferrer">Pay securely with Cash App ↗</a>
             <a class="button secondary-button venmo-button" href="#contact">Contact Bluvixa First</a>
           </div>
           <p class="payment-fineprint">Do not send payment until your project details, package, price, and start date have been confirmed.</p>
@@ -1964,7 +2087,7 @@
 
         <div class="process-grid">
           <article class="step-card"><span class="step-number">01</span><h3>Tell Me About It</h3><p>We discuss your business, goals, preferred style, content, and the pages your website needs.</p></article>
-          <article class="step-card"><span class="step-number">02</span><h3>Confirm &amp; Pay</h3><p>We select the right package, confirm the exact scope and price, then reserve the project through Venmo.</p></article>
+          <article class="step-card"><span class="step-number">02</span><h3>Confirm &amp; Pay</h3><p>We select the right package, confirm the exact scope and price, then reserve the project through Venmo or Cash App.</p></article>
           <article class="step-card"><span class="step-number">03</span><h3>Review the Build</h3><p>You receive a working website preview and can request reasonable changes before launch.</p></article>
           <article class="step-card"><span class="step-number">04</span><h3>Go Live</h3><p>The finished website is prepared for publishing and connected to your domain.</p></article>
         </div>
