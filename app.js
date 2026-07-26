@@ -2,8 +2,8 @@
 
     var PLAN_CONFIG = {
       starter:{name:"Starter",monthly:15,annual:180,buyout:499,photos:10,gallery:0},
-      professional:{name:"Professional",monthly:29,annual:348,buyout:899,photos:15,gallery:12},
-      advanced:{name:"Advanced",monthly:59,annual:708,buyout:1199,photos:20,gallery:12}
+      professional:{name:"Professional",monthly:29,annual:348,buyout:599,photos:15,gallery:12},
+      advanced:{name:"Advanced",monthly:49,annual:588,buyout:699,photos:20,gallery:12}
     };
 
     var STORAGE_KEY = "bluvixa_v25_backend_ready_final";
