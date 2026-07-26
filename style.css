@@ -1390,7 +1390,10 @@ section.backend-only{
   margin-bottom:0;
 }
 @media (max-width:900px){
-  .builder-shell,.sidebar,.workspace,.preview-wrap{
+  .builder-shell,
+  .sidebar,
+  .workspace,
+  .preview-wrap{
     height:1400px !important;
     min-height:1400px !important;
   }
@@ -1399,6 +1402,12 @@ section.backend-only{
   .builder-shell{
     height:1400px !important;
     min-height:1400px !important;
+  }
+}
+@media (max-width:900px){
+  .builder-shell{
+    height:clamp(540px,70vh,760px);
+    min-height:0;
   }
 }
 
@@ -2526,3 +2535,142 @@ main > section .step-card{
 
 /* The generated customer website preview remains controlled by its own
    theme/color settings and is intentionally excluded from these overrides. */
+
+/* =========================================================
+   BLUVIXA MOBILE EDITOR HEIGHT + PREVIEW CONTAINMENT FIX
+   Keeps the editor controls roomy and prevents the website
+   preview from extending behind the Starter pricing card.
+   This final block intentionally overrides earlier height rules.
+   ========================================================= */
+
+@media (max-width:900px){
+  #builder,
+  #builder .container{
+    overflow:visible !important;
+  }
+
+  .builder-shell{
+    display:flex !important;
+    flex-direction:column !important;
+    height:auto !important;
+    min-height:0 !important;
+    overflow:visible !important;
+  }
+
+  .sidebar{
+    flex:none !important;
+    height:1500px !important;
+    min-height:1500px !important;
+    overflow:hidden !important;
+    border-bottom:1px solid rgba(96,167,255,.32) !important;
+  }
+
+  .sidebar-head{
+    flex:none !important;
+  }
+
+  .tabs{
+    flex:none !important;
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    gap:12px !important;
+    padding:16px !important;
+  }
+
+  .tab{
+    min-height:76px !important;
+    padding:16px 12px !important;
+    font-size:16px !important;
+  }
+
+  .sidebar-body{
+    display:flex !important;
+    flex:1 1 auto !important;
+    min-height:0 !important;
+    overflow:hidden !important;
+  }
+
+  .panel{
+    flex:1 1 auto !important;
+    min-height:0 !important;
+    padding:24px 20px 34px !important;
+    overflow-y:auto !important;
+    overflow-x:hidden !important;
+    overscroll-behavior:contain !important;
+  }
+
+  .sidebar-footer{
+    flex:none !important;
+    position:relative !important;
+    z-index:20 !important;
+  }
+
+  .workspace{
+    flex:none !important;
+    height:2200px !important;
+    min-height:2200px !important;
+    overflow:hidden !important;
+  }
+
+  .toolbar{
+    flex:none !important;
+  }
+
+  .preview-wrap{
+    box-sizing:border-box !important;
+    height:calc(2200px - 78px) !important;
+    min-height:calc(2200px - 78px) !important;
+    max-height:calc(2200px - 78px) !important;
+    overflow-y:auto !important;
+    overflow-x:auto !important;
+    padding:10px !important;
+    padding-bottom:64px !important;
+  }
+
+  .preview{
+    height:auto !important;
+    min-height:100% !important;
+    max-height:none !important;
+    overflow:visible !important;
+    margin:0 auto !important;
+  }
+
+  .preview .site-footer{
+    margin-bottom:0 !important;
+  }
+}
+
+@media (max-width:560px){
+  #builder .container{
+    width:min(100% - 14px,1680px) !important;
+  }
+
+  .sidebar{
+    height:1550px !important;
+    min-height:1550px !important;
+  }
+
+  .tabs{
+    gap:12px !important;
+    padding:16px !important;
+  }
+
+  .tab{
+    min-height:78px !important;
+    border-radius:22px !important;
+  }
+
+  .panel{
+    padding:26px 20px 38px !important;
+  }
+
+  .workspace{
+    height:2300px !important;
+    min-height:2300px !important;
+  }
+
+  .preview-wrap{
+    height:calc(2300px - 78px) !important;
+    min-height:calc(2300px - 78px) !important;
+    max-height:calc(2300px - 78px) !important;
+  }
+}
