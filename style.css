@@ -2362,3 +2362,156 @@ border:1px solid rgba(255,255,255,.08);
   .workspace{height:78vh;min-height:600px}
   .preview-wrap{padding:8px}
 }
+
+/* =========================================================
+   BLUVIXA 2.5 RELEASE FIX — DARK BLUE ON EVERY DEVICE
+   Keeps the generated customer-site preview customizable.
+   ========================================================= */
+:root{
+  color-scheme:dark;
+  --marketing-bg-deep:#020a18;
+  --marketing-bg-mid:#061a37;
+  --marketing-panel:#081f43;
+  --marketing-panel-2:#0b2a58;
+  --marketing-copy:#d7e9ff;
+  --marketing-muted:#b7cae2;
+}
+
+html,
+body{
+  background-color:var(--marketing-bg-deep) !important;
+}
+
+body{
+  background:
+    radial-gradient(circle at 8% 4%,rgba(28,130,255,.30),transparent 30%),
+    radial-gradient(circle at 92% 12%,rgba(75,70,255,.18),transparent 32%),
+    radial-gradient(circle at 50% 88%,rgba(0,190,255,.10),transparent 38%),
+    linear-gradient(180deg,var(--marketing-bg-deep) 0%,var(--marketing-bg-mid) 48%,var(--marketing-bg-deep) 100%) !important;
+  background-attachment:fixed !important;
+  color:var(--text) !important;
+}
+
+main,
+main > section,
+main > .section,
+main > .hero,
+footer{
+  background-color:transparent !important;
+  background-image:none !important;
+}
+
+/* Marketing typography: high contrast without changing the customer preview. */
+main > section .section-head h1,
+main > section .section-head h2,
+main > section .section-head h3,
+main > section .section-head h4,
+main > section .section-head h5,
+main > section .section-head h6,
+main > section .ownership-card h3,
+main > section .ownership-steps h3,
+main > section .license-panel h3,
+main > section .plan-card h3,
+main > section .price-card h3{
+  color:#fff !important;
+  text-shadow:0 0 24px rgba(77,173,255,.18);
+}
+
+main > section .section-head p,
+main > section .ownership-card p,
+main > section .ownership-note,
+main > section .ownership-steps p,
+main > section .license-panel p,
+main > section .features,
+main > section .price-card p,
+main > section .price-card li{
+  color:var(--marketing-copy) !important;
+}
+
+/* Prevent pale mobile cards and sections from reappearing. */
+main > section .glass,
+main > section .ownership-card,
+main > section .ownership-note,
+main > section .ownership-steps article,
+main > section .license-panel,
+main > section .license-grid > div,
+main > section .plan-card,
+main > section .price-card,
+main > section .pricing-card,
+main > section .step-card{
+  background:
+    radial-gradient(circle at 16% 0%,rgba(44,151,255,.17),transparent 38%),
+    linear-gradient(160deg,rgba(10,39,82,.97),rgba(3,14,32,.99)) !important;
+  border-color:rgba(89,176,255,.34) !important;
+  color:#fff !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.07),
+    0 22px 70px rgba(0,0,0,.34),
+    0 0 38px rgba(31,126,255,.08) !important;
+}
+
+/* Keep all marketing content readable on phones and tablets. */
+@media (max-width:900px){
+  html,
+  body,
+  main,
+  main > section,
+  main > .section,
+  footer{
+    background-color:var(--marketing-bg-deep) !important;
+  }
+
+  body{
+    background:
+      radial-gradient(circle at 50% 0%,rgba(28,130,255,.25),transparent 29%),
+      radial-gradient(circle at 15% 60%,rgba(50,101,255,.12),transparent 34%),
+      linear-gradient(180deg,#020a18 0%,#071c3a 50%,#020a18 100%) !important;
+    background-attachment:scroll !important;
+  }
+
+  main > section .section-head h1,
+  main > section .section-head h2,
+  main > section .section-head h3,
+  main > section .ownership-card h3,
+  main > section .ownership-steps h3,
+  main > section .license-panel h3{
+    color:#fff !important;
+    opacity:1 !important;
+  }
+
+  main > section .section-head p,
+  main > section .ownership-card p,
+  main > section .ownership-note,
+  main > section .ownership-steps p,
+  main > section .license-panel p,
+  main > section .ownership-list li{
+    color:#d9eaff !important;
+    opacity:1 !important;
+  }
+}
+
+@media (max-width:560px){
+  main > section .glass,
+  main > section .ownership-card,
+  main > section .ownership-note,
+  main > section .ownership-steps article,
+  main > section .license-panel,
+  main > section .license-grid > div,
+  main > section .plan-card,
+  main > section .price-card,
+  main > section .pricing-card,
+  main > section .step-card{
+    background:
+      radial-gradient(circle at 18% 0%,rgba(42,147,255,.19),transparent 40%),
+      linear-gradient(165deg,#0a2854 0%,#06172f 58%,#020b18 100%) !important;
+  }
+
+  .section-kicker,
+  .ownership-label{
+    color:#62c6ff !important;
+    opacity:1 !important;
+  }
+}
+
+/* The generated customer website preview remains controlled by its own
+   theme/color settings and is intentionally excluded from these overrides. */
