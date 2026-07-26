@@ -1357,15 +1357,14 @@ section.backend-only{
   }
 }
 
-/* Final visible-scroll-area correction
-   Keep the entire website preview viewport inside the browser window. */
+/* Final visible-scroll-area correction - EXTRA LARGE EDITOR */
 .builder-shell{
-  height:clamp(560px,72vh,820px);
-  min-height:0;
+  height:1700px !important;
+  min-height:1700px !important;
 }
 .sidebar{
-  height:100%;
-  min-height:0;
+  height:1700px !important;
+  min-height:1700px !important;
   overflow:hidden;
 }
 .sidebar-body{
@@ -1373,15 +1372,15 @@ section.backend-only{
   overflow-y:auto;
 }
 .workspace{
-  height:100%;
-  min-height:0;
+  height:1700px !important;
+  min-height:1700px !important;
 }
 .preview-wrap{
-  height:100%;
-  min-height:0;
+  height:1700px !important;
+  min-height:1700px !important;
+  overflow-y:auto;
+  overflow-x:auto;
   padding-bottom:48px;
-  scroll-padding-top:90px;
-  scroll-padding-bottom:48px;
 }
 .preview{
   min-height:max-content;
@@ -1390,16 +1389,16 @@ section.backend-only{
 .preview .site-footer{
   margin-bottom:0;
 }
-@media (max-height:760px){
-  .builder-shell{
-    height:68vh;
-    min-height:500px;
+@media (max-width:900px){
+  .builder-shell,.sidebar,.workspace,.preview-wrap{
+    height:1400px !important;
+    min-height:1400px !important;
   }
 }
-@media (max-width:900px){
+@media (max-height:760px){
   .builder-shell{
-    height:clamp(540px,70vh,760px);
-    min-height:0;
+    height:1400px !important;
+    min-height:1400px !important;
   }
 }
 
