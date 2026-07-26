@@ -1160,9 +1160,21 @@ transition:all .25s ease;
 
 
 /* Backend-dependent interface is intentionally hidden until services are live. */
-.backend-only{display:none!important;}
+.backend-only{
+  display:initial;
+}
 
-.hidden{display:none!important}
+button.backend-only{
+  display:inline-flex;
+}
+
+a.backend-only{
+  display:inline-flex;
+}
+
+section.backend-only{
+  display:block;
+}
 
 
 /* Editable full-background About and Map sections */
