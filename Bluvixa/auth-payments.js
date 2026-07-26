@@ -83,6 +83,7 @@
     ["signOutBtn","accountNavLink"].forEach(function(id){el(id).classList.toggle("hidden",!signedIn);});
     el("accountEmail").textContent=signedIn?currentUser.email:"—";
     el("accountAuthStatus").textContent=signedIn?"Signed in":"Signed out";
+    var accountSection=el("account"); if(accountSection) accountSection.classList.toggle("hidden",!signedIn);
     if(signedIn){ await loadAccount(); }
   }
   async function signOut(){ if(supabaseClient) await supabaseClient.auth.signOut(); location.hash="#top"; toast("Signed out."); }

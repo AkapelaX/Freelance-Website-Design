@@ -28,8 +28,8 @@
 </nav>
 <div class="nav-actions">
 <a class="btn btn-secondary" href="#ownership">How Ownership Works</a>
-<button class="btn btn-secondary backend-only hidden" id="signInBtn" type="button">Sign In</button>
-<button class="btn btn-primary backend-only hidden" id="startTrialBtn" type="button">Start Free Trial</button>
+<button class="btn btn-secondary hidden" id="signInBtn" type="button">Sign In</button>
+<button class="btn btn-primary hidden" id="startTrialBtn" type="button">Start Free Trial</button>
 <button class="btn btn-secondary hidden backend-only" id="signOutBtn" type="button">Sign Out</button>
 </div>
 </div>
@@ -718,7 +718,8 @@
 </div>
 </div>
 <div class="toast" id="toast"></div>
-<script defer="" src="app.js?v=final-proportion-pass-1"></script>
-<!-- auth-payments.js is intentionally not loaded until the operating backend is enabled. -->
+<script defer src="app.js?v=backend-starter-1"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script defer src="auth-payments.js?v=backend-starter-1"></script>
 </body>
 </html>

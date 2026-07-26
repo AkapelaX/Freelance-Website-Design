@@ -1,0 +1,17 @@
+{
+  "name": "bluvixa-2-5-backend-starter",
+  "version": "2.5.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vercel dev",
+    "check": "node --check app.js && node --check auth-payments.js && node --check api/_lib.js && node --check api/config.js && node --check api/account.js && node --check api/project.js && node --check api/create-checkout-session.js && node --check api/create-portal-session.js && node --check api/stripe-webhook.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.1",
+    "stripe": "^17.7.0"
+  },
+  "devDependencies": {
+    "vercel": "^41.4.1"
+  }
+}
