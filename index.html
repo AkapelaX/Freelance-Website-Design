@@ -1,2193 +1,724 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Bluvixa Web Design creates distinctive, mobile-friendly websites for local businesses in Oakhurst, California and beyond." />
-  <title>Bluvixa | Professional Websites for Small Businesses</title>
-
-  <style>
-    :root {
-      --bg: #02050b;
-      --bg-soft: #07101e;
-      --panel: rgba(7, 14, 29, 0.88);
-      --panel-strong: rgba(4, 11, 24, 0.97);
-      --line: rgba(83, 157, 255, 0.4);
-      --line-bright: rgba(110, 204, 255, 0.82);
-      --line-soft: rgba(255, 255, 255, 0.08);
-      --blue: #1688ff;
-      --blue-deep: #0755d8;
-      --blue-light: #72d0ff;
-      --white: #f7fbff;
-      --muted: #aebbd0;
-      --muted-2: #7f8da5;
-      --success: #73e6b0;
-      --radius-xl: 34px;
-      --radius-lg: 25px;
-      --radius-md: 18px;
-      --shadow: 0 26px 90px rgba(0, 0, 0, 0.46);
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    html {
-      scroll-behavior: smooth;
-      scroll-padding-top: 110px;
-    }
-
-    body {
-      min-height: 100vh;
-      overflow-x: hidden;
-      color: var(--white);
-      background:
-        radial-gradient(circle at 50% -15%, rgba(31, 103, 255, 0.25), transparent 33%),
-        radial-gradient(circle at 98% 35%, rgba(38, 134, 255, 0.14), transparent 29%),
-        linear-gradient(180deg, #07101e 0%, #02050b 56%, #010307 100%);
-      font-family: Arial, Helvetica, sans-serif;
-    }
-
-    body::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      z-index: -1;
-      pointer-events: none;
-      opacity: 0.24;
-      background-image:
-        linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px);
-      background-size: 52px 52px;
-      -webkit-mask-image: linear-gradient(to bottom, black, transparent 82%);
-      mask-image: linear-gradient(to bottom, black, transparent 82%);
-    }
-
-    a {
-      color: inherit;
-      text-decoration: none;
-    }
-
-    button,
-    a {
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    img {
-      max-width: 100%;
-      display: block;
-    }
-
-    .page-shell {
-      width: min(1480px, calc(100% - 36px));
-      margin: 18px auto 36px;
-    }
-
-    .bubble-header {
-      position: sticky;
-      top: 14px;
-      z-index: 50;
-      min-height: 82px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 22px;
-      padding: 14px 18px 14px 16px;
-      margin-bottom: 22px;
-      border: 1px solid rgba(122, 190, 255, 0.34);
-      border-radius: 999px;
-      background:
-        linear-gradient(120deg, rgba(255,255,255,0.08), transparent 22%),
-        rgba(4, 12, 27, 0.82);
-      box-shadow:
-        0 0 0 1px rgba(255,255,255,0.03) inset,
-        0 18px 55px rgba(0,0,0,0.36),
-        0 0 36px rgba(26, 132, 255, 0.12);
-      -webkit-backdrop-filter: blur(18px);
-      backdrop-filter: blur(18px);
-      overflow: hidden;
-    }
-
-    .bubble-header::before {
-      content: "";
-      position: absolute;
-      top: -180%;
-      left: -18%;
-      width: 40%;
-      height: 430%;
-      transform: rotate(22deg);
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
-      animation: headerShine 7s linear infinite;
-      pointer-events: none;
-    }
-
-    .bubble-header::after {
-      content: "";
-      position: absolute;
-      width: 300px;
-      height: 120px;
-      right: 7%;
-      top: -70px;
-      border-radius: 50%;
-      background: rgba(22,136,255,0.25);
-      filter: blur(36px);
-      pointer-events: none;
-    }
-
-    @keyframes headerShine {
-      0% { left: -35%; opacity: 0; }
-      10% { opacity: 1; }
-      45% { opacity: 0.8; }
-      65%, 100% { left: 120%; opacity: 0; }
-    }
-
-    .brand {
-      position: relative;
-      z-index: 1;
-      display: inline-flex;
-      align-items: center;
-      gap: 12px;
-      min-width: 0;
-    }
-
-    .brand-mark {
-      width: 50px;
-      height: 50px;
-      display: grid;
-      place-items: center;
-      flex: 0 0 auto;
-      border-radius: 18px;
-      font-family: "Trebuchet MS", Arial, sans-serif;
-      font-size: 14px;
-      font-weight: 900;
-      letter-spacing: 0.08em;
-      background:
-        radial-gradient(circle at 32% 24%, #d4f1ff 0, #54b6ff 13%, #0966ef 47%, #042661 100%);
-      border: 1px solid rgba(190,226,255,0.65);
-      box-shadow: 0 0 28px rgba(25,138,255,0.55);
-    }
-
-    .brand-copy {
-      display: grid;
-      line-height: 1.05;
-    }
-
-    .brand-copy strong {
-      font-family: "Trebuchet MS", Arial, sans-serif;
-      font-size: 17px;
-      letter-spacing: 0.02em;
-    }
-
-    .brand-copy small {
-      margin-top: 5px;
-      color: var(--blue-light);
-      font-size: 10px;
-      letter-spacing: 0.11em;
-      text-transform: uppercase;
-    }
-
-    .header-nav {
-      position: relative;
-      z-index: 1;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .header-nav a {
-      padding: 11px 15px;
-      border-radius: 999px;
-      color: #cbd7e8;
-      font-size: 13px;
-      font-weight: 800;
-      transition: 180ms ease;
-    }
-
-    .header-nav a:hover {
-      color: white;
-      background: rgba(255,255,255,0.07);
-    }
-
-    .call-button,
-    .primary-button {
-      border: 1px solid rgba(101,183,255,0.58);
-      background: linear-gradient(180deg, rgba(49,157,255,0.42), rgba(9,82,190,0.36));
-      box-shadow: 0 0 26px rgba(20,123,255,0.24);
-    }
-
-    main {
-      display: grid;
-      gap: 22px;
-    }
-
-    .panel {
-      position: relative;
-      overflow: hidden;
-      border: 1px solid rgba(108,177,255,0.38);
-      border-radius: var(--radius-xl);
-      background:
-        radial-gradient(circle at 45% 0%, rgba(34,105,255,0.21), transparent 27%),
-        linear-gradient(145deg, rgba(5,14,31,0.97), rgba(2,7,15,0.98));
-      box-shadow:
-        var(--shadow),
-        0 0 0 1px rgba(255,255,255,0.025) inset,
-        0 0 44px rgba(25,118,255,0.12);
-    }
-
-    .panel::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      background: linear-gradient(110deg, transparent 15%, rgba(255,255,255,0.045) 30%, transparent 43%);
-      transform: translateX(-80%);
-      animation: panelShine 11s ease-in-out infinite;
-    }
-
-    @keyframes panelShine {
-      0%, 32% { transform: translateX(-80%); opacity: 0; }
-      47% { opacity: 1; }
-      66%, 100% { transform: translateX(90%); opacity: 0; }
-    }
-
-    .hero {
-      min-height: 680px;
-      display: grid;
-      grid-template-columns: minmax(0, 1.15fr) minmax(330px, 0.85fr);
-      align-items: center;
-      gap: 56px;
-      padding: clamp(42px, 7vw, 96px);
-    }
-
-    .hero-copy,
-    .hero-visual {
-      position: relative;
-      z-index: 1;
-    }
-
-    .eyebrow {
-      margin-bottom: 18px;
-      color: #4baeff;
-      font-size: 12px;
-      font-weight: 900;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-    }
-
-    h1,
-    h2,
-    h3 {
-      font-family: "Trebuchet MS", Arial, sans-serif;
-    }
-
-    h1 {
-      max-width: 820px;
-      font-size: clamp(48px, 7vw, 94px);
-      line-height: 0.94;
-      letter-spacing: -0.055em;
-    }
-
-    .hero-lead {
-      max-width: 690px;
-      margin-top: 28px;
-      color: #bdc9db;
-      font-size: clamp(17px, 1.6vw, 21px);
-      line-height: 1.72;
-    }
-
-    .hero-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-top: 34px;
-    }
-
-    .button {
-      min-height: 52px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 9px;
-      padding: 0 22px;
-      border: 1px solid rgba(123,182,255,0.42);
-      border-radius: 999px;
-      font-size: 14px;
-      font-weight: 900;
-      transition: transform 180ms ease, border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
-    }
-
-    .button:hover {
-      transform: translateY(-3px);
-      border-color: var(--line-bright);
-      box-shadow: 0 16px 34px rgba(0,0,0,0.3), 0 0 30px rgba(22,136,255,0.2);
-    }
-
-    .secondary-button {
-      background: rgba(255,255,255,0.045);
-    }
-
-    .hero-visual {
-      min-height: 430px;
-      display: grid;
-      place-items: center;
-    }
-
-    .browser-card {
-      width: min(100%, 520px);
-      padding: 14px;
-      border: 1px solid rgba(120,192,255,0.45);
-      border-radius: 28px;
-      background: rgba(2,8,18,0.78);
-      box-shadow: 0 30px 80px rgba(0,0,0,0.46), 0 0 55px rgba(21,129,255,0.18);
-      transform: rotate(2deg);
-    }
-
-    .browser-top {
-      display: flex;
-      align-items: center;
-      gap: 7px;
-      height: 34px;
-      padding: 0 8px;
-    }
-
-    .browser-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: rgba(114,208,255,0.55);
-    }
-
-    .browser-screen {
-      min-height: 355px;
-      display: grid;
-      align-content: space-between;
-      padding: 28px;
-      border-radius: 20px;
-      background:
-        radial-gradient(circle at 78% 20%, rgba(86,183,255,0.8), transparent 18%),
-        linear-gradient(145deg, #061b43, #05101f 60%, #020711);
-      border: 1px solid rgba(255,255,255,0.08);
-      overflow: hidden;
-    }
-
-    .mock-logo {
-      width: 110px;
-      height: 18px;
-      border-radius: 999px;
-      background: linear-gradient(90deg, #d9f2ff, #4bb4ff);
-      box-shadow: 0 0 22px rgba(75,180,255,0.32);
-    }
-
-    .mock-title {
-      width: 82%;
-      height: 84px;
-      border-radius: 18px;
-      background:
-        linear-gradient(rgba(255,255,255,0.92), rgba(255,255,255,0.92)) 0 0/100% 22px no-repeat,
-        linear-gradient(rgba(255,255,255,0.68), rgba(255,255,255,0.68)) 0 36px/78% 18px no-repeat,
-        linear-gradient(rgba(255,255,255,0.38), rgba(255,255,255,0.38)) 0 66px/55% 12px no-repeat;
-    }
-
-    .mock-cards {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-    }
-
-    .mock-cards span {
-      min-height: 82px;
-      border-radius: 15px;
-      border: 1px solid rgba(115,198,255,0.25);
-      background: rgba(255,255,255,0.055);
-    }
-
-    .trust-bar {
-      position: relative;
-      z-index: 1;
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 12px;
-      padding: 18px;
-      border-top: 1px solid var(--line-soft);
-      background: rgba(2,8,18,0.45);
-    }
-
-    .trust-item {
-      min-height: 64px;
-      display: grid;
-      place-items: center;
-      text-align: center;
-      padding: 12px;
-      color: #d5e4f7;
-      font-size: 12px;
-      font-weight: 900;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-    }
-
-    .trust-item span {
-      color: var(--success);
-      margin-right: 6px;
-    }
-
-    .section-wrap {
-      padding: clamp(34px, 5vw, 72px);
-    }
-
-    .section-heading {
-      position: relative;
-      z-index: 1;
-      display: grid;
-      grid-template-columns: minmax(0, 1.3fr) minmax(260px, 0.7fr);
-      align-items: end;
-      gap: 42px;
-      margin-bottom: 34px;
-    }
-
-    .section-heading h2 {
-      max-width: 780px;
-      font-size: clamp(38px, 5vw, 70px);
-      line-height: 0.98;
-      letter-spacing: -0.05em;
-    }
-
-    .section-note {
-      max-width: 480px;
-      color: #b9c6d9;
-      font-size: 16px;
-      line-height: 1.7;
-    }
-
-    .projects-grid {
-      position: relative;
-      z-index: 1;
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 20px;
-    }
-
-    .project-card {
-      min-height: 255px;
-      display: grid;
-      grid-template-columns: minmax(210px, 1fr) minmax(220px, 0.92fr);
-      overflow: hidden;
-      border: 1px solid var(--line);
-      border-radius: var(--radius-lg);
-      background: rgba(5, 13, 28, 0.82);
-      box-shadow: 0 18px 45px rgba(0,0,0,0.28), 0 0 0 1px rgba(255,255,255,0.02) inset;
-      transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
-    }
-
-    .project-card:hover {
-      transform: translateY(-6px);
-      border-color: rgba(107,204,255,0.84);
-      box-shadow: 0 26px 60px rgba(0,0,0,0.42), 0 0 34px rgba(21,129,255,0.2);
-    }
-
-    .project-cover {
-      position: relative;
-      min-height: 255px;
-      display: grid;
-      place-items: center;
-      overflow: hidden;
-      border-right: 1px solid rgba(91,164,255,0.26);
-      background:
-        radial-gradient(circle at 72% 32%, rgba(40,176,255,0.98) 0, rgba(14,109,255,0.52) 9%, transparent 30%),
-        radial-gradient(circle at 80% 36%, rgba(0,117,255,0.5), transparent 25%),
-        linear-gradient(145deg, #04112a, #061b4b 56%, #031020);
-    }
-
-    .project-cover::before {
-      content: "";
-      position: absolute;
-      width: 70%;
-      height: 1px;
-      right: -5%;
-      top: 52%;
-      transform: rotate(-14deg);
-      background: linear-gradient(90deg, transparent, #1688ff, transparent);
-      box-shadow: 0 0 15px #1688ff;
-    }
-
-    .project-cover::after {
-      content: "";
-      position: absolute;
-      width: 220px;
-      height: 220px;
-      right: -78px;
-      top: 15px;
-      border: 1px solid rgba(60,143,255,0.2);
-      border-radius: 50%;
-    }
-
-    .project-cover span {
-      position: relative;
-      z-index: 2;
-      padding: 10px 14px;
-      border: 1px solid rgba(112,190,255,0.55);
-      border-radius: 999px;
-      color: #eaf7ff;
-      background: rgba(3,11,24,0.62);
-      font-size: 11px;
-      font-weight: 900;
-      box-shadow: 0 0 25px rgba(31,134,255,0.18);
-    }
-
-    .project-cover img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      object-position: top center;
-    }
-
-    .project-cover::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      z-index: 1;
-      width: auto;
-      height: auto;
-      right: auto;
-      top: auto;
-      transform: none;
-      background: linear-gradient(180deg, transparent 58%, rgba(2, 7, 15, 0.34));
-      box-shadow: none;
-      pointer-events: none;
-    }
-
-    .project-cover::after {
-      display: none;
-    }
-
-    .project-info {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: flex-start;
-      padding: 30px;
-    }
-
-    .project-info span {
-      margin-bottom: 25px;
-      color: #48aaff;
-      font-size: 11px;
-      font-weight: 900;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-    }
-
-    .project-info strong {
-      max-width: 280px;
-      font-family: "Trebuchet MS", Arial, sans-serif;
-      font-size: clamp(22px, 2vw, 31px);
-      line-height: 1.07;
-    }
-
-    .project-info em {
-      margin-top: auto;
-      padding-top: 30px;
-      color: #55b9ff;
-      font-size: 13px;
-      font-style: normal;
-      font-weight: 900;
-    }
-
-    .feature-grid {
-      position: relative;
-      z-index: 1;
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 16px;
-    }
-
-    .feature-card {
-      min-height: 245px;
-      padding: 28px;
-      border: 1px solid rgba(97,171,255,0.28);
-      border-radius: var(--radius-lg);
-      background: rgba(5,13,28,0.7);
-      transition: transform 180ms ease, border-color 180ms ease;
-    }
-
-    .feature-card:hover {
-      transform: translateY(-5px);
-      border-color: var(--line-bright);
-    }
-
-    .feature-icon {
-      width: 52px;
-      height: 52px;
-      display: grid;
-      place-items: center;
-      margin-bottom: 28px;
-      border: 1px solid rgba(115,198,255,0.42);
-      border-radius: 17px;
-      background: rgba(22,136,255,0.13);
-      font-size: 24px;
-      box-shadow: 0 0 28px rgba(22,136,255,0.16);
-    }
-
-    .feature-card h3 {
-      font-size: 23px;
-      margin-bottom: 13px;
-    }
-
-    .feature-card p {
-      color: #acb9cc;
-      line-height: 1.65;
-      font-size: 14px;
-    }
-
-    .pricing-grid {
-      position: relative;
-      z-index: 1;
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 18px;
-    }
-
-    .tier-card {
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      min-height: 100%;
-      padding: clamp(28px, 4vw, 44px);
-      border: 1px solid rgba(108,187,255,0.36);
-      border-radius: 30px;
-      background: rgba(4,12,26,0.84);
-      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-      overflow: hidden;
-    }
-
-    .tier-card.featured {
-      border-color: rgba(114,208,255,0.84);
-      background:
-        radial-gradient(circle at 88% 4%, rgba(34,132,255,0.35), transparent 30%),
-        linear-gradient(145deg, rgba(8,28,64,0.97), rgba(3,10,22,0.96));
-      box-shadow: 0 25px 70px rgba(0,0,0,0.38), 0 0 42px rgba(22,136,255,0.19);
-    }
-
-    .tier-badge {
-      align-self: flex-start;
-      margin-bottom: 22px;
-      padding: 8px 12px;
-      border: 1px solid rgba(109,199,255,0.48);
-      border-radius: 999px;
-      color: #dff5ff;
-      background: rgba(22,136,255,0.14);
-      font-size: 10px;
-      font-weight: 900;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-    }
-
-    .price-label {
-      color: #61bdff;
-      font-size: 12px;
-      font-weight: 900;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-    }
-
-    .tier-card h3 {
-      margin-top: 12px;
-      font-size: clamp(28px, 3vw, 43px);
-      line-height: 1;
-      letter-spacing: -0.04em;
-    }
-
-    .price {
-      display: flex;
-      align-items: flex-start;
-      gap: 6px;
-      margin: 22px 0 7px;
-      font-family: "Trebuchet MS", Arial, sans-serif;
-      line-height: 1;
-    }
-
-    .price sup {
-      padding-top: 8px;
-      color: var(--blue-light);
-      font-size: 22px;
-    }
-
-    .price strong {
-      font-size: clamp(55px, 6vw, 82px);
-      letter-spacing: -0.07em;
-    }
-
-    .price .plus {
-      align-self: flex-end;
-      padding-bottom: 9px;
-      color: #9fcfff;
-      font-size: 18px;
-      font-weight: 900;
-    }
-
-    .flat-rate {
-      color: #b8c5d7;
-      font-size: 14px;
-      font-weight: 800;
-    }
-
-    .tier-summary {
-      margin-top: 20px;
-      color: #aebcd0;
-      font-size: 14px;
-      line-height: 1.65;
-    }
-
-    .included-list {
-      display: grid;
-      gap: 12px;
-      margin-top: 26px;
-      list-style: none;
-    }
-
-    .included-list li {
-      position: relative;
-      padding-left: 25px;
-      color: #d2deee;
-      font-size: 14px;
-      line-height: 1.45;
-    }
-
-    .included-list li::before {
-      content: "✓";
-      position: absolute;
-      left: 0;
-      color: var(--success);
-      font-weight: 900;
-    }
-
-    .tier-note {
-      margin-top: auto;
-      padding-top: 24px;
-      color: #8190a6;
-      font-size: 12px;
-      line-height: 1.6;
-    }
-
-    .tier-button {
-      width: 100%;
-      margin-top: 24px;
-      border-radius: 16px;
-    }
-
-    .value-strip {
-      position: relative;
-      z-index: 1;
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 12px;
-      margin-top: 20px;
-    }
-
-    .value-item {
-      padding: 18px;
-      border: 1px solid rgba(92,167,255,0.24);
-      border-radius: 18px;
-      background: rgba(255,255,255,0.025);
-      text-align: center;
-    }
-
-    .value-item strong {
-      display: block;
-      color: #eff8ff;
-      font-size: 15px;
-    }
-
-    .value-item span {
-      display: block;
-      margin-top: 6px;
-      color: #8493aa;
-      font-size: 11px;
-      line-height: 1.45;
-    }
-
-    .extras-layout {
-      position: relative;
-      z-index: 1;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 18px;
-    }
-
-    .extras-card {
-      padding: clamp(28px, 4vw, 46px);
-      border: 1px solid rgba(108,187,255,0.34);
-      border-radius: 28px;
-      background: rgba(4,12,26,0.78);
-    }
-
-    .extras-card h3 {
-      margin-top: 12px;
-      font-size: clamp(30px, 3.5vw, 48px);
-      line-height: 1;
-      letter-spacing: -0.04em;
-    }
-
-    .extras-card > p {
-      margin-top: 18px;
-      color: #aebbd0;
-      line-height: 1.68;
-    }
-
-    .menu-list {
-      display: grid;
-      gap: 10px;
-      margin-top: 24px;
-    }
-
-    .menu-row {
-      display: flex;
-      justify-content: space-between;
-      gap: 18px;
-      padding: 15px 0;
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-    }
-
-    .menu-row:last-child { border-bottom: 0; }
-    .menu-row span { color: #c9d6e8; }
-    .menu-row strong { color: #68c2ff; text-align: right; }
-
-
-    .service-explainer-grid {
-      position: relative;
-      z-index: 1;
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 18px;
-      margin-top: 20px;
-    }
-
-    .service-explainer-card {
-      position: relative;
-      min-height: 100%;
-      padding: clamp(28px, 4vw, 42px);
-      border: 1px solid rgba(108,187,255,0.3);
-      border-radius: 28px;
-      background:
-        radial-gradient(circle at 100% 0%, rgba(24,116,255,0.18), transparent 34%),
-        rgba(4,12,26,0.78);
-      overflow: hidden;
-    }
-
-    .service-explainer-card h3 {
-      max-width: 560px;
-      margin-top: 12px;
-      font-size: clamp(26px, 3vw, 40px);
-      line-height: 1.03;
-      letter-spacing: -0.04em;
-    }
-
-    .service-explainer-card > p {
-      max-width: 650px;
-      margin-top: 18px;
-      color: #aebbd0;
-      font-size: 14px;
-      line-height: 1.7;
-    }
-
-    .service-number {
-      position: absolute;
-      right: 24px;
-      top: 18px;
-      color: rgba(93,184,255,0.18);
-      font-family: "Trebuchet MS", Arial, sans-serif;
-      font-size: clamp(48px, 7vw, 88px);
-      font-weight: 900;
-      line-height: 1;
-      pointer-events: none;
-    }
-
-    .payment-card {
-      position: relative;
-      margin-top: 20px;
-      padding: clamp(30px, 5vw, 58px);
-      border: 1px solid rgba(108,187,255,0.42);
-      border-radius: 30px;
-      background:
-        radial-gradient(circle at 90% 10%, rgba(28,121,255,0.32), transparent 32%),
-        linear-gradient(145deg, rgba(8,25,58,0.96), rgba(3,10,22,0.95));
-      box-shadow: 0 20px 60px rgba(0,0,0,0.32);
-    }
-
-    .payment-card h3 {
-      margin-top: 14px;
-      font-size: clamp(34px, 4vw, 58px);
-      line-height: 1;
-      letter-spacing: -0.04em;
-    }
-
-    .payment-card p {
-      max-width: 760px;
-      margin-top: 20px;
-      color: #bdc9db;
-      font-size: 16px;
-      line-height: 1.7;
-    }
-
-    .payment-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-top: 28px;
-    }
-
-    .venmo-button {
-      min-height: 62px;
-      font-size: 16px;
-      border-radius: 18px;
-    }
-
-    .payment-fineprint {
-      color: #8291a7 !important;
-      font-size: 12px !important;
-    }
-
-    .process-grid {
-      position: relative;
-      z-index: 1;
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 16px;
-    }
-
-    .step-card {
-      min-height: 210px;
-      padding: 26px;
-      border-top: 1px solid rgba(90,173,255,0.46);
-      background: rgba(255,255,255,0.025);
-    }
-
-    .step-number {
-      color: #3da8ff;
-      font-family: "Trebuchet MS", Arial, sans-serif;
-      font-size: 38px;
-      font-weight: 900;
-    }
-
-    .step-card h3 {
-      margin-top: 28px;
-      font-size: 22px;
-    }
-
-    .step-card p {
-      margin-top: 12px;
-      color: #aab8cc;
-      font-size: 14px;
-      line-height: 1.65;
-    }
-
-    .faq-list {
-      position: relative;
-      z-index: 1;
-      display: grid;
-      gap: 12px;
-    }
-
-    details {
-      border: 1px solid rgba(95,167,255,0.28);
-      border-radius: 19px;
-      background: rgba(5,13,28,0.67);
-      overflow: hidden;
-    }
-
-    summary {
-      cursor: pointer;
-      list-style: none;
-      padding: 22px 24px;
-      font-weight: 900;
-    }
-
-    summary::-webkit-details-marker {
-      display: none;
-    }
-
-    summary::after {
-      content: "+";
-      float: right;
-      color: #59baff;
-      font-size: 20px;
-    }
-
-    details[open] summary::after {
-      content: "−";
-    }
-
-    details p {
-      padding: 0 24px 24px;
-      color: #acb9cc;
-      line-height: 1.7;
-      font-size: 14px;
-    }
-
-    .contact-panel {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 46px;
-      padding: clamp(34px, 6vw, 78px);
-      background:
-        radial-gradient(circle at 14% 18%, rgba(33,109,255,0.34), transparent 34%),
-        radial-gradient(circle at 100% 100%, rgba(24,92,255,0.32), transparent 27%),
-        rgba(5,13,27,0.92);
-    }
-
-    .contact-copy,
-    .contact-actions {
-      position: relative;
-      z-index: 1;
-    }
-
-    .contact-copy h2 {
-      max-width: 650px;
-      font-size: clamp(42px, 5.5vw, 76px);
-      line-height: 0.96;
-      letter-spacing: -0.05em;
-    }
-
-    .contact-copy p:last-child {
-      max-width: 600px;
-      margin-top: 24px;
-      color: #b8c5da;
-      font-size: 16px;
-      line-height: 1.7;
-    }
-
-    .contact-actions {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-    }
-
-    .contact-link {
-      display: grid;
-      grid-template-columns: 120px minmax(0, 1fr);
-      gap: 18px;
-      align-items: center;
-      padding: 24px 4px;
-      border-bottom: 1px solid rgba(255,255,255,0.09);
-      transition: padding-left 180ms ease;
-    }
-
-    .contact-link:hover {
-      padding-left: 10px;
-    }
-
-    .contact-link:last-child {
-      border-bottom: 0;
-    }
-
-    .contact-link span {
-      color: #48aaff;
-      font-size: 11px;
-      font-weight: 900;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-    }
-
-    .contact-link strong {
-      text-align: right;
-      overflow-wrap: anywhere;
-      font-size: clamp(14px, 1.5vw, 19px);
-    }
-
-    .floating-start {
-      position: fixed;
-      right: 22px;
-      bottom: 22px;
-      z-index: 40;
-      min-height: 52px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 0 20px;
-      border: 1px solid rgba(130,208,255,0.65);
-      border-radius: 999px;
-      background: linear-gradient(180deg, #249aff, #075bd4);
-      box-shadow: 0 18px 42px rgba(0,0,0,0.42), 0 0 28px rgba(20,123,255,0.36);
-      color: white;
-      font-size: 13px;
-      font-weight: 900;
-    }
-
-    .site-footer {
-      display: flex;
-      justify-content: space-between;
-      gap: 18px;
-      padding: 22px 10px 4px;
-      color: #76849a;
-      font-size: 12px;
-    }
-
-    @media (max-width: 1100px) {
-      .hero {
-        grid-template-columns: 1fr;
-      }
-
-      .hero {
-        min-height: 0;
-      }
-
-      .hero-visual {
-        min-height: 360px;
-      }
-
-      .feature-grid,
-      .process-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-
-      .pricing-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .extras-layout,
-      .service-explainer-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .value-strip {
-        grid-template-columns: repeat(2, 1fr);
-      }
-
-      .trust-bar {
-        grid-template-columns: repeat(3, 1fr);
-      }
-    }
-
-    @media (max-width: 820px) {
-      .page-shell {
-        width: min(100% - 20px, 1480px);
-        margin-top: 10px;
-      }
-
-      .bubble-header {
-        position: relative;
-        top: 0;
-        min-height: 0;
-        border-radius: 26px;
-        padding: 14px;
-      }
-
-      .header-nav {
-        gap: 4px;
-      }
-
-      .header-nav a:not(.call-button) {
-        display: none;
-      }
-
-      .hero,
-      .section-heading,
-      .contact-panel {
-        grid-template-columns: 1fr;
-      }
-
-      .hero {
-        gap: 28px;
-        padding: 46px 24px;
-      }
-
-      .section-heading {
-        gap: 18px;
-      }
-
-      .projects-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .project-card {
-        grid-template-columns: 1fr;
-      }
-
-      .project-cover {
-        min-height: 230px;
-        border-right: 0;
-        border-bottom: 1px solid rgba(91,164,255,0.26);
-      }
-
-      .project-info {
-        min-height: 210px;
-      }
-
-      .contact-link {
-        grid-template-columns: 85px minmax(0,1fr);
-      }
-
-      .site-footer {
-        flex-direction: column;
-        padding-bottom: 80px;
-      }
-    }
-
-    @media (max-width: 560px) {
-      .brand-copy small {
-        display: none;
-      }
-
-      .brand-mark {
-        width: 44px;
-        height: 44px;
-        border-radius: 15px;
-      }
-
-      .header-nav a {
-        padding: 10px 13px;
-      }
-
-      .panel {
-        border-radius: 27px;
-      }
-
-      .section-wrap {
-        padding: 30px 16px;
-      }
-
-      h1 {
-        font-size: clamp(45px, 15vw, 68px);
-      }
-
-      .hero-actions,
-      .hero-actions .button {
-        width: 100%;
-      }
-
-      .trust-bar,
-      .feature-grid,
-      .process-grid,
-      .value-strip {
-        grid-template-columns: 1fr;
-      }
-
-      .browser-screen {
-        min-height: 300px;
-        padding: 20px;
-      }
-
-      .mock-cards {
-        grid-template-columns: 1fr;
-      }
-
-      .mock-cards span:nth-child(n+2) {
-        display: none;
-      }
-
-      .tier-card,
-      .extras-card,
-      .service-explainer-card,
-      .payment-card {
-        padding: 28px 20px;
-        border-radius: 24px;
-      }
-
-      .contact-panel {
-        padding: 34px 20px;
-      }
-
-      .contact-link {
-        grid-template-columns: 1fr;
-        gap: 7px;
-      }
-
-      .contact-link strong {
-        text-align: left;
-      }
-
-      .floating-start {
-        right: 12px;
-        left: 12px;
-        bottom: 12px;
-      }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      html { scroll-behavior: auto; }
-      *, *::before, *::after { animation: none !important; transition: none !important; }
-    }
-  
-
-    /* BLUVIXA BUSINESS-CARD MVP THEME */
-    :root {
-      --bg: #020711;
-      --bg-soft: #061222;
-      --panel: rgba(4, 13, 28, 0.96);
-      --panel-strong: rgba(2, 8, 19, 0.98);
-      --line: rgba(58, 143, 255, 0.46);
-      --line-bright: rgba(55, 179, 255, 0.94);
-      --blue: #1189ff;
-      --blue-deep: #0751c9;
-      --blue-light: #53b9ff;
-      --white: #f8fbff;
-      --muted: #b9c7da;
-      --success: #56b8ff;
-      --radius-xl: 24px;
-      --radius-lg: 18px;
-      --radius-md: 14px;
-    }
-
-    body {
-      background:
-        radial-gradient(circle at 18% 2%, rgba(20, 112, 255, 0.24), transparent 26%),
-        radial-gradient(circle at 92% 28%, rgba(0, 128, 255, 0.14), transparent 24%),
-        linear-gradient(180deg, #071321 0%, #020711 48%, #01040a 100%);
-    }
-
-    body::before {
-      opacity: 0.22;
-      background-image:
-        linear-gradient(rgba(72, 151, 255, 0.035) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(72, 151, 255, 0.035) 1px, transparent 1px);
-      background-size: 42px 42px;
-    }
-
-    .page-shell {
-      width: min(1460px, calc(100% - 28px));
-      margin-top: 14px;
-    }
-
-    .bubble-header {
-      min-height: 76px;
-      border-radius: 20px;
-      border-color: rgba(92, 169, 255, 0.42);
-      background:
-        linear-gradient(110deg, rgba(12, 62, 125, 0.38), transparent 38%),
-        rgba(2, 10, 22, 0.92);
-      box-shadow: 0 16px 48px rgba(0,0,0,.42), 0 0 35px rgba(0,119,255,.14);
-    }
-
-    .bubble-header::before {
-      width: 22%;
-      transform: rotate(18deg);
-      background: linear-gradient(90deg, transparent, rgba(42, 145, 255, .4), transparent);
-    }
-
-    .brand-mark {
-      width: 52px;
-      height: 52px;
-      display: grid;
-      place-items: center;
-      border-radius: 13px;
-      transform: skewX(-10deg);
-      background:
-        linear-gradient(145deg, #33b9ff 0%, #0a79ff 42%, #ffffff 44%, #cbd7e9 63%, #0345a8 64%, #021b48 100%);
-      border: 1px solid rgba(180, 223, 255, .68);
-      box-shadow: 0 0 28px rgba(17, 137, 255, .45);
-    }
-
-    .brand-mark span {
-      transform: skewX(10deg);
-      color: #041226;
-      font-family: "Trebuchet MS", Arial, sans-serif;
-      font-size: 28px;
-      font-weight: 1000;
-      text-shadow: 0 1px 0 rgba(255,255,255,.45);
-    }
-
-    .brand-copy strong {
-      font-size: 19px;
-      letter-spacing: .12em;
-      text-transform: uppercase;
-    }
-
-    .brand-copy small {
-      color: #52baff;
-      letter-spacing: .15em;
-    }
-
-    .header-nav a {
-      border-radius: 10px;
-    }
-
-    .call-button,
-    .primary-button {
-      border-color: rgba(83, 177, 255, .8);
-      background: linear-gradient(135deg, #1598ff, #0753cf);
-      box-shadow: 0 10px 28px rgba(0, 103, 255, .32), inset 0 1px 0 rgba(255,255,255,.22);
-    }
-
-    .panel {
-      border-radius: 24px;
-      border-color: rgba(72, 151, 255, .38);
-      background:
-        radial-gradient(circle at 16% 0%, rgba(16, 101, 235, .22), transparent 30%),
-        linear-gradient(145deg, rgba(4, 14, 31, .98), rgba(1, 7, 16, .99));
-      box-shadow: 0 28px 80px rgba(0,0,0,.44), 0 0 35px rgba(12, 111, 255, .1);
-    }
-
-    .panel::after {
-      content: "";
-      position: absolute;
-      top: 0;
-      right: 8%;
-      width: 120px;
-      height: 100%;
-      pointer-events: none;
-      opacity: .16;
-      transform: skewX(-23deg);
-      background: linear-gradient(180deg, #1ba2ff, #0a55cf 60%, transparent);
-    }
-
-    .hero {
-      min-height: 650px;
-      grid-template-columns: minmax(0, .9fr) minmax(500px, 1.1fr);
-      gap: clamp(30px, 5vw, 72px);
-      padding: clamp(40px, 6vw, 84px);
-    }
-
-    h1 {
-      max-width: 760px;
-      font-size: clamp(50px, 6vw, 86px);
-      line-height: .98;
-      letter-spacing: -.045em;
-      text-transform: uppercase;
-    }
-
-    .eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 12px;
-      color: #42aaff;
-      letter-spacing: .18em;
-    }
-
-    .eyebrow::before {
-      content: "";
-      width: 42px;
-      height: 2px;
-      background: linear-gradient(90deg, #128bff, transparent);
-      box-shadow: 0 0 12px #128bff;
-    }
-
-    .hero-lead {
-      color: #c5d1e1;
-      font-size: clamp(17px, 1.45vw, 21px);
-      line-height: 1.65;
-    }
-
-    .button {
-      border-radius: 11px;
-      text-transform: uppercase;
-      letter-spacing: .055em;
-    }
-
-    .hero-visual {
-      min-height: 390px;
-      display: grid;
-      place-items: center;
-    }
-
-    .business-card-frame {
-      position: relative;
-      width: min(100%, 760px);
-      padding: 8px;
-      border: 1px solid rgba(77, 169, 255, .5);
-      border-radius: 22px;
-      background: linear-gradient(145deg, rgba(255,255,255,.08), rgba(1,8,18,.82));
-      box-shadow: 0 36px 90px rgba(0,0,0,.52), 0 0 52px rgba(0, 112, 255, .24);
-      transform: perspective(1200px) rotateY(-3deg) rotateX(1deg);
-      isolation: isolate;
-    }
-
-    .business-card-frame::before,
-    .business-card-frame::after {
-      content: "";
-      position: absolute;
-      z-index: -1;
-      pointer-events: none;
-    }
-
-    .business-card-frame::before {
-      inset: 11% -18px 11% auto;
-      width: 28px;
-      background: linear-gradient(180deg, transparent, #158eff, transparent);
-      filter: blur(7px);
-      opacity: .9;
-    }
-
-    .business-card-frame::after {
-      width: 180px;
-      height: 180px;
-      right: -36px;
-      bottom: -48px;
-      border-radius: 50%;
-      background: rgba(0, 110, 255, .28);
-      filter: blur(44px);
-    }
-
-    .hero-business-card {
-      width: 100%;
-      aspect-ratio: 1536 / 878;
-      object-fit: cover;
-      border-radius: 15px;
-      border: 1px solid rgba(255,255,255,.11);
-    }
-
-    .card-glow {
-      position: absolute;
-      inset: auto 7% -3px 7%;
-      height: 2px;
-      background: linear-gradient(90deg, transparent, #24a4ff 25%, white 50%, #0c7aff 75%, transparent);
-      box-shadow: 0 0 18px #168eff;
-    }
-
-    .trust-bar {
-      grid-template-columns: repeat(5, 1fr);
-      background: rgba(2, 9, 20, .78);
-    }
-
-    .trust-item {
-      color: #dbe8f8;
-      border-right: 1px solid rgba(77, 147, 235, .16);
-    }
-
-    .trust-item:last-child { border-right: 0; }
-
-    .section-heading h2,
-    .contact-copy h2,
-    .tier-card h3,
-    .extras-card h3,
-    .payment-card h3 {
-      text-transform: uppercase;
-    }
-
-    .project-card,
-    .feature-card,
-    .tier-card,
-    .extras-card,
-    .payment-card,
-    details {
-      border-radius: 16px;
-    }
-
-    .project-card {
-      background: linear-gradient(145deg, rgba(4, 16, 34, .94), rgba(2, 8, 18, .98));
-    }
-
-    .project-info {
-      position: relative;
-      border-left: 3px solid rgba(17, 137, 255, .5);
-    }
-
-    .feature-icon {
-      border-radius: 12px;
-      background: linear-gradient(145deg, rgba(17,137,255,.22), rgba(4,40,96,.32));
-    }
-
-    .tier-card.featured {
-      box-shadow: 0 28px 74px rgba(0,0,0,.42), 0 0 44px rgba(17,137,255,.2);
-    }
-
-    .contact-panel {
-      background:
-        linear-gradient(115deg, rgba(11, 70, 154, .52), transparent 42%),
-        radial-gradient(circle at 100% 100%, rgba(24, 92, 255, .35), transparent 28%),
-        rgba(3, 11, 24, .96);
-    }
-
-    .floating-start {
-      border-radius: 12px;
-      text-transform: uppercase;
-      letter-spacing: .05em;
-    }
-
-    @media (max-width: 1100px) {
-      .hero { grid-template-columns: 1fr; }
-      .hero-visual { min-height: 0; }
-      .business-card-frame { transform: none; }
-    }
-
-    @media (max-width: 820px) {
-      .bubble-header { border-radius: 18px; }
-      .hero { padding: 42px 22px; }
-      .panel::after { display: none; }
-    }
-
-    @media (max-width: 560px) {
-      .brand-mark { width: 44px; height: 44px; }
-      .brand-mark span { font-size: 23px; }
-      .business-card-frame { padding: 4px; border-radius: 15px; }
-      .hero-business-card { border-radius: 11px; }
-      .trust-item { border-right: 0; border-bottom: 1px solid rgba(77,147,235,.13); }
-      .trust-item:last-child { border-bottom: 0; }
-    }
-
-
-    /* Featured real-client case study */
-    .project-card.featured-client {
-      grid-column: 1 / -1;
-      grid-template-columns: minmax(320px, 0.9fr) minmax(420px, 1.1fr);
-      min-height: 430px;
-      border-color: rgba(83, 177, 255, .78);
-      background:
-        radial-gradient(circle at 92% 10%, rgba(17,137,255,.22), transparent 32%),
-        linear-gradient(145deg, rgba(4, 20, 43, .98), rgba(2, 8, 18, .99));
-      box-shadow: 0 30px 78px rgba(0,0,0,.46), 0 0 42px rgba(17,137,255,.18);
-    }
-
-    .featured-client .project-cover {
-      min-height: 430px;
-    }
-
-    .featured-client .project-info {
-      padding: clamp(30px, 4vw, 54px);
-      justify-content: flex-start;
-    }
-
-    .featured-client .client-badge {
-      display: inline-flex;
-      margin-bottom: 14px;
-      padding: 8px 11px;
-      border: 1px solid rgba(86,184,255,.55);
-      border-radius: 999px;
-      color: #dff4ff;
-      background: rgba(17,137,255,.13);
-      font-size: 10px;
-      font-weight: 900;
-      letter-spacing: .14em;
-      text-transform: uppercase;
-    }
-
-    .featured-client .project-info > span:not(.client-badge) {
-      margin-bottom: 12px;
-    }
-
-    .featured-client .project-info strong {
-      max-width: none;
-      font-size: clamp(30px, 3.5vw, 48px);
-    }
-
-    .project-summary {
-      margin-top: 18px;
-      color: #b9c8dc;
-      font-size: 14px;
-      line-height: 1.65;
-    }
-
-    .project-improvements {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 10px 18px;
-      margin: 22px 0 4px;
-      padding: 0;
-      list-style: none;
-    }
-
-    .project-improvements li {
-      position: relative;
-      padding-left: 22px;
-      color: #d8e5f5;
-      font-size: 13px;
-      line-height: 1.45;
-    }
-
-    .project-improvements li::before {
-      content: "✓";
-      position: absolute;
-      left: 0;
-      color: #56b8ff;
-      font-weight: 900;
-    }
-
-    .featured-client .project-info em {
-      margin-top: 24px;
-      padding-top: 0;
-      font-size: 14px;
-    }
-
-    @media (max-width: 900px) {
-      .project-card.featured-client {
-        grid-template-columns: 1fr;
-      }
-      .featured-client .project-cover {
-        min-height: 320px;
-      }
-    }
-
-    @media (max-width: 560px) {
-      .project-improvements {
-        grid-template-columns: 1fr;
-      }
-      .featured-client .project-cover {
-        min-height: 260px;
-      }
-    }
-
-  </style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bluvixa 2.5 — Website Builder</title>
+<meta content="Build, host, and manage a professional website with Bluvixa. Subscribers use the platform; a one-time buyout unlocks ownership and export of the complete raw-code website package." name="description"/>
+<link href="hero-bluvixa-webicon.webp?v=5" rel="icon" type="image/webp"/>
+<link href="assets/bluvixa-favicon.png?v=5" rel="icon" sizes="512x512" type="image/png"/>
+<link href="assets/favicon.ico?v=5" rel="shortcut icon"/>
+<link href="assets/bluvixa-favicon.png?v=5" rel="apple-touch-icon"/>
+<link href="style.css?v=20260725-backend-ready-zero-gap" rel="stylesheet"/>
 </head>
-
 <body>
-  <div class="page-shell">
-    <header class="bubble-header">
-      <a class="brand" href="#home" aria-label="Bluvixa Web Design home">
-        
-        <span class="brand-mark" aria-hidden="true"><span>B</span></span>
-        <span class="brand-copy">
-          <strong>Bluvixa</strong>
-          <small>Web Design • Oakhurst, CA</small>
-        </span>
-      </a>
+<header class="topbar">
+<div class="container nav">
+<a class="brand" href="#top">
+<div class="logo-mark"><img alt="Bluvixa logo" src="hero-bluvixa-webicon.webp"/></div>
+<div class="brand-copy">BLUVIXA<small>VERSION 2.5</small></div>
+</a>
+<nav class="nav-links">
+<a href="#how-it-works">How It Works</a>
+<a href="#builder">Builder</a>
+<a href="#ownership">Code Ownership</a>
+<a href="#pricing">Plans</a>
 
-      <nav class="header-nav" aria-label="Primary navigation">
-        <a href="#projects">Projects</a>
-        <a href="#pricing">Pricing</a>
-        <a href="#process">Process</a>
-        <a href="#contact">Contact</a>
-        <a class="call-button" href="tel:+15596763875">Call Now</a>
-      </nav>
-    </header>
-
-    <main>
-      <section id="home" class="panel">
-        <div class="hero">
-          <div class="hero-copy">
-            <p class="eyebrow">Modern websites. Local impact.</p>
-            <h1>Professional websites for small businesses.</h1>
-            <p class="hero-lead">
-              Custom, mobile-friendly websites built to make your business look professional, load fast, and turn more visitors into customers.
-            </p>
-            <div class="hero-actions">
-              <a class="button primary-button" href="#projects">View My Work</a>
-              <a class="button secondary-button" href="#pricing">Compare Packages</a>
-              <a class="button secondary-button" href="tel:+15596763875">Call (559) 676-3875</a>
-            </div>
-          </div>
-
-          <div class="hero-visual">
-            <div class="business-card-frame">
-              <img src="hero-business-card.webp" alt="Bluvixa business card showing Charles Brown's web design contact information and portfolio QR code" class="hero-business-card" loading="eager" />
-              <div class="card-glow" aria-hidden="true"></div>
-            </div>
-          </div>
+<a class="hidden backend-only" href="#account" id="accountNavLink">My Account</a>
+</nav>
+<div class="nav-actions">
+<a class="btn btn-secondary" href="#ownership">How Ownership Works</a>
+<button class="btn btn-secondary backend-only hidden" id="signInBtn" type="button">Sign In</button>
+<button class="btn btn-primary backend-only hidden" id="startTrialBtn" type="button">Start Free Trial</button>
+<button class="btn btn-secondary hidden backend-only" id="signOutBtn" type="button">Sign Out</button>
+</div>
+</div>
+</header>
+<main id="top">
+<section class="container hero">
+<div class="hero-card glass">
+<div class="eyebrow">Visual building. Real raw code.</div>
+<h1>Build and run your website with Bluvixa—or buy it out and own the code.</h1>
+<p>Design, host, update, and manage a professional website through one simple platform. When you purchase a website buyout, Bluvixa unlocks a complete export containing your HTML, CSS, JavaScript, and eligible assets.</p>
+<div class="hero-actions">
+<a class="btn btn-primary" href="#builder">Open Website Builder</a>
+<a class="btn btn-secondary" href="#pricing">Compare Packages</a>
+</div>
+<div class="trust">
+<span><b>✓</b> 7-day free trial</span>
+<span><b>✓</b> Annual subscription</span>
+<span><b>✓</b> Raw-code ownership after buyout</span>
+</div>
+</div>
+<div class="plan-stack">
+<article class="plan-card glass">
+<div class="plan-top">
+<div><h3>Starter</h3><small>Simple professional website</small></div>
+<span class="buyout-tag">$499 buyout</span>
+</div>
+<div class="stats">
+<div class="stat"><b>10</b><span>Content uploads</span></div>
+<div class="stat"><b>1</b><span>Header bio</span></div>
+<div class="stat"><b>0</b><span>Gallery uploads</span></div>
+</div>
+</article>
+<article class="plan-card glass">
+<div class="plan-top">
+<div><h3>Professional</h3><small>More content and gallery tools</small></div>
+<span class="buyout-tag">$599 buyout</span>
+</div>
+<div class="stats">
+<div class="stat"><b>15</b><span>Content uploads</span></div>
+<div class="stat"><b>1</b><span>Header bio</span></div>
+<div class="stat"><b>12</b><span>Gallery uploads</span></div>
+</div>
+</article>
+<article class="plan-card glass">
+<div class="plan-top">
+<div><h3>Advanced</h3><small>Full custom controls</small></div>
+<span class="buyout-tag">$699 buyout</span>
+</div>
+<div class="stats">
+<div class="stat"><b>20</b><span>Content uploads</span></div>
+<div class="stat"><b>1</b><span>Header bio</span></div>
+<div class="stat"><b>12</b><span>Gallery uploads</span></div>
+</div>
+</article>
+</div>
+</section>
+<section class="section" id="how-it-works">
+<div class="container">
+<div class="section-head">
+<span class="section-kicker">ONE BUILDER, TWO WAYS TO USE IT</span>
+<h2>Stay subscribed or purchase full website ownership.</h2>
+<p>Bluvixa separates convenient ongoing website service from ownership of the exported source-code package.</p>
+</div>
+<div class="ownership-compare">
+<article class="glass ownership-card">
+<div class="ownership-icon">∞</div>
+<span class="ownership-label">SUBSCRIPTION</span>
+<h3>Build, host, and manage with Bluvixa</h3>
+<p>Your annual subscription keeps the builder, hosting workflow, updates, backups, dashboard, analytics, domain tools, and support available.</p>
+<ul class="ownership-list">
+<li>Use the visual website builder</li>
+<li>Publish through Bluvixa hosting</li>
+<li>Connect a domain and manage updates</li>
+<li>Keep cloud projects and media available</li>
+<li>Source-code export remains locked</li>
+</ul>
+<a class="btn btn-primary" href="#pricing">Choose a Subscription</a>
+</article>
+<article class="glass ownership-card ownership-card-premium">
+<div class="ownership-icon">&lt;/&gt;</div>
+<span class="ownership-label">ONE-TIME BUYOUT</span>
+<h3>Own and export the finished website</h3>
+<p>A successful buyout payment unlocks a downloadable project package for that website. You can self-host it, edit it in a code editor, or give it to another developer.</p>
+<ul class="ownership-list">
+<li>Complete HTML, CSS, and JavaScript</li>
+<li>Customer-uploaded images and assets</li>
+<li>Organized folders and setup README</li>
+<li>Self-hosting and continued editing rights</li>
+<li>Re-download access from the dashboard</li>
+</ul>
+<a class="btn btn-secondary" href="#pricing">View Buyout Prices</a>
+</article>
+</div>
+<div class="ownership-note">
+<strong>What the buyout does not transfer:</strong> the Bluvixa platform, builder software, backend systems, trademarks, reusable platform components, or third-party items that cannot legally be redistributed. The customer owns the exported website package and their own uploaded content.
         </div>
+</div>
+</section>
+<section class="section" id="builder">
+<div class="container">
+<div class="section-head">
+<h2>Bluvixa Master Builder</h2>
+<p>Build the complete visual website design here. Build the complete visual website design here. Domain configuration and local drafts are available now; account, billing, cloud storage, and publishing activate with the operating backend.</p>
+</div>
+<div class="builder-shell">
+<aside class="sidebar" id="builderSidebar">
+<div class="sidebar-head">
+<div class="sidebar-title">Website Editor</div>
+<div class="sidebar-sub">Choose a plan to preview its available design limits.</div>
+</div>
+<div class="tabs" id="tabs">
+<button class="tab active" data-tab="business" type="button">Business</button>
+<button class="tab" data-tab="header" type="button">Header</button>
+<button class="tab" data-tab="logo" type="button">Logo</button>
+<button class="tab" data-tab="about" type="button">About</button>
+<button class="tab" data-tab="photos" type="button">Photos</button>
+<button class="tab" data-tab="gallery" type="button">Gallery</button>
+<button class="tab" data-tab="design" type="button">Design</button>
+<button class="tab" data-tab="map" type="button">Map</button>
+<button class="tab backend-only" data-tab="billing" type="button">Billing</button>
+<button class="tab domain-tab" data-tab="project" type="button">Domain</button>
+</div>
+<section class="panel active" data-panel="business">
+<div class="group">
+<label for="planSelect">Subscription plan</label>
+<select class="select" id="planSelect">
+<option value="starter">Starter</option>
+<option selected="" value="professional">Professional</option>
+<option value="advanced">Advanced</option>
+</select>
+</div>
+<div class="group">
+<label for="businessName">Business name</label>
+<input class="input" id="businessName" value=""/>
+</div>
+<div class="group">
+<label for="businessBio">Business information</label>
+<textarea class="textarea" id="businessBio"></textarea>
+</div>
+<div class="group">
+<label for="phoneNumber">Phone number</label>
+<input class="input" id="phoneNumber" value=""/>
+</div>
+<div class="group">
+<label for="emailAddress">Email</label>
+<input class="input" id="emailAddress" value=""/>
+</div>
+<div class="group">
+<label for="businessHours">Business hours</label>
+<input class="input" id="businessHours" value=""/>
+</div>
+<div class="group">
+<label for="callButtonText">Call button text</label>
+<input class="input" id="callButtonText" value=""/>
+</div>
+</section>
+<section class="panel" data-panel="header">
+<div class="notice" id="headerNotice"></div>
+<div class="group">
+<label for="headerTagline">Header tagline</label>
+<input class="input" id="headerTagline" placeholder="Example: Modern website. Local impact."/>
+</div>
+<div class="group">
+<label for="headerHeadline">Main headline</label>
+<textarea class="textarea" id="headerHeadline"></textarea>
+</div>
+<div class="group">
+<label for="headerImage">Header image</label>
+<div class="upload">
+                  Upload one hero image.
+                  <input accept="image/*" id="headerImage" type="file"/>
+</div>
+</div>
+<div class="group">
+<label for="headerBio">Header bio</label>
+<textarea class="textarea" id="headerBio" placeholder="Write one short introduction shown below the main headline."></textarea>
+</div>
+</section>
+<section class="panel" data-panel="logo">
+<div class="notice">Upload one business logo for the website header. The logo appears instantly in the live preview and remains part of the saved website project.</div>
+<div class="group">
+<label for="businessLogo">Business logo</label>
+<div class="upload">
+                  Upload PNG, JPG, or WebP. A transparent PNG is recommended.
+                  <input accept="image/png,image/jpeg,image/webp" id="businessLogo" type="file"/>
+</div>
+<button class="btn btn-secondary btn-small" id="removeLogoBtn" style="width:100%;margin-top:8px" type="button">Remove Uploaded Logo</button>
+</div>
+<div class="tiny">The uploaded logo is separate from the header image. The logo is displayed in the website navigation while the header image is used as the main hero image.</div>
+</section>
+<section class="panel" data-panel="about">
+<div class="notice">Make the About section completely your own with a custom heading and a full-width background cover photo.</div>
+<div class="group">
+<label for="aboutHeading">About section heading</label>
+<input class="input" id="aboutHeading" placeholder="Example: About Our Business"/>
+</div>
+<div class="group">
+<label for="aboutCoverFile">About background cover photo</label>
+<div class="upload">
+                  Upload one image that fills the About section background like the main header.
+                  <input accept="image/png,image/jpeg,image/webp" id="aboutCoverFile" type="file"/>
+</div>
+<button class="btn btn-secondary btn-small" id="removeAboutCoverBtn" style="width:100%;margin-top:8px" type="button">Remove About Cover</button>
+</div>
+</section>
+<section class="panel" data-panel="photos">
+<div class="notice" id="photoNotice"></div>
+<div class="group">
+<label for="featuredHeading">Section header</label>
+<input class="input" id="featuredHeading" placeholder="Type the section header"/>
+</div>
+<div class="group">
+<label for="featuredDescription">Section bio</label>
+<textarea class="textarea" id="featuredDescription" placeholder="Type the bio displayed below this section header."></textarea>
+</div>
+<div class="group">
+<label for="featuredCoverFile">Section cover photo</label>
+<div class="upload">
+                  Upload one wide cover photo for this entire section.
+                  <input accept="image/png,image/jpeg,image/webp" id="featuredCoverFile" type="file"/>
+</div>
+<button class="btn btn-secondary btn-small" id="removeFeaturedCoverBtn" style="width:100%;margin-top:8px" type="button">Remove Section Cover</button>
+</div>
+<div class="group">
+<label for="photoDescription">Upload description</label>
+<textarea class="textarea" id="photoDescription" placeholder="Describe this photo, service, product, employee, or project."></textarea>
+</div>
+<div class="group">
+<label for="photoFile">Photo or video</label>
+<div class="upload">
+                  Each upload includes one photo or video and one description.
+                  <input accept="image/*,video/*" id="photoFile" type="file"/>
+</div>
+</div>
+<button class="btn btn-primary" id="addPhotoBtn" style="width:100%" type="button">Add Upload</button>
+<div class="editor-list" id="photoEditorList"></div>
+</section>
+<section class="panel" data-panel="gallery">
+<div class="notice" id="galleryNotice"></div>
+<div id="galleryControls">
+<div class="group">
+<label for="galleryHeading">Section header</label>
+<input class="input" id="galleryHeading" placeholder="Type the section header"/>
+</div>
+<div class="group">
+<label for="galleryDescription">Section bio</label>
+<textarea class="textarea" id="galleryDescription" placeholder="Type the bio displayed below this section header."></textarea>
+</div>
+<div class="group">
+<label for="galleryCoverFile">Section cover photo</label>
+<div class="upload">
+                    Upload one wide cover photo for this entire section.
+                    <input accept="image/png,image/jpeg,image/webp" id="galleryCoverFile" type="file"/>
+</div>
+<button class="btn btn-secondary btn-small" id="removeGalleryCoverBtn" style="width:100%;margin-top:8px" type="button">Remove Section Cover</button>
+</div>
+<div class="group">
+<label for="galleryUploadDescription">Upload description</label>
+<textarea class="textarea" id="galleryUploadDescription" placeholder="Describe this upload."></textarea>
+</div>
+<div class="group">
+<label for="galleryFile">Photo or video</label>
+<div class="upload">
+                    Each upload includes one photo or video and one description.
+                    <input accept="image/*,video/*" id="galleryFile" type="file"/>
+</div>
+</div>
+<button class="btn btn-primary" id="addGalleryBtn" style="width:100%" type="button">Add Upload</button>
+<div class="editor-list" id="galleryEditorList"></div>
+</div>
+</section>
+<section class="panel" data-panel="design">
+<div class="notice">Customize every major part of the website theme. Logo upload is available in the dedicated Logo tab. Changes appear in the preview immediately.</div>
+<div class="group">
+<label>Quick theme presets</label>
+<div class="theme-presets" id="themePresets">
+<button class="theme-preset active" data-theme="blue" type="button"><span style="background:#1769ff"></span>Blue</button>
+<button class="theme-preset" data-theme="purple" type="button"><span style="background:#7c3aed"></span>Purple</button>
+<button class="theme-preset" data-theme="red" type="button"><span style="background:#dc2626"></span>Red</button>
+<button class="theme-preset" data-theme="green" type="button"><span style="background:#059669"></span>Green</button>
+<button class="theme-preset" data-theme="orange" type="button"><span style="background:#ea580c"></span>Orange</button>
+</div>
+</div>
+<div class="color-grid">
+<div class="color-control"><label for="themeColor">Overall page theme</label><input id="themeColor" type="color" value="#1769ff"/><span id="themeColorValue">#1769ff</span></div>
+<div class="color-control"><label for="headerColor">Header and footer</label><input id="headerColor" type="color" value="#082b5e"/><span id="headerColorValue">#082b5e</span></div>
+<div class="color-control"><label for="buttonColor">Buttons</label><input id="buttonColor" type="color" value="#1769ff"/><span id="buttonColorValue">#1769ff</span></div>
+<div class="color-control"><label for="cardColor">Information cards</label><input id="cardColor" type="color" value="#ffffff"/><span id="cardColorValue">#ffffff</span></div>
+<div class="color-control"><label for="logoOutlineColor">Logo outline</label><input id="logoOutlineColor" type="color" value="#61c7ff"/><span id="logoOutlineColorValue">#61c7ff</span></div>
+</div>
+<div class="group">
+<label for="scrollItems">Scroll bar items</label>
+<textarea class="textarea" id="scrollItems">Home, Services, Gallery, Reviews, Contact</textarea>
+</div>
+</section>
+<section class="panel" data-panel="map">
+<div class="notice">Customize the location section heading and place your own cover image behind the map content.</div>
+<div class="group">
+<label for="mapHeading">Map section heading</label>
+<input class="input" id="mapHeading" placeholder="Example: Find Us"/>
+</div>
+<div class="group">
+<label for="mapCoverFile">Map background cover photo</label>
+<div class="upload">
+                  Upload one image that fills the Map section background like the main header.
+                  <input accept="image/png,image/jpeg,image/webp" id="mapCoverFile" type="file"/>
+</div>
+<button class="btn btn-secondary btn-small" id="removeMapCoverBtn" style="width:100%;margin-top:8px" type="button">Remove Map Cover</button>
+</div>
+<div class="group">
+<label for="businessAddress">Business address</label>
+<textarea class="textarea" id="businessAddress"></textarea>
+</div>
+<div class="group">
+<label for="mapEmbedUrl">Map search location</label>
+<textarea class="textarea" id="mapEmbedUrl" placeholder="Example: 43165 W Sugar Pine Dr, Oakhurst, CA 93644"></textarea>
+</div>
+<div class="tiny">Enter a street address, business name, city, or landmark. Bluvixa creates the embedded map automatically. Leave this blank to use the business address above.</div>
+</section>
+<section class="panel backend-only" data-panel="billing">
+<div class="notice" id="billingNotice"></div>
+<div class="group">
+<label for="subscriptionStatus">Subscription status</label>
+<select class="select" id="subscriptionStatus">
+<option value="trialing">Trialing</option>
+<option value="active">Active</option>
+<option value="past_due">Past due</option>
+<option value="canceled">Canceled</option>
+<option value="bought_out">Bought out</option>
+</select>
+</div>
+<button class="btn btn-primary backend-only" id="annualCheckoutBtn" style="width:100%;margin-bottom:9px" type="button">Start Annual Subscription</button>
+<button class="btn btn-secondary backend-only" id="buyoutBtn" style="width:100%" type="button">Buy Out Website</button>
+</section>
+<section class="panel domain-panel" data-panel="project">
+<div class="notice">
+                Choose a free Bluvixa address or connect a domain you already own. User IDs and website IDs are created automatically by the backend and are hidden from customers.
+              </div>
+<div class="group">
+<label>Website domain</label>
+<label class="domain-choice">
+<input checked="" id="domainModeSubdomain" name="domainMode" type="radio" value="subdomain">
+<span>
+<strong>Use a Bluvixa address</strong>
+<small>Fastest option. No DNS setup required.</small>
+</span>
+</input></label>
+<label class="domain-choice">
+<input id="domainModeCustom" name="domainMode" type="radio" value="custom">
+<span>
+<strong>Connect my own domain</strong>
+<small>Use a domain purchased from any registrar.</small>
+</span>
+</input></label>
+</div>
+<div id="subdomainSettings">
+<div class="group">
+<label for="projectSlug">Bluvixa website address</label>
+<div class="domain-input-row">
+<input class="input" id="projectSlug" value="">
+<span>.bluvixa.com</span>
+</input></div>
+<div class="domain-preview" id="subdomainPreview">https://summit-auto-care.bluvixa.com</div>
+</div>
+<button class="btn btn-secondary" id="checkSubdomainBtn" style="width:100%" type="button">
+                  Check Address
+                </button>
+</div>
+<div class="hidden" id="customDomainSettings">
+<div class="group">
+<label for="customDomain">Domain you own</label>
+<input class="input" id="customDomain" placeholder="example.com" value="">
+</input></div>
+<button class="btn btn-secondary" id="connectDomainBtn" style="width:100%;margin-bottom:10px" type="button">
+                  Connect Domain
+                </button>
+<div class="domain-status-card" id="domainStatusCard">
+<div class="domain-status-line">
+<strong>Connection status</strong>
+<span class="status-pill waiting" id="domainStatusPill">Not connected</span>
+</div>
+<p id="domainStatusMessage">Enter your domain and select Connect Domain.</p>
+</div>
+<div class="dns-panel hidden" id="dnsPanel">
+<h4>DNS records to add</h4>
+<p>Add these records at the company where you purchased your domain.</p>
+<div class="dns-record">
+<div><small>Type</small><strong>A</strong></div>
+<div><small>Host</small><strong>@</strong></div>
+<div><small>Points to</small><strong>76.76.21.21</strong></div>
+</div>
+<div class="dns-record">
+<div><small>Type</small><strong>CNAME</strong></div>
+<div><small>Host</small><strong>www</strong></div>
+<div><small>Points to</small><strong>cname.bluvixa.com</strong></div>
+</div>
+<button class="btn btn-primary" id="verifyDomainBtn" style="width:100%;margin-top:10px" type="button">
+                    Verify DNS Connection
+                  </button>
+</div>
+</div>
+<div class="published-address-card">
+<small>Website will publish to</small>
+<strong id="publishedAddress">https://summit-auto-care.bluvixa.com</strong>
+</div>
+<button class="btn btn-secondary" id="loadDraftBtn" style="width:100%;margin-bottom:9px" type="button">
+                Load Saved Draft
+              </button>
+<button class="btn btn-danger" id="resetBtn" style="width:100%" type="button">
+                Reset Builder
+              </button>
+</section>
+<div class="sidebar-footer">
+<button class="btn btn-secondary" id="saveBtn" type="button">Save Draft</button>
+<button class="btn btn-primary backend-only" id="publishBtn" type="button">Publish</button>
+</div>
+</aside>
+<div class="builder-resizer" id="builderResizer" role="separator" aria-label="Resize website editor" aria-orientation="vertical" tabindex="0"></div>
+<section class="workspace">
+<div class="toolbar">
+<div class="toolbar-left">
+<button class="workspace-toggle" id="editorToggle" type="button" aria-expanded="true" aria-controls="builderSidebar">Hide Editor</button>
+<button class="device active" data-device="desktop" type="button">▰</button>
+<button class="device" data-device="tablet" type="button">▯</button>
+<button class="device" data-device="mobile" type="button">▯</button>
+</div>
+<div class="status"><b>●</b> <span id="saveStatus">Ready</span></div>
+</div>
+<div class="preview-wrap">
+<article class="preview" id="preview">
+<header class="site-header">
+<div class="site-brand-wrap">
+<div class="site-logo-frame" id="previewLogoFrame">
+<img alt="Business logo" id="previewLogoImage"/>
+<span id="previewLogoPlaceholder">YOUR LOGO</span>
+</div>
+<div class="site-brand" id="previewBusinessName">YOUR BUSINESS</div>
+</div>
+<button class="site-menu-toggle" id="previewMenuToggle" type="button" aria-label="Open website navigation" aria-expanded="false">
+<span></span><span></span><span></span>
+</button>
+<nav class="site-nav" id="previewSiteNav" aria-label="Website sections">
+<button type="button" data-preview-target="previewHero">Home</button>
+<button type="button" data-preview-target="previewAboutSection">About</button>
+<button type="button" data-preview-target="previewFeaturedSection">Services</button>
+<button type="button" data-preview-target="previewGallerySection">Display</button>
+<button type="button" data-preview-target="previewMapSection">Location</button>
+</nav>
+<a class="site-call" href="tel:+15595550199" id="previewCallButton">Call Now</a>
+</header>
+<section class="site-hero" id="previewHero">
+<div class="site-hero-copy">
+<div class="kicker" id="previewTagline"></div>
+<h2 id="previewHeadline">Your headline appears here.</h2>
+<div class="bio-stack" id="previewHeaderBios"></div>
+<a class="hero-cta" href="tel:+15595550199" id="previewHeroCall">Call Now</a>
+</div>
+</section>
+<section class="scroll-wrap">
+<div class="scroll-row" id="previewScroll"></div>
+</section>
+<section class="business cover-background" id="previewAboutSection">
+<div>
+<h3 id="previewAboutHeading">About Our Business</h3>
+<p id="previewBusinessBio"></p>
+</div>
+<div class="info">
+<div><strong>Phone:</strong> <span id="previewPhone"></span></div>
+<div><strong>Email:</strong> <span id="previewEmail"></span></div>
+<div><strong>Hours:</strong> <span id="previewHours"></span></div>
+<div><strong>Location:</strong> <span id="previewAddress"></span></div>
+</div>
+</section>
+<section class="content-section cover-background" id="previewFeaturedSection">
+<div class="section-cover hidden" id="previewFeaturedCover" aria-hidden="true"></div>
+<div class="section-label">
+<div>
+<h3 id="previewFeaturedHeading" hidden></h3>
+<p id="previewFeaturedDescription"></p>
+</div>
+<small id="previewPhotoCount" hidden></small>
+</div>
+<div class="cards" id="previewPhotoGrid"></div>
+</section>
+<section class="gallery-section" id="previewGallerySection">
+<div class="section-cover hidden" id="previewGalleryCover" aria-hidden="true"></div>
+<div class="section-label">
+<div>
+<h3 id="previewGalleryHeading" hidden></h3>
+<p id="previewGalleryDescription"></p>
+</div>
+<small id="previewGalleryCount" hidden></small>
+</div>
+<div class="gallery-grid" id="previewGalleryGrid"></div>
+</section>
+<section class="map-section cover-background" id="previewMapSection">
+<div class="map-copy">
+<h3 id="previewMapHeading"></h3>
+<p id="previewMapAddress"></p>
+<a class="hero-cta" href="tel:+15595550199" id="previewMapCall">Call Now</a>
+</div>
+<iframe class="map-frame" id="previewMapFrame" title="Business location"></iframe>
+</section>
+<footer class="site-footer">
+<span id="previewFooter"></span>
+<span>Website powered by Bluvixa</span>
+</footer>
+</article>
+</div>
+</section>
+</div>
+</div>
+</section>
 
-        <div class="trust-bar" aria-label="Website service benefits">
-          <div class="trust-item"><span>✓</span> Custom Built</div>
-          <div class="trust-item"><span>✓</span> Mobile Friendly</div>
-          <div class="trust-item"><span>✓</span> Fast Loading</div>
-          <div class="trust-item"><span>✓</span> SEO Foundation</div>
-          <div class="trust-item"><span>✓</span> Launch Support</div>
-        </div>
-      </section>
+<section class="section" id="pricing">
+<div class="container">
+<div class="section-head">
+<h2>Choose Your Package</h2>
+<p>Subscriptions include continued access to the Bluvixa service. A separate one-time buyout unlocks ownership and export of the completed raw-code website.</p>
+</div>
+<div class="pricing-grid">
+<article class="pricing-card glass">
+<strong>Starter</strong>
+<div class="price">$15 <small>/ month</small></div>
+<div class="annual">Billed annually at $180</div>
+<div class="buyout">Website buyout: $499</div>
+<div class="features">
+<span>✓ 10 photo or video uploads with descriptions</span>
+<span>✓ 1 header bio</span>
+<span>✓ Call button</span>
+<span>✓ Business information</span>
+<span>✓ Google Maps pin</span>
+<span>— No gallery section</span>
+<span>🔒 Code export requires $499 buyout</span>
+</div>
+<button class="btn btn-secondary pricingTrial" data-plan="starter" type="button">Start Free Trial</button>
+</article>
+<article class="pricing-card glass popular">
+<div class="popular-label">MOST POPULAR</div>
+<strong>Professional</strong>
+<div class="price">$29 <small>/ month</small></div>
+<div class="annual">Billed annually at $348</div>
+<div class="buyout">Website buyout: $599</div>
+<div class="features">
+<span>✓ 15 photo or video uploads with descriptions</span>
+<span>✓ 1 header bio</span>
+<span>✓ 12 gallery photo or video uploads</span>
+<span>✓ Call button</span>
+<span>✓ Business information</span>
+<span>✓ Google Maps pin</span>
+<span>🔒 Code export requires $599 buyout</span>
+</div>
+<button class="btn btn-primary pricingTrial" data-plan="professional" type="button">Start Free Trial</button>
+</article>
+<article class="pricing-card glass">
+<strong>Advanced</strong>
+<div class="price">$49 <small>/ month</small></div>
+<div class="annual">Billed annually at $588</div>
+<div class="buyout">Website buyout: $699</div>
+<div class="features">
+<span>✓ 20 photo or video uploads with descriptions</span>
+<span>✓ 1 header bio</span>
+<span>✓ 12 gallery photo or video uploads</span>
+<span>✓ Full design controls</span>
+<span>✓ Call button</span>
+<span>✓ Business information</span>
+<span>✓ Google Maps pin</span>
+<span>🔒 Code export requires $699 buyout</span>
+</div>
+<button class="btn btn-secondary pricingTrial" data-plan="advanced" type="button">Start Free Trial</button>
+</article>
+</div>
+</div>
+</section>
+<section class="section" id="ownership">
+<div class="container">
+<div class="section-head">
+<span class="section-kicker">CLEAR OWNERSHIP TERMS</span>
+<h2>Your website service and your exported code are different products.</h2>
+<p>No hidden lock-in language: the subscription operates the website inside Bluvixa; the buyout transfers the downloadable website package.</p>
+</div>
+<div class="ownership-steps">
+<article><b>1</b><h3>Build</h3><p>Create the website visually and save it to your Bluvixa account.</p></article>
+<article><b>2</b><h3>Subscribe</h3><p>Use hosting, updates, domains, analytics, backups, and support while subscribed.</p></article>
+<article><b>3</b><h3>Buy out</h3><p>Purchase the specific website at the buyout price assigned to its plan.</p></article>
+<article><b>4</b><h3>Export</h3><p>Download a ZIP with clean source files, eligible assets, and instructions.</p></article>
+</div>
+<div class="license-panel glass">
+<h3>Website Buyout License Summary</h3>
+<div class="license-grid">
+<div><strong>Customer receives</strong><p>A perpetual right to use, modify, host, transfer, and commercially operate the purchased exported website package.</p></div>
+<div><strong>Bluvixa retains</strong><p>Ownership of its platform, builder, SaaS source code, backend, trademarks, generic components, and reusable templates.</p></div>
+<div><strong>Third-party assets</strong><p>Remain governed by their original licenses. Items that cannot be redistributed are identified or excluded from export.</p></div>
+<div><strong>After export</strong><p>Self-hosted code is no longer automatically maintained by Bluvixa unless a separate support or hosting service is active.</p></div>
+</div>
+</div>
+</div>
+</section>
+<section class="section hidden backend-only" id="account">
+<div class="container">
+<div class="section-head">
+<h2>My Bluvixa Account</h2>
+<p>Manage your profile, subscription, saved project, and billing.</p>
+</div>
+<div class="account-grid">
+<article class="glass account-card">
+<h3>Account</h3>
+<p><strong>Email:</strong> <span id="accountEmail">—</span></p>
+<p><strong>Status:</strong> <span id="accountAuthStatus">Signed out</span></p>
+<button class="btn btn-secondary backend-only" id="accountSignOutBtn" type="button">Sign Out</button>
+</article>
+<article class="glass account-card">
+<h3>Subscription</h3>
+<p><strong>Plan:</strong> <span id="accountPlan">No active plan</span></p>
+<p><strong>Billing:</strong> <span id="accountBillingStatus">Not connected</span></p>
+<button class="btn btn-primary backend-only" id="manageBillingBtn" type="button">Manage Billing</button>
+</article>
+<article class="glass account-card">
+<h3>Website Project</h3>
+<p><strong>Project:</strong> <span id="accountProjectName">No cloud project saved</span></p>
+<div class="account-actions">
+<button class="btn btn-primary backend-only" id="cloudSaveBtn" type="button">Save to Cloud</button>
+<button class="btn btn-secondary backend-only" id="cloudLoadBtn" type="button">Load from Cloud</button>
+</div>
+</article>
+<article class="glass account-card ownership-account-card">
+<h3>Code Ownership &amp; Export</h3>
+<p><strong>Ownership:</strong> <span id="accountOwnershipStatus">Not purchased</span></p>
+<p id="accountExportHelp">Purchase the website buyout to unlock a complete raw-code ZIP export.</p>
+<button class="btn btn-secondary backend-only" disabled="" id="exportWebsiteBtn" type="button">Export Website ZIP</button>
+</article>
+</div>
+</div>
+</section>
 
-      <section id="projects" class="panel section-wrap">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">Featured work</p>
-            <h2>Every website gets its own identity.</h2>
-          </div>
-          <p class="section-note">
-            A growing portfolio of custom website concepts created for businesses in and around Oakhurst, California.
-          </p>
-        </div>
-
-        <div class="projects-grid">
-          <a class="project-card" href="https://pak-page-rebuild.vercel.app" target="_blank" rel="noopener noreferrer" aria-label="Open Pak and Page website project">
-            <div class="project-cover"><img src="hero-pak-&-page.webp" alt="Pak &amp; Page website preview" loading="lazy" /></div>
-            <div class="project-info"><span>Shipping &amp; Business Services</span><strong>Pak &amp; Page</strong><em>Live Preview ↗</em></div>
-          </a>
-
-          <a class="project-card" href="https://oakhurst-business-center.vercel.app" target="_blank" rel="noopener noreferrer" aria-label="Open Oakhurst Business Center website project">
-            <div class="project-cover"><img src="hero-oakhurst-business-center.webp" alt="Oakhurst Business Center website preview" loading="lazy" /></div>
-            <div class="project-info"><span>Business Services</span><strong>Oakhurst Business Center</strong><em>Live Preview ↗</em></div>
-          </a>
-
-          <a class="project-card" href="https://oakhurst-beauty-supply-hair-designe.vercel.app" target="_blank" rel="noopener noreferrer" aria-label="Open Oakhurst Beauty Supply and Hair Designer website project">
-            <div class="project-cover"><img src="hero-oakhurst-beauty-supply.webp" alt="Oakhurst Beauty Supply website preview" loading="lazy" /></div>
-            <div class="project-info"><span>Beauty &amp; Hair</span><strong>Oakhurst Beauty Supply</strong><em>Live Preview ↗</em></div>
-          </a>
-
-          <a class="project-card featured-client" href="https://hero-andysmobileautorep.com" target="_blank" rel="noopener noreferrer" aria-label="Open Andy's Mobile Auto Repair live website">
-            <div class="project-cover">
-              <img src="hero-andysmobileautorep.jpg" alt="Andy&#39;s Mobile Auto Repair mobile website homepage" loading="lazy" />
-            </div>
-            <div class="project-info">
-              <span class="client-badge">Real Client Project</span>
-              <span>Mobile Auto Repair • Cabot &amp; Central Arkansas</span>
-              <strong>Andy&#39;s Mobile Auto Repair</strong>
-              <p class="project-summary">
-                Andy needed a stronger online presence that immediately explained his mobile service, built customer trust, and made it effortless to request help from a phone. Bluvixa rebuilt the experience around speed, clarity, and direct customer action.
-              </p>
-              <ul class="project-improvements" aria-label="Website improvements">
-                <li>Complete custom visual redesign</li>
-                <li>Mobile-first responsive layout</li>
-                <li>Clear service and coverage information</li>
-                <li>One-tap Call Now buttons</li>
-                <li>Simple service-request contact flow</li>
-                <li>Professional photo gallery</li>
-                <li>Trust signals and certification highlights</li>
-                <li>Fast, secure static hosting</li>
-                <li>SEO-ready page structure</li>
-                <li>Custom domain connection</li>
-              </ul>
-              <em>View Finished Live Website ↗</em>
-            </div>
-          </a>
-<a class="project-card" href="https://good-ol-things-website.vercel.app" target="_blank" rel="noopener noreferrer" aria-label="Open Good Ol Things website project">
-            <div class="project-cover"><img src="hero-good-ol-things.webp" alt="Good Ol' Things website preview" loading="lazy" /></div>
-            <div class="project-info"><span>Antiques &amp; Collectibles</span><strong>Good Ol' Things</strong><em>Live Preview ↗</em></div>
-          </a>
-
-          <a class="project-card" href="https://alpenglow-pearl.vercel.app" target="_blank" rel="noopener noreferrer" aria-label="Open Alpenglow Consignment website project">
-            <div class="project-cover"><img src="hero-alpenglow.webp" alt="Alpenglow Consignment website preview" loading="lazy" /></div>
-            <div class="project-info"><span>Outdoor Retail</span><strong>Alpenglow Consignment</strong><em>Live Preview ↗</em></div>
-          </a>
-
-          <a class="project-card" href="https://sierra-merciantile-website.vercel.app/" target="_blank" rel="noopener noreferrer" aria-label="Open Sierra Mercantile website project">
-            <div class="project-cover"><img src="hero-sierra-mercantile.webp" alt="Sierra Mercantile website preview" loading="lazy" /></div>
-            <div class="project-info"><span>Local Retail</span><strong>Sierra Mercantile</strong><em>Live Preview ↗</em></div>
-          </a>
-
-          <a class="project-card" href="https://ec-lec-tic-website.vercel.app" target="_blank" rel="noopener noreferrer" aria-label="Open Eclectic website project">
-            <div class="project-cover"><img src="hero-eclectic.webp" alt="Ec.lec.tic website preview" loading="lazy" /></div>
-            <div class="project-info"><span>Gifts &amp; Retail</span><strong>Ec.lec.tic</strong><em>Live Preview ↗</em></div>
-          </a>
-
-          <a class="project-card" href="https://7-rivers-pickers-website.vercel.app" target="_blank" rel="noopener noreferrer" aria-label="Open Seven Rivers Pickers website project">
-            <div class="project-cover"><img src="hero-7-rivers-pickers.webp" alt="7 Rivers Pickers website preview" loading="lazy" /></div>
-            <div class="project-info"><span>Antiques &amp; Vintage</span><strong>7 Rivers Pickers</strong><em>Live Preview ↗</em></div>
-          </a>
-
-          <a class="project-card" href="https://oakhurst-office-supply-and-decor-we.vercel.app" target="_blank" rel="noopener noreferrer" aria-label="Open Oakhurst Office Supply and Decor website project">
-            <div class="project-cover"><img src="hero-oakhurst-office-supply.webp" alt="Oakhurst Office Supply &amp; Decor website preview" loading="lazy" /></div>
-            <div class="project-info"><span>Office &amp; Home Retail</span><strong>Oakhurst Office Supply &amp; Decor</strong><em>Live Preview ↗</em></div>
-          </a>
-        </div>
-      </section>
-
-      <section class="panel section-wrap" aria-labelledby="why-title">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">Why Bluvixa</p>
-            <h2 id="why-title">Designed around your business—not a template.</h2>
-          </div>
-          <p class="section-note">
-            Your website should look intentional, feel easy to use, and give customers a clear reason to contact you.
-          </p>
-        </div>
-
-        <div class="feature-grid">
-          <article class="feature-card">
-            <div class="feature-icon">⚡</div>
-            <h3>Fast Turnaround</h3>
-            <p>A focused build process keeps your project moving without sacrificing the details that make it feel custom.</p>
-          </article>
-          <article class="feature-card">
-            <div class="feature-icon">✦</div>
-            <h3>Unique Design</h3>
-            <p>Each business receives its own visual identity instead of another copy-and-paste website.</p>
-          </article>
-          <article class="feature-card">
-            <div class="feature-icon">▣</div>
-            <h3>Mobile First</h3>
-            <p>Your site is designed to look polished and remain easy to use on phones, tablets, and desktops.</p>
-          </article>
-          <article class="feature-card">
-            <div class="feature-icon">⌁</div>
-            <h3>Simple &amp; Secure</h3>
-            <p>Lean static builds reduce unnecessary maintenance and avoid the plugin clutter found in many site builders.</p>
-          </article>
-        </div>
-      </section>
-
-      <section id="pricing" class="panel section-wrap">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">Website packages</p>
-            <h2>Choose the level that fits your business now.</h2>
-          </div>
-          <p class="section-note">
-            Every Bluvixa website is custom designed, mobile friendly, and built around your business. The package simply determines the size, depth, and functionality of the project.
-          </p>
-        </div>
-
-        <div class="pricing-grid">
-          <article class="tier-card">
-            <span class="price-label">Focused Launch</span>
-            <h3>One-Page Website</h3>
-            <div class="price"><sup>$</sup><strong>500</strong></div>
-            <p class="flat-rate">Flat-rate starter package</p>
-            <p class="tier-summary">A polished digital home for a small business that needs one clear, high-impact page.</p>
-            <ul class="included-list">
-              <li>Custom one-page visual design</li>
-              <li>Mobile responsive layout</li>
-              <li>Business overview and services</li>
-              <li>Phone, directions, and social links</li>
-              <li>Basic SEO page setup</li>
-              <li>One included revision round</li>
-              <li>Launch and publishing assistance</li>
-            </ul>
-            <p class="tier-note">Best for independent professionals, new businesses, and local shops that need a strong online presence without unnecessary complexity.</p>
-            <a class="button secondary-button tier-button" href="#contact">Ask About the $500 Package</a>
-          </article>
-
-          <article class="tier-card featured">
-            <span class="tier-badge">Most Popular</span>
-            <span class="price-label">Growth Starter</span>
-            <h3>Multi-Page Business Site</h3>
-            <div class="price"><sup>$</sup><strong>1,200</strong><span class="plus">+</span></div>
-            <p class="flat-rate">Quoted by project scope</p>
-            <p class="tier-summary">A complete business presence with room to explain services, build trust, and guide customers toward action.</p>
-            <ul class="included-list">
-              <li>Up to five custom pages</li>
-              <li>Custom visual identity throughout</li>
-              <li>Expanded service and about pages</li>
-              <li>Image galleries or product showcases</li>
-              <li>Local SEO structure and metadata</li>
-              <li>Google Maps and contact pathways</li>
-              <li>Two included revision rounds</li>
-              <li>Launch and domain connection help</li>
-            </ul>
-            <p class="tier-note">Ideal for established local businesses that need more than a digital business card and want a website capable of supporting growth.</p>
-            <a class="button primary-button tier-button" href="#contact">Request a Growth Quote</a>
-          </article>
-
-          <article class="tier-card">
-            <span class="price-label">Professional Custom</span>
-            <h3>Advanced Website Build</h3>
-            <div class="price"><sup>$</sup><strong>2,500</strong><span class="plus">+</span></div>
-            <p class="flat-rate">Custom proposal required</p>
-            <p class="tier-summary">A deeper strategic build for businesses that need advanced content, integrations, or specialized customer journeys.</p>
-            <ul class="included-list">
-              <li>Expanded custom page system</li>
-              <li>Brand integration and design direction</li>
-              <li>Tailored conversion pathways</li>
-              <li>Advanced forms and integrations</li>
-              <li>Booking, scheduling, or third-party tools</li>
-              <li>Online store planning or payment setup</li>
-              <li>Custom scope and launch plan</li>
-            </ul>
-            <p class="tier-note">Online stores, customer portals, member logins, employee dashboards, databases, and custom business systems are priced according to technical complexity and ongoing requirements.</p>
-            <a class="button secondary-button tier-button" href="#contact">Discuss a Custom Build</a>
-          </article>
-        </div>
-
-        <div class="value-strip" aria-label="What every Bluvixa website includes">
-          <div class="value-item"><strong>Custom Design</strong><span>No copy-and-paste template identity</span></div>
-          <div class="value-item"><strong>Mobile First</strong><span>Designed for phones, tablets, and desktops</span></div>
-          <div class="value-item"><strong>Lean &amp; Fast</strong><span>Static builds without plugin clutter</span></div>
-          <div class="value-item"><strong>Launch Support</strong><span>Help publishing and connecting your domain</span></div>
-        </div>
-      </section>
-
-      <section class="panel section-wrap" aria-labelledby="extras-title">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">Optional support</p>
-            <h2 id="extras-title">Add only what your business actually needs.</h2>
-          </div>
-          <p class="section-note">Clear add-ons and ongoing support prevent surprises while giving your website room to evolve after launch.</p>
-        </div>
-
-        <div class="extras-layout">
-          <article class="extras-card">
-            <span class="price-label">Monthly care plans</span>
-            <h3>Stay supported after launch.</h3>
-            <p>Maintenance is optional. Businesses that prefer ongoing help can choose a plan based on how frequently they expect updates.</p>
-            <div class="menu-list">
-              <div class="menu-row"><span>Technical Check Plan</span><strong>$25/month</strong></div>
-              <div class="menu-row"><span>One Small Content Update</span><strong>$59/month</strong></div>
-              <div class="menu-row"><span>Priority Support + Up to 1 Hour</span><strong>$99/month</strong></div>
-            </div>
-          </article>
-
-          <article class="extras-card">
-            <span class="price-label">Business growth add-ons</span>
-            <h3>Add tools that make it easier for customers to take action.</h3>
-            <p>Choose only the features your business needs now. Every add-on is planned around your workflow, connected to the right service, and tested before launch.</p>
-            <div class="menu-list">
-              <div class="menu-row"><span>Online Booking &amp; Appointment Scheduling</span><strong>+$300–$500</strong></div>
-              <div class="menu-row"><span>Professional Website Copy</span><strong>+$100/page</strong></div>
-              <div class="menu-row"><span>Online Store &amp; Payment Setup</span><strong>Starting +$1,500</strong></div>
-              <div class="menu-row"><span>Mobile Application</span><strong>Starting at $5,000+</strong></div>
-              <div class="menu-row"><span>Customer Portals, Member Logins &amp; Dashboards</span><strong>Custom quote</strong></div>
-            </div>
-          </article>
-        </div>
-
-        <div class="service-explainer-grid" aria-label="How Bluvixa business add-ons work">
-          <article class="service-explainer-card">
-            <div class="service-number">01</div>
-            <span class="price-label">Booking &amp; scheduling</span>
-            <h3>Let customers book without calling.</h3>
-            <p>I can connect a trusted scheduling platform such as Calendly, Square Appointments, Acuity, Vagaro, or Google Calendar and place the booking experience directly on your website.</p>
-            <ul class="included-list">
-              <li>Account connection or guided setup</li>
-              <li>Service, availability, and contact configuration</li>
-              <li>Branded booking button or embedded calendar</li>
-              <li>Mobile testing and launch support</li>
-            </ul>
-          </article>
-
-          <article class="service-explainer-card">
-            <div class="service-number">02</div>
-            <span class="price-label">Website copywriting</span>
-            <h3>Turn what you do into clear customer-focused language.</h3>
-            <p>After a short interview, I organize your services, advantages, and story into polished website copy that helps visitors understand your business and know what to do next.</p>
-            <ul class="included-list">
-              <li>Client discovery questions</li>
-              <li>Page structure and headline direction</li>
-              <li>Service descriptions and calls-to-action</li>
-              <li>One copy revision round per page</li>
-            </ul>
-          </article>
-
-          <article class="service-explainer-card">
-            <div class="service-number">03</div>
-            <span class="price-label">Online store setup</span>
-            <h3>Sell products through a proven commerce platform.</h3>
-            <p>Rather than reinventing payment security, I can design and configure a storefront using an established platform such as Shopify, Square Online, Ecwid, or secure payment links.</p>
-            <ul class="included-list">
-              <li>Storefront design and platform configuration</li>
-              <li>Initial product and category setup</li>
-              <li>Payment, shipping, pickup, and tax settings</li>
-              <li>Testing and owner handoff</li>
-            </ul>
-          </article>
-
-          <article class="service-explainer-card">
-            <div class="service-number">04</div>
-            <span class="price-label">Mobile application • Starting at $5,000+</span>
-            <h3>Put your business directly in your customers’ hands.</h3>
-            <p>Bluvixa designs custom mobile applications for businesses that need more than a traditional website. Your app can give customers, employees, or members a fast, convenient way to access your services from their phones while connecting to secure cloud data and the systems your business already uses.</p>
-            <ul class="included-list">
-              <li>Custom mobile-first interface and branded user experience</li>
-              <li>Customer accounts, profiles, and secure sign-in</li>
-              <li>Booking, ordering, messaging, payments, or notifications</li>
-              <li>Cloud database, file storage, and website integration</li>
-              <li>Administrative dashboard for managing app content or users</li>
-              <li>Testing, launch preparation, and deployment assistance</li>
-            </ul>
-            <p class="tier-note">Every mobile application is quoted according to its features, integrations, security requirements, and deployment needs. Projects begin at $5,000.</p>
-          </article>
-
-          <article class="service-explainer-card">
-            <div class="service-number">05</div>
-            <span class="price-label">Custom business systems</span>
-            <h3>Give customers, members, or employees a secure place to sign in.</h3>
-            <p>For businesses that need more than a standard website, I can scope customer portals, member areas, employee dashboards, secure document workflows, databases, and custom internal tools.</p>
-            <ul class="included-list">
-              <li>Secure account and login planning</li>
-              <li>Custom dashboard or portal interface</li>
-              <li>Database, storage, and workflow requirements</li>
-              <li>Phased proposal based on complexity</li>
-            </ul>
-          </article>
-        </div>
-
-        <article class="payment-card">
-          <span class="price-label">Reserve your project</span>
-          <h3>We confirm the scope before payment.</h3>
-          <p>Call or email first so we can choose the right package, confirm the deliverables, set the start date, and agree on the final price. Once those details are clear, payment can be submitted through Venmo or Cash App.</p>
-          <div class="payment-actions">
-            <a class="button primary-button venmo-button" href="https://venmo.com/u/RickeyB1218" target="_blank" rel="noopener noreferrer">Pay securely with Venmo ↗</a>
-            <a class="button primary-button venmo-button" href="https://cash.app/$sarahbear151822" target="_blank" rel="noopener noreferrer">Pay securely with Cash App ↗</a>
-            <a class="button secondary-button venmo-button" href="#contact">Contact Bluvixa First</a>
-          </div>
-          <p class="payment-fineprint">Do not send payment until your project details, package, price, and start date have been confirmed.</p>
-        </article>
-      </section>
-
-      <section id="process" class="panel section-wrap">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">How it works</p>
-            <h2>A straightforward path from idea to launch.</h2>
-          </div>
-          <p class="section-note">
-            You stay involved throughout the process while I handle the design, responsive layout, and final presentation.
-          </p>
-        </div>
-
-        <div class="process-grid">
-          <article class="step-card"><span class="step-number">01</span><h3>Tell Me About It</h3><p>We discuss your business, goals, preferred style, content, and the pages your website needs.</p></article>
-          <article class="step-card"><span class="step-number">02</span><h3>Confirm &amp; Pay</h3><p>We select the right package, confirm the exact scope and price, then reserve the project through Venmo or Cash App.</p></article>
-          <article class="step-card"><span class="step-number">03</span><h3>Review the Build</h3><p>You receive a working website preview and can request reasonable changes before launch.</p></article>
-          <article class="step-card"><span class="step-number">04</span><h3>Go Live</h3><p>The finished website is prepared for publishing and connected to your domain.</p></article>
-        </div>
-      </section>
-
-      <section class="panel section-wrap" aria-labelledby="faq-title">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">Frequently asked questions</p>
-            <h2 id="faq-title">Clear answers before we begin.</h2>
-          </div>
-          <p class="section-note">These are the most common questions businesses ask before starting a website project.</p>
-        </div>
-
-        <div class="faq-list">
-          <details>
-            <summary>What is included in the $500 website?</summary>
-            <p>A focused custom one-page website for a small business, including responsive design, core business information, service highlights, calls-to-action, social links, maps when needed, one revision round, and launch assistance.</p>
-          </details>
-          <details>
-            <summary>Do I own the finished website?</summary>
-            <p>Yes. Once the project is paid for, you receive the completed website files. Domain, hosting, and third-party service accounts remain under the account holder's control.</p>
-          </details>
-          <details>
-            <summary>Can you redesign an existing website?</summary>
-            <p>Yes. Existing content can often be reorganized and rebuilt into a cleaner, faster, and more modern design.</p>
-          </details>
-          <details>
-            <summary>Can you add booking, online payments, or customer logins?</summary>
-            <p>Yes. Booking and appointment tools can be connected as an add-on. Online stores, payment systems, customer portals, member logins, employee dashboards, and database-driven features are quoted separately according to the platform and technical requirements.</p>
-          </details>
-          <details>
-            <summary>How quickly can the website be completed?</summary>
-            <p>Timing depends on the scope and how quickly content is supplied. A focused static business website can often move from planning to launch quickly once all materials are ready.</p>
-          </details>
-          <details>
-            <summary>Do I have to purchase a monthly maintenance plan?</summary>
-            <p>No. Ongoing support is optional. You may manage the finished website yourself, request individual paid updates, or choose a monthly care plan when regular assistance is more convenient.</p>
-          </details>
-        </div>
-      </section>
-
-      <section id="contact" class="panel contact-panel">
-        <div class="contact-copy">
-          <p class="eyebrow">Start a project</p>
-          <h2>Let’s build something your business can be proud of.</h2>
-          <p>
-            Call or email to discuss your business, your goals, and the kind of website you want to create. We will confirm the details before any payment is made.
-          </p>
-        </div>
-
-        <div class="contact-actions">
-          <a href="tel:+15596763875" class="contact-link">
-            <span>Phone</span>
-            <strong>(559) 676-3875</strong>
-          </a>
-          <a href="mailto:Brown.Rickey95@gmail.com?subject=Bluvixa%20Website%20Project" class="contact-link">
-            <span>Email</span>
-            <strong>Bluvixa.web@gmail.com</strong>
-          </a>
-          <a href="https://www.google.com/maps/search/?api=1&query=Oakhurst%2C%20CA" target="_blank" rel="noopener" class="contact-link">
-            <span>Location</span>
-            <strong>Oakhurst, CA</strong>
-          </a>
-          <a href="#pricing" class="contact-link">
-            <span>Pricing</span>
-            <strong>One-page sites from $500 • Mobile applications from $5,000</strong>
-          </a>
-        </div>
-      </section>
-    </main>
-
-    <footer class="site-footer">
-      <span>© <span id="year"></span> Bluvixa Web Design</span>
-      <span>Custom website design • Oakhurst, California</span>
-    </footer>
-  </div>
-
-  <a class="floating-start" href="#pricing">View Website Packages</a>
-
-  <script>
-    document.getElementById("year").textContent = new Date().getFullYear();
-
-  </script>
+</main>
+<div class="modal hidden backend-only" id="authModal">
+<div class="modal-card auth-card">
+<div class="modal-head">
+<div>
+<h3 id="authTitle">Sign in to Bluvixa</h3>
+<div class="tiny">Access your websites, subscription, and billing.</div>
+</div>
+<button class="btn btn-secondary btn-small" id="closeAuthBtn" type="button">Close</button>
+</div>
+<div class="auth-tabs">
+<button class="auth-tab active" id="showSignInTab" type="button">Sign In</button>
+<button class="auth-tab" id="showSignUpTab" type="button">Create Account</button>
+</div>
+<form id="authForm">
+<div class="group hidden" id="fullNameGroup">
+<label for="authFullName">Full name</label>
+<input autocomplete="name" class="input" id="authFullName">
+</input></div>
+<div class="group">
+<label for="authEmail">Email</label>
+<input autocomplete="email" class="input" id="authEmail" required="" type="email">
+</input></div>
+<div class="group">
+<label for="authPassword">Password</label>
+<input autocomplete="current-password" class="input" id="authPassword" minlength="8" required="" type="password">
+</input></div>
+<button class="btn btn-primary" id="authSubmitBtn" style="width:100%" type="submit">Sign In</button>
+</form>
+<button class="text-button" id="forgotPasswordBtn" type="button">Forgot your password?</button>
+<div class="notice hidden" id="authMessage"></div>
+</div>
+</div>
+<div class="modal hidden backend-only" id="backendModal">
+<div class="modal-card">
+<div class="modal-head">
+<div>
+<h3>Backend Controls</h3>
+<div class="tiny">Development-only preview.</div>
+</div>
+<button class="btn btn-secondary btn-small" id="closeBackendBtn" type="button">Close</button>
+</div>
+<div class="backend-grid">
+<div class="backend-card"><strong>Authentication</strong><small>Supabase Auth</small></div>
+<div class="backend-card"><strong>Database</strong><small>Supabase Postgres</small></div>
+<div class="backend-card"><strong>Storage</strong><small>Supabase Storage</small></div>
+<div class="backend-card"><strong>Billing</strong><small>Stripe</small></div>
+</div>
+<button class="btn btn-primary" id="refreshJsonBtn" style="width:100%;margin-bottom:12px" type="button">Refresh Backend JSON</button>
+<pre id="backendJson"></pre>
+</div>
+</div>
+<div class="toast" id="toast"></div>
+<script defer="" src="app.js?v=final-proportion-pass-1"></script>
+<!-- auth-payments.js is intentionally not loaded until the operating backend is enabled. -->
 </body>
 </html>
