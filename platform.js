@@ -2,7 +2,7 @@
 "use strict";
 
 /* =========================================================
-   BLUVIXA 7.0 CLOUD-FIRST WORKSPACE CONTROLLER
+   BLUVIXA 7.1 VERIFIED CLOUD-SAVE WORKSPACE CONTROLLER
    One router, one authentication controller, one project library.
    Supabase and Stripe API routes remain unchanged.
    ========================================================= */
@@ -22,6 +22,8 @@ var projectsCache=[];
 var snapshotsCache=[];
 var cloudWorkspaceLoaded=false;
 var cloudSyncTimer=null;
+var cloudRecordIds=new Set();
+var lastCloudError="";
 
 function id(name){return document.getElementById(name);}
 function all(selector){return Array.prototype.slice.call(document.querySelectorAll(selector));}
@@ -156,9 +158,7 @@ function projectToRow(project){
     domain_status:project.domainStatus||"not_connected",
     website_bought_out:!!project.websiteBoughtOut,
     buyout_plan:project.buyoutPlan||null,
-    buyout_completed_at:project.buyoutCompletedAt||null,
-    created_at:project.createdAt||new Date().toISOString(),
-    updated_at:project.updatedAt||new Date().toISOString()
+    buyout_completed_at:project.buyoutCompletedAt||null
   };
 }
 function snapshotToRow(snapshot){
@@ -178,9 +178,7 @@ function snapshotToRow(snapshot){
     domain_status:"not_connected",
     website_bought_out:false,
     buyout_plan:null,
-    buyout_completed_at:null,
-    created_at:snapshot.savedAt||new Date().toISOString(),
-    updated_at:snapshot.savedAt||new Date().toISOString()
+    buyout_completed_at:null
   };
 }
 function rowToProject(row){
@@ -220,18 +218,37 @@ function rowToSnapshot(row){
     state:state
   });
 }
+async function saveCloudRow(row){
+  if(!currentUser||!supabaseClient)throw new Error("You must be signed in before saving to the cloud.");
+  var result=await supabaseClient
+    .from("website_projects")
+    .upsert([row],{onConflict:"id"})
+    .select("id")
+    .single();
+  if(result.error)throw result.error;
+  cloudRecordIds.add(row.id);
+  lastCloudError="";
+  cloudWorkspaceLoaded=true;
+  return result.data;
+}
+async function saveProjectToCloud(project){
+  return saveCloudRow(projectToRow(project));
+}
+async function saveSnapshotToCloud(snapshot){
+  return saveCloudRow(snapshotToRow(snapshot));
+}
 async function syncCloudWorkspace(){
   if(!currentUser||!supabaseClient)return false;
-  var rows=projectsCache.map(projectToRow).concat(snapshotsCache.map(snapshotToRow));
-  if(!rows.length)return true;
   try{
-    var result=await supabaseClient
-      .from("website_projects")
-      .upsert(rows,{onConflict:"id"});
-    if(result.error)throw result.error;
-    cloudWorkspaceLoaded=true;
+    for(var projectIndex=0;projectIndex<projectsCache.length;projectIndex++){
+      await saveProjectToCloud(projectsCache[projectIndex]);
+    }
+    for(var snapshotIndex=0;snapshotIndex<snapshotsCache.length;snapshotIndex++){
+      await saveSnapshotToCloud(snapshotsCache[snapshotIndex]);
+    }
     return true;
   }catch(error){
+    lastCloudError=error.message||"Unknown cloud save error";
     console.error("Bluvixa cloud save failed:",error);
     return false;
   }
@@ -239,23 +256,23 @@ async function syncCloudWorkspace(){
 function scheduleCloudSync(){
   if(!currentUser||!supabaseClient)return;
   clearTimeout(cloudSyncTimer);
-  cloudSyncTimer=setTimeout(async function(){
-    var saved=await syncCloudWorkspace();
-    if(!saved)console.warn("The local emergency cache was kept because cloud saving was unavailable.");
-  },350);
+  cloudSyncTimer=setTimeout(function(){syncCloudWorkspace();},500);
 }
 async function deleteCloudRecord(recordId){
-  if(!currentUser||!supabaseClient||!recordId)return;
+  if(!currentUser||!supabaseClient||!recordId)return true;
   try{
     var result=await supabaseClient
       .from("website_projects")
       .delete()
-      .eq("id",recordId)
-      .eq("owner_id",currentUser.id);
+      .eq("id",recordId);
     if(result.error)throw result.error;
+    cloudRecordIds.delete(recordId);
+    lastCloudError="";
+    return true;
   }catch(error){
+    lastCloudError=error.message||"Unknown cloud delete error";
     console.error("Bluvixa cloud delete failed:",error);
-    toast("This item was removed locally, but the cloud delete needs to be retried.");
+    return false;
   }
 }
 async function loadCloudWorkspace(){
@@ -265,13 +282,15 @@ async function loadCloudWorkspace(){
   var localSnapshots=safeJson(SNAPSHOTS_KEY,[]);
   projectsCache=[];
   snapshotsCache=[];
+  cloudRecordIds=new Set();
 
   var result=await supabaseClient
     .from("website_projects")
-    .select("id,owner_id,name,slug,plan,project_data,status,custom_domain,domain_status,website_bought_out,buyout_plan,buyout_completed_at,created_at,updated_at")
-    .eq("owner_id",currentUser.id);
+    .select("*")
+    .order("updated_at",{ascending:false});
 
   if(result.error){
+    lastCloudError=result.error.message||"Cloud load failed";
     console.error("Bluvixa cloud load failed:",result.error);
     projectsCache=(Array.isArray(localProjects)?localProjects:[]).map(normalizeProject);
     snapshotsCache=(Array.isArray(localSnapshots)?localSnapshots:[]).map(normalizeSnapshot);
@@ -280,8 +299,10 @@ async function loadCloudWorkspace(){
     return;
   }
 
+  lastCloudError="";
   var rows=result.data||[];
   rows.forEach(function(row){
+    cloudRecordIds.add(row.id);
     var recordType=row.project_data&&row.project_data.__bluvixa_record_type;
     if(recordType==="snapshot")snapshotsCache.push(rowToSnapshot(row));
     else projectsCache.push(rowToProject(row));
@@ -291,7 +312,7 @@ async function loadCloudWorkspace(){
   snapshotsCache.sort(function(a,b){return new Date(b.savedAt)-new Date(a.savedAt);});
   cloudWorkspaceLoaded=true;
 
-  /* One-time migration from the old browser-only workspace. */
+  /* One-time migration from browser storage only when this account has no cloud rows. */
   if(!rows.length&&(localProjects.length||localSnapshots.length)){
     projectsCache=(Array.isArray(localProjects)?localProjects:[]).map(normalizeProject);
     snapshotsCache=(Array.isArray(localSnapshots)?localSnapshots:[]).map(normalizeSnapshot);
@@ -631,14 +652,15 @@ function newWebsite(){
     toast("New website created.");
   }
 }
-function saveActiveProject(showMessage){
+async function saveActiveProject(showMessage){
   var state=currentBuilderState();
-  if(!state){toast("The builder is still loading.");return;}
+  if(!state){toast("The builder is still loading.");return false;}
   var projects=getProjects();
   var project=projects.find(function(item){return item.id===activeProjectId();});
   if(!project){
     var name=(state.business&&state.business.name)?state.business.name+" Website":"Untitled Website";
     project=createProject(name,state);
+    projects=getProjects();
   }else{
     project.state=clone(state);
     project.name=(state.business&&state.business.name)?state.business.name+" Website":project.name;
@@ -649,10 +671,27 @@ function saveActiveProject(showMessage){
     project.slug=(state.project&&state.project.slug)||project.slug;
     project.customDomain=(state.project&&state.project.customDomain)||project.customDomain;
     project.domainStatus=(state.project&&state.project.domainStatus)||project.domainStatus;
-    setProjects(projects);
+    projectsCache=projects.map(normalizeProject);
+    saveJson(PROJECTS_KEY,projectsCache);
   }
-  if(showMessage)toast("Website saved. Cloud sync is running.");
+
   renderProjects();renderDrafts();renderPublishing();
+
+  if(currentUser&&supabaseClient){
+    try{
+      await saveProjectToCloud(project);
+      if(showMessage)toast("Website saved to your cloud account.");
+      return true;
+    }catch(error){
+      lastCloudError=error.message||"Unknown cloud save error";
+      console.error("Bluvixa project save failed:",error);
+      if(showMessage)toast("Cloud save failed: "+lastCloudError);
+      return false;
+    }
+  }
+
+  if(showMessage)toast("Website saved on this device. Sign in to save it to the cloud.");
+  return true;
 }
 function loadProject(projectId){
   var project=getProjects().find(function(item){return item.id===projectId;});
@@ -710,22 +749,31 @@ function renderProjects(){
 }
 
 /* ---------- DRAFTS ---------- */
-function saveSnapshot(){
+async function saveSnapshot(){
   var state=currentBuilderState();
   if(!state){toast("The builder is still loading.");return;}
   var project=getProjects().find(function(item){return item.id===activeProjectId();});
-  var snapshots=getSnapshots();
-  snapshots.unshift({
+  var snapshot={
     id:makeUuid(),
     projectId:project?project.id:"",
     name:project?project.name+" Snapshot":"Untitled Snapshot",
     plan:currentAccountPlan(),
     savedAt:new Date().toISOString(),
     state:clone(state)
-  });
-  setSnapshots(snapshots.slice(0,60));
+  };
+  snapshotsCache=[snapshot].concat(getSnapshots()).slice(0,60).map(normalizeSnapshot);
+  saveJson(SNAPSHOTS_KEY,snapshotsCache);
   renderDrafts();
-  toast("Snapshot saved.");
+  if(currentUser&&supabaseClient){
+    try{
+      await saveSnapshotToCloud(snapshot);
+      toast("Snapshot saved to your cloud account.");
+    }catch(error){
+      lastCloudError=error.message||"Unknown cloud save error";
+      console.error("Bluvixa snapshot save failed:",error);
+      toast("Snapshot kept on this device. Cloud error: "+lastCloudError);
+    }
+  }else toast("Snapshot saved on this device.");
 }
 function loadSnapshot(snapshotId){
   var snapshot=getSnapshots().find(function(item){return item.id===snapshotId;});
@@ -927,8 +975,8 @@ function handleClick(event){
   if(button.id==="forgotPasswordBtn"){event.preventDefault();forgotPassword();return;}
   if(button.id==="manageBillingBtn"){event.preventDefault();portal();return;}
   if(button.id==="createWebsiteBtn"||button.id==="createWebsiteFromDraftsBtn"){event.preventDefault();newWebsite();return;}
-  if(button.id==="saveWebsiteProjectBtn"){event.preventDefault();saveActiveProject(true);return;}
-  if(button.id==="saveCurrentDraftBtn"||button.id==="saveSnapshotTopBtn"){event.preventDefault();saveSnapshot();return;}
+  if(button.id==="saveWebsiteProjectBtn"){event.preventDefault();void saveActiveProject(true);return;}
+  if(button.id==="saveCurrentDraftBtn"||button.id==="saveSnapshotTopBtn"){event.preventDefault();void saveSnapshot();return;}
   if(button.id==="searchDomainsBtn"){event.preventDefault();searchDomains();return;}
   if(button.id==="reserveSubdomainBtn"){event.preventDefault();reserveSubdomain();return;}
   if(button.id==="connectCustomDomainWorkspaceBtn"){event.preventDefault();connectCustomDomain();return;}

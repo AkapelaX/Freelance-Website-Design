@@ -1,24 +1,21 @@
-BLUVIXA 7.0 — CLOUD-FIRST WORKSPACE
+BLUVIXA 7.1 — VERIFIED CLOUD SAVE FIX
 
-This package makes Supabase website_projects the primary signed-in workspace.
+This version fixes the actual save flow instead of hiding the warning.
 
-FIXES
-- Empty website_projects is treated as a valid empty workspace, not an error.
-- The large “Cloud projects could not be loaded” notification is removed.
-- Project saves attempt a Supabase upsert even if the first cloud read was unavailable.
-- Cloud synchronization no longer deletes remote rows by comparing them with a local cache.
-- Project and snapshot deletes remove only the selected owner-owned record.
-- Existing browser-only projects migrate automatically when the cloud table is empty.
-- A browser cache remains only as an emergency backup.
-- The builder plan is locked to the signed-in account plan from /api/account.
-- Starter members see Starter only; Professional and Advanced are not selectable in the builder.
+CHANGES
+- Save Website now waits for Supabase and confirms only after the row is written.
+- The website_projects table may be empty without being treated as an error.
+- Cloud reads use the live table schema with SELECT *.
+- Database-managed created_at and updated_at values are no longer forced by the browser.
+- New projects, edits, snapshots, domains, publishing changes, duplicates, and deletes synchronize to Supabase.
+- Starter accounts are locked to Starter in the builder.
+- Professional and Advanced are not selectable from a Starter workspace.
+- No generic cloud warning appears at sign-in.
+- A real Supabase error is shown only when an attempted save fails.
+- Browser storage remains an emergency backup only.
 
 DEPLOYMENT
-Replace index.html, style.css, app.js, and platform.js. Keep the existing api folder, Vercel environment variables, Stripe configuration, and Supabase SQL/RLS policies.
+Replace index.html, style.css, app.js, and platform.js. Keep the existing api folder and Vercel environment variables. Redeploy after replacement.
 
 TEST
-1. Deploy to Vercel.
-2. Sign in on bluvixa.com.
-3. Create a test website and select Save Website.
-4. Refresh public.website_projects in Supabase.
-5. Confirm a row appears with owner_id matching the signed-in user.
+Sign in, create a website, enter a business name, press Save Website, then refresh public.website_projects in Supabase. The app will show “Website saved to your cloud account” only after Supabase accepts the row.
