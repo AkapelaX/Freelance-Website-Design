@@ -2,17 +2,9 @@ import {
   admin
 } from "./_lib.js";
 
-function createHttpError(message, status = 500) {
-  const error = new Error(message);
-  error.status = status;
-  return error;
-}
-
 function getBearerToken(req) {
   const authorization =
-    req.headers.authorization ||
-    req.headers.Authorization ||
-    "";
+    req.headers.authorization || "";
 
   if (
     typeof authorization !== "string" ||
@@ -24,21 +16,8 @@ function getBearerToken(req) {
   return authorization.slice(7).trim();
 }
 
-function normalizePlan(plan) {
-  if (!plan) {
-    return null;
-  }
-
-  return String(plan)
-    .trim()
-    .toLowerCase();
-}
-
-function isActiveSubscription(status) {
-  return [
-    "active",
-    "trialing"
-  ].includes(
+function isActiveStatus(status) {
+  return ["active", "trialing"].includes(
     String(status || "").toLowerCase()
   );
 }
@@ -61,24 +40,23 @@ export default async function handler(req, res) {
     const accessToken = getBearerToken(req);
 
     if (!accessToken) {
-      throw createHttpError(
-        "You must be signed in.",
-        401
-      );
+      return res.status(401).json({
+        signedIn: false,
+        error: "You must be signed in."
+      });
     }
 
     const {
       data: userData,
       error: userError
-    } = await admin.auth.getUser(
-      accessToken
-    );
+    } = await admin.auth.getUser(accessToken);
 
     if (userError || !userData?.user) {
-      throw createHttpError(
-        "Your sign-in session is invalid or expired.",
-        401
-      );
+      return res.status(401).json({
+        signedIn: false,
+        error:
+          "Your sign-in session is invalid or expired."
+      });
     }
 
     const user = userData.user;
@@ -89,19 +67,7 @@ export default async function handler(req, res) {
     } = await admin
       .from("profiles")
       .select(
-        [
-          "id",
-          "email",
-          "full_name",
-          "plan",
-          "subscription_status",
-          "stripe_customer_id",
-          "website_bought_out",
-          "buyout_plan",
-          "buyout_completed_at",
-          "created_at",
-          "updated_at"
-        ].join(",")
+        "id,plan,subscription_status,stripe_customer_id,website_bought_out,buyout_plan,buyout_completed_at"
       )
       .eq("id", user.id)
       .maybeSingle();
@@ -110,23 +76,17 @@ export default async function handler(req, res) {
       throw profileError;
     }
 
-    const plan = normalizePlan(
-      profile?.plan
-    );
+    const plan = profile?.plan || null;
 
     const subscriptionStatus =
       profile?.subscription_status ||
       "inactive";
 
-    const activeSubscription =
-      isActiveSubscription(
-        subscriptionStatus
-      );
+    const subscribed =
+      isActiveStatus(subscriptionStatus);
 
     const websiteBoughtOut =
-      Boolean(
-        profile?.website_bought_out
-      );
+      Boolean(profile?.website_bought_out);
 
     return res.status(200).json({
       signedIn: true,
@@ -134,31 +94,46 @@ export default async function handler(req, res) {
 
       user: {
         id: user.id,
-        email:
-          user.email ||
-          profile?.email ||
-          null,
-        fullName:
-          profile?.full_name ||
-          user.user_metadata?.full_name ||
-          user.user_metadata?.name ||
-          null
+        email: user.email || null
       },
+
+      plan,
+      subscriptionStatus,
+      subscription_status:
+        subscriptionStatus,
+
+      subscribed,
+      activeSubscription: subscribed,
+      active_subscription: subscribed,
+      hasActivePlan: subscribed,
+      has_active_plan: subscribed,
+
+      websiteBoughtOut,
+      website_bought_out:
+        websiteBoughtOut,
+
+      buyoutPlan:
+        profile?.buyout_plan || null,
+      buyout_plan:
+        profile?.buyout_plan || null,
+
+      buyoutCompletedAt:
+        profile?.buyout_completed_at ||
+        null,
+      buyout_completed_at:
+        profile?.buyout_completed_at ||
+        null,
 
       account: {
         plan,
         subscriptionStatus,
         subscription_status:
           subscriptionStatus,
-        activeSubscription,
-        active_subscription:
-          activeSubscription,
-        subscribed:
-          activeSubscription,
-        hasActivePlan:
-          activeSubscription,
-        has_active_plan:
-          activeSubscription,
+        subscribed,
+        activeSubscription: subscribed,
+        active_subscription: subscribed,
+        hasActivePlan: subscribed,
+        has_active_plan: subscribed,
         stripeCustomerId:
           profile?.stripe_customer_id ||
           null,
@@ -169,62 +144,25 @@ export default async function handler(req, res) {
         website_bought_out:
           websiteBoughtOut,
         buyoutPlan:
-          profile?.buyout_plan ||
-          null,
+          profile?.buyout_plan || null,
         buyout_plan:
-          profile?.buyout_plan ||
-          null,
+          profile?.buyout_plan || null,
         buyoutCompletedAt:
           profile?.buyout_completed_at ||
           null,
         buyout_completed_at:
           profile?.buyout_completed_at ||
           null
-      },
-
-      plan,
-      subscriptionStatus,
-      subscription_status:
-        subscriptionStatus,
-      activeSubscription,
-      active_subscription:
-        activeSubscription,
-      subscribed:
-        activeSubscription,
-      hasActivePlan:
-        activeSubscription,
-      has_active_plan:
-        activeSubscription,
-      websiteBoughtOut,
-      website_bought_out:
-        websiteBoughtOut,
-      buyoutPlan:
-        profile?.buyout_plan ||
-        null,
-      buyout_plan:
-        profile?.buyout_plan ||
-        null,
-      buyoutCompletedAt:
-        profile?.buyout_completed_at ||
-        null,
-      buyout_completed_at:
-        profile?.buyout_completed_at ||
-        null
+      }
     });
   } catch (error) {
-    console.error(
-      "Account API error:",
-      error
-    );
+    console.error("Account API error:", error);
 
-    return res
-      .status(error.status || 500)
-      .json({
-        signedIn: false,
-        signed_in: false,
-        error:
-          error.message ||
-          "Unable to load account information."
-      });
+    return res.status(500).json({
+      signedIn: false,
+      error:
+        error.message ||
+        "Unable to load account information."
+    });
   }
 }
