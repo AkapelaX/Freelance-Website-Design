@@ -2,7 +2,7 @@
 "use strict";
 
 /* =========================================================
-   BLUVIXA 11.2.3 AUTHENTICATION CONNECTION FIX CONTROLLER
+   BLUVIXA 11.2 PUBLISHING RELIABILITY CONTROLLER
    One router, one authentication controller, one project library.
    Supabase and Stripe API routes remain unchanged.
    ========================================================= */
@@ -39,7 +39,6 @@ var publishingProgressValue=0;
 var publishingInFlight=false;
 var publishingStage="idle";
 var PUBLISH_VERSIONS_KEY="bluvixa_publish_versions_v112";
-var sessionApplySequence=0;
 var MEDIA_BUCKET="website-assets";
 var MEDIA_SIGNED_URL_SECONDS=315360000;
 var mediaUploadInFlight=0;
@@ -635,21 +634,10 @@ async function signOut(){
   toast("Signed out.");
 }
 function closeLoading(){
-  if(typeof window.releaseBluvixaLoading==="function"){
-    window.releaseBluvixaLoading();
-    return;
-  }
   var loading=id("sessionLoadingScreen");
-  if(loading){
-    loading.classList.add("ready");
-    loading.setAttribute("aria-hidden","true");
-    setTimeout(function(){
-      if(loading&&loading.parentNode)loading.parentNode.removeChild(loading);
-    },350);
-  }
+  if(loading)loading.classList.add("ready");
 }
 async function applySession(session){
-  var applyId=++sessionApplySequence;
   currentUser=session?session.user:null;
   var signedIn=!!currentUser;
 
@@ -681,69 +669,59 @@ async function applySession(session){
   }
 
   closeLoading();
-
-  if(!signedIn){
-    cloudWorkspaceLoaded=false;
-    projectsCache=[];
-    snapshotsCache=[];
-    showRoute();
-    return;
-  }
-
-  if(["home","top",""].indexOf(routeName())>=0){
-    location.hash="#projects";
-  }
   showRoute();
 
-  void (async function(){
+  if(signedIn){
     try{
-      await withTimeout(loadAccount(),10000,"Account check");
+      await withTimeout(loadAccount(),12000,"Account check");
     }catch(error){
       console.warn("Bluvixa account check did not finish:",error);
     }
-    if(applyId!==sessionApplySequence)return;
-
     try{
       await withTimeout(loadCloudWorkspace(),15000,"Cloud workspace");
     }catch(error){
       console.warn("Bluvixa cloud workspace did not finish:",error);
-      if(applyId!==sessionApplySequence)return;
       cloudWorkspaceLoaded=false;
       projectsCache=readJson(PROJECTS_KEY,[]).map(normalizeProject);
       snapshotsCache=readJson(SNAPSHOTS_KEY,[]).map(normalizeSnapshot);
       renderProjects();renderDrafts();renderDomainSelectors();renderPublishing();
       toast("Signed in. Cloud data is taking longer than expected.");
     }
-    if(applyId!==sessionApplySequence)return;
 
+    var requestedRoute=routeName();
     var lastProjectId=localStorage.getItem(lastOpenedProjectKey)||activeProjectId();
     var recoverProject=getProjects().find(function(item){return item.id===lastProjectId;});
-    if(routeName()==="builder"&&recoverProject){
+    if(requestedRoute==="builder"&&recoverProject){
       loadProject(recoverProject.id,{silent:true});
+    }else if(["home","top",""].indexOf(requestedRoute)>=0){
+      location.hash="#projects";
     }
-    showRoute();
-  })();
+  }else{
+    cloudWorkspaceLoaded=false;
+    projectsCache=[];
+    snapshotsCache=[];
+  }
+
+  showRoute();
 }
 async function initAuth(){
-  setTimeout(closeLoading,4200);
   try{
     var config=await withTimeout(api("/api/config"),10000,"Configuration");
     if(!config.supabaseUrl||!config.supabaseAnonKey){
-      throw new Error(config.error||"Supabase configuration is unavailable.");
+      closeLoading();
+      return;
     }
     if(!window.supabase)throw new Error("Supabase client did not load.");
     supabaseClient=window.supabase.createClient(config.supabaseUrl,config.supabaseAnonKey);
     var sessionResult=await withTimeout(supabaseClient.auth.getSession(),10000,"Session check");
-    void applySession(sessionResult.data.session);
+    await applySession(sessionResult.data.session);
     supabaseClient.auth.onAuthStateChange(function(_event,session){
       setTimeout(function(){void applySession(session);},0);
     });
   }catch(error){
     console.error("Bluvixa auth initialization failed:",error);
-    supabaseClient=null;
     closeLoading();
     showRoute();
-    authMessage("Authentication connection failed. "+((error&&error.message)||"Check the Vercel Supabase environment variables."),true);
   }
 }
 
@@ -1262,28 +1240,25 @@ function markPublishStage(stage){
     if(small)small.textContent="Verifying live site…";
   }
 }
-async function verifyPublishedUrl(url,project){
-  if(!project||!project.slug)throw new Error("The publishing service did not return a website slug.");
-  var endpoint="/api/public-site?slug="+encodeURIComponent(project.slug)+"&verify="+Date.now();
+async function verifyPublishedUrl(url){
+  if(!url)throw new Error("No live URL was returned.");
   var lastError=null;
-  for(var attempt=1;attempt<=6;attempt++){
+  for(var attempt=1;attempt<=5;attempt++){
     try{
-      var response=await withTimeout(fetch(endpoint,{
+      var separator=url.indexOf("?")===-1?"?":"&";
+      var response=await withTimeout(fetch(url+separator+"bluvixa_verify="+Date.now(),{
         method:"GET",
         cache:"no-store",
-        headers:{"Accept":"application/json"}
-      }),10000,"Live verification");
-      var data=await response.json().catch(function(){return {};});
-      if(response.ok&&data&&data.website&&data.website.id===project.id){
-        return {ok:true,url:url,website:data.website};
-      }
-      lastError=new Error(data.error||("Verification returned HTTP "+response.status+"."));
+        headers:{"Accept":"text/html"}
+      }),9000,"Live verification");
+      if(response.ok)return true;
+      lastError=new Error("Live website returned HTTP "+response.status+".");
     }catch(error){
       lastError=error;
     }
-    if(attempt<6)await new Promise(function(resolve){setTimeout(resolve,1200*attempt);});
+    if(attempt<5)await new Promise(function(resolve){setTimeout(resolve,1000*attempt);});
   }
-  throw lastError||new Error("The published website could not be verified.");
+  throw lastError||new Error("Live website could not be reached.");
 }
 function publishingSelectedProject(){
   var select=id("publishingCenterProjectSelect");
@@ -1491,14 +1466,8 @@ async function togglePublish(projectId){
     markPublishStage("media");
     var mediaItems=(project.state&&project.state.backend&&project.state.backend.media)||[];
     var unfinished=mediaItems.filter(function(item){
-      if(!item||typeof item!=="object")return false;
-      var status=String(item.status||"").toLowerCase();
-      return item.uploading===true||status==="uploading"||status==="processing"||status==="pending";
+      return item&&(item.uploading||item.status==="uploading"||(!item.url&&!item.path));
     });
-    var failedMedia=mediaItems.filter(function(item){
-      return item&&typeof item==="object"&&String(item.status||"").toLowerCase()==="failed";
-    });
-    if(failedMedia.length)throw new Error(failedMedia.length+" media upload(s) failed. Replace or remove them before publishing.");
     if(unfinished.length)throw new Error(unfinished.length+" upload(s) are still processing.");
 
     markPublishStage("build");
@@ -1526,7 +1495,7 @@ async function togglePublish(projectId){
 
     markPublishStage("verify");
     var liveUrl=result.url||projectUrl(project);
-    await verifyPublishedUrl(liveUrl,project);
+    await verifyPublishedUrl(liveUrl);
 
     createPublishVersion(project,liveUrl);
     finishPublishingProgress(true);
@@ -1534,10 +1503,6 @@ async function togglePublish(projectId){
   }catch(error){
     finishPublishingProgress(false);
     var failure=publishingFailure(publishingStage,error);
-    if(publishingStage==="verify"&&project&&project.published){
-      failure.title="Published — verification delayed";
-      failure.detail="The publishing update succeeded, but Bluvixa could not immediately confirm the live page. Use View Live and try verification again after a few seconds. "+((error&&error.message)||"");
-    }
     setReliabilityMessage("error",failure.title,failure.detail);
     console.error("Bluvixa publishing failed during "+publishingStage+":",error);
     toast(failure.title);
@@ -1785,13 +1750,8 @@ async function authenticatedApi(path,payload){
     },
     body:JSON.stringify(payload||{})
   });
-  var raw=await response.text();
-  var data={};
-  try{data=raw?JSON.parse(raw):{};}catch(_error){data={message:raw};}
-  if(!response.ok){
-    var detail=data.error||data.message||("Request failed with HTTP "+response.status+".");
-    throw new Error(detail);
-  }
+  var data=await response.json().catch(function(){return {};});
+  if(!response.ok)throw new Error(data.error||data.message||"Request failed.");
   return data;
 }
 
