@@ -1,40 +1,39 @@
+"use strict";
+
 function send(res, status, body) {
   res.status(status).json(body);
 }
 
 function cleanSlug(value) {
-  return (
-    String(value || "website")
-      .toLowerCase()
-      .trim()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-|-$/g, "")
-      .slice(0, 48) || "website"
-  );
+  return String(value || "website")
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 48) || "website";
 }
 
 function parsePublishValue(value) {
-  if (value === true || value === "true" || value === 1 || value === "1") {
-    return true;
-  }
+  if (value === true || value === 1 || value === "1") return true;
+  if (value === false || value === 0 || value === "0") return false;
 
-  if (
-    value === false ||
-    value === "false" ||
-    value === 0 ||
-    value === "0"
-  ) {
-    return false;
+  if (typeof value === "string") {
+    const normalized = value.trim().toLowerCase();
+    if (normalized === "true" || normalized === "publish" || normalized === "published") {
+      return true;
+    }
+    if (normalized === "false" || normalized === "unpublish" || normalized === "draft") {
+      return false;
+    }
   }
 
   return null;
 }
 
-async function getAuthenticatedUser(
-  supabaseUrl,
-  anonKey,
-  authorization
-) {
+async function getAuthenticatedUser(supabaseUrl, anonKey, authorization) {
+  if (!authorization.toLowerCase().startsWith("bearer ")) return null;
+
   const response = await fetch(`${supabaseUrl}/auth/v1/user`, {
     headers: {
       apikey: anonKey,
@@ -42,20 +41,14 @@ async function getAuthenticatedUser(
     }
   });
 
-  if (!response.ok) {
-    return null;
-  }
-
+  if (!response.ok) return null;
   return response.json();
 }
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     res.setHeader("Allow", "POST");
-
-    return send(res, 405, {
-      error: "Method not allowed."
-    });
+    return send(res, 405, { error: "Method not allowed." });
   }
 
   const supabaseUrl = process.env.SUPABASE_URL;
@@ -76,9 +69,7 @@ export default async function handler(req, res) {
   );
 
   if (!user || !user.id) {
-    return send(res, 401, {
-      error: "Please sign in again."
-    });
+    return send(res, 401, { error: "Please sign in again." });
   }
 
   const projectId = String(req.body?.projectId || "").trim();
@@ -92,7 +83,7 @@ export default async function handler(req, res) {
 
   if (publish === null) {
     return send(res, 400, {
-      error: "A valid publish status is required."
+      error: "Publish must be true or false."
     });
   }
 
@@ -104,39 +95,37 @@ export default async function handler(req, res) {
   });
 
   const projectResponse = await fetch(
-    `${supabaseUrl}/rest/v1/website_projects?${projectQuery.toString()}`,
+    `${supabaseUrl}/rest/v1/website_projects?${projectQuery}`,
     {
-      method: "GET",
       headers: {
         apikey: serviceRoleKey,
-        Authorization: `Bearer ${serviceRoleKey}`,
-        Accept: "application/json"
+        Authorization: `Bearer ${serviceRoleKey}`
       }
     }
   );
 
   if (!projectResponse.ok) {
-    const detail = await projectResponse.text();
-
-    console.error("Website verification failed:", detail);
-
+    console.error(
+      "Website verification failed:",
+      await projectResponse.text()
+    );
     return send(res, 500, {
       error: "The website could not be verified."
     });
   }
 
-  const projects = await projectResponse.json();
-  const project = Array.isArray(projects) ? projects[0] : null;
+  const projectRows = await projectResponse.json();
+  const project = projectRows[0];
 
   if (!project) {
-    return send(res, 404, {
-      error: "Website not found."
-    });
+    return send(res, 404, { error: "Website not found." });
   }
 
-  let slug =
+  let slug = cleanSlug(
     project.slug ||
-    cleanSlug(req.body?.requestedSlug || project.name);
+    req.body?.requestedSlug ||
+    project.name
+  );
 
   if (publish) {
     const collisionQuery = new URLSearchParams({
@@ -147,54 +136,44 @@ export default async function handler(req, res) {
     });
 
     const collisionResponse = await fetch(
-      `${supabaseUrl}/rest/v1/website_projects?${collisionQuery.toString()}`,
+      `${supabaseUrl}/rest/v1/website_projects?${collisionQuery}`,
       {
-        method: "GET",
         headers: {
           apikey: serviceRoleKey,
-          Authorization: `Bearer ${serviceRoleKey}`,
-          Accept: "application/json"
+          Authorization: `Bearer ${serviceRoleKey}`
         }
       }
     );
 
     if (!collisionResponse.ok) {
-      const detail = await collisionResponse.text();
-
-      console.error("Slug collision check failed:", detail);
-
+      console.error(
+        "Slug collision check failed:",
+        await collisionResponse.text()
+      );
       return send(res, 500, {
         error: "The website address could not be verified."
       });
     }
 
-    const collisions = await collisionResponse.json();
-    const collision = Array.isArray(collisions)
-      ? collisions[0]
-      : null;
+    const collision = (await collisionResponse.json())[0];
 
     if (collision) {
-      slug = `${slug}-${projectId
-        .replace(/-/g, "")
-        .slice(-8)}`;
+      slug = `${slug}-${projectId.replace(/-/g, "").slice(-8)}`;
     }
   }
 
-  const updateBody = {
+  const patchBody = {
     status: publish ? "published" : "draft"
   };
 
-  if (publish) {
-    updateBody.slug = slug;
+  if (publish || !project.slug) {
+    patchBody.slug = slug;
   }
 
-  const updateQuery = new URLSearchParams({
-    id: `eq.${projectId}`,
-    owner_id: `eq.${user.id}`
-  });
-
   const updateResponse = await fetch(
-    `${supabaseUrl}/rest/v1/website_projects?${updateQuery.toString()}`,
+    `${supabaseUrl}/rest/v1/website_projects` +
+      `?id=eq.${encodeURIComponent(projectId)}` +
+      `&owner_id=eq.${encodeURIComponent(user.id)}`,
     {
       method: "PATCH",
       headers: {
@@ -203,20 +182,15 @@ export default async function handler(req, res) {
         "Content-Type": "application/json",
         Prefer: "return=representation"
       },
-      body: JSON.stringify(updateBody)
+      body: JSON.stringify(patchBody)
     }
   );
 
   if (!updateResponse.ok) {
-    const detail = await updateResponse.text();
-
     console.error(
-      publish
-        ? "Website publishing update failed:"
-        : "Website unpublishing update failed:",
-      detail
+      "Website publishing update failed:",
+      await updateResponse.text()
     );
-
     return send(res, 500, {
       error: publish
         ? "The website could not be published."
@@ -224,40 +198,28 @@ export default async function handler(req, res) {
     });
   }
 
-  const updatedProjects = await updateResponse.json();
-  const updatedProject = Array.isArray(updatedProjects)
-    ? updatedProjects[0]
-    : null;
+  const updatedRows = await updateResponse.json();
+  const updatedProject = updatedRows[0];
 
   if (!updatedProject) {
     return send(res, 500, {
-      error: publish
-        ? "The website was not published."
-        : "The website was not unpublished."
+      error: "The publishing update returned no website."
     });
   }
 
-  const protocol =
-    String(req.headers["x-forwarded-proto"] || "https")
-      .split(",")[0]
-      .trim();
-
-  const host = req.headers.host || "";
-
-  const finalSlug = updatedProject.slug || project.slug || slug;
+  const published = updatedProject.status === "published";
+  const finalSlug = cleanSlug(updatedProject.slug || slug);
+  const protocol = String(
+    req.headers["x-forwarded-proto"] || "https"
+  ).split(",")[0].trim();
+  const host = req.headers.host;
 
   return send(res, 200, {
-    success: true,
-    published: updatedProject.status === "published",
+    ok: true,
+    projectId: updatedProject.id,
+    published,
     status: updatedProject.status,
     slug: finalSlug,
-    url:
-      finalSlug && host
-        ? `${protocol}://${host}/site/${encodeURIComponent(finalSlug)}`
-        : "",
-    message:
-      updatedProject.status === "published"
-        ? "Website published successfully."
-        : "Website unpublished successfully."
+    url: `${protocol}://${host}/site/${encodeURIComponent(finalSlug)}`
   });
 }

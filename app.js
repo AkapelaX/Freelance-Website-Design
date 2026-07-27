@@ -491,7 +491,15 @@
       renderMap();
       renderDomainSettings();
       renderBackendJson();
-      updatePublishButton();
+
+      var publishButton = byId("publishBtn");
+      if(publishButton){
+        publishButton.dataset.published = String(state.backend.published === true);
+        publishButton.textContent = state.backend.published
+          ? "Unpublish Website"
+          : "Publish Website";
+        publishButton.classList.toggle("btn-danger",state.backend.published === true);
+      }
 
       byId("previewPhotoCount").textContent = "";
       byId("previewGalleryCount").textContent = "";
@@ -1067,193 +1075,6 @@
       }
     }
 
-    function updatePublishButton(){
-      var button = byId("publishBtn");
-      if(!button){return;}
-
-      button.textContent = state.backend.published
-        ? "Unpublish Website"
-        : "Publish Website";
-
-      button.setAttribute(
-        "aria-label",
-        state.backend.published
-          ? "Unpublish website"
-          : "Publish website"
-      );
-    }
-
-    async function getPublishingAccessToken(){
-      if(
-        window.BluvixaMVP &&
-        typeof window.BluvixaMVP.getAccessToken === "function"
-      ){
-        var directToken = await window.BluvixaMVP.getAccessToken();
-        if(directToken){return directToken;}
-      }
-
-      if(
-        window.BluvixaMVP &&
-        typeof window.BluvixaMVP.getSession === "function"
-      ){
-        var mvpSessionResult = await window.BluvixaMVP.getSession();
-        var mvpSession =
-          mvpSessionResult &&
-          mvpSessionResult.data &&
-          mvpSessionResult.data.session
-            ? mvpSessionResult.data.session
-            : mvpSessionResult && mvpSessionResult.session
-              ? mvpSessionResult.session
-              : mvpSessionResult;
-
-        if(mvpSession && mvpSession.access_token){
-          return mvpSession.access_token;
-        }
-      }
-
-      if(
-        window.supabase &&
-        window.supabase.auth &&
-        typeof window.supabase.auth.getSession === "function"
-      ){
-        var supabaseSessionResult =
-          await window.supabase.auth.getSession();
-
-        var supabaseSession =
-          supabaseSessionResult &&
-          supabaseSessionResult.data
-            ? supabaseSessionResult.data.session
-            : null;
-
-        if(supabaseSession && supabaseSession.access_token){
-          return supabaseSession.access_token;
-        }
-      }
-
-      return "";
-    }
-
-    async function updateWebsitePublication(shouldPublish){
-      syncFromInputs();
-
-      if(
-        shouldPublish &&
-        state.project.domainMode === "custom" &&
-        !state.project.dnsVerified
-      ){
-        switchTab("project");
-        showToast(
-          "Connect and verify your custom domain before publishing."
-        );
-        return;
-      }
-
-      if(!state.backend.websiteId){
-        showToast(
-          "Save this website to your account before publishing."
-        );
-        return;
-      }
-
-      var accessToken = "";
-
-      try{
-        accessToken = await getPublishingAccessToken();
-      }catch(error){
-        console.error("Session lookup failed:",error);
-      }
-
-      if(!accessToken){
-        showToast("Please sign in again before publishing.");
-        return;
-      }
-
-      var button = byId("publishBtn");
-      var originalText = button ? button.textContent : "";
-
-      if(button){
-        button.disabled = true;
-        button.textContent = shouldPublish
-          ? "Publishing…"
-          : "Unpublishing…";
-      }
-
-      try{
-        var response = await fetch("/api/publish-site",{
-          method:"POST",
-          headers:{
-            "Content-Type":"application/json",
-            "Authorization":"Bearer " + accessToken
-          },
-          body:JSON.stringify({
-            projectId:state.backend.websiteId,
-            publish:shouldPublish,
-            requestedSlug:state.project.slug
-          })
-        });
-
-        var data = {};
-
-        try{
-          data = await response.json();
-        }catch(_error){}
-
-        if(!response.ok){
-          throw new Error(
-            data.error ||
-            (shouldPublish
-              ? "The website could not be published."
-              : "The website could not be unpublished.")
-          );
-        }
-
-        state.backend.published = data.published === true;
-        state.backend.updatedAt = new Date().toISOString();
-
-        if(data.slug){
-          state.project.slug = sanitizeSlug(data.slug);
-          byId("projectSlug").value = state.project.slug;
-        }
-
-        saveDraft(false);
-        renderDomainSettings();
-        updatePublishButton();
-
-        showToast(
-          state.backend.published
-            ? "Website published successfully."
-            : "Website unpublished successfully."
-        );
-      }catch(error){
-        console.error(
-          shouldPublish
-            ? "Website publishing failed:"
-            : "Website unpublishing failed:",
-          error
-        );
-
-        showToast(
-          error.message ||
-          (shouldPublish
-            ? "The website could not be published."
-            : "The website could not be unpublished.")
-        );
-      }finally{
-        if(button){
-          button.disabled = false;
-
-          if(
-            button.textContent === "Publishing…" ||
-            button.textContent === "Unpublishing…"
-          ){
-            button.textContent = originalText;
-          }
-
-          updatePublishButton();
-        }
-      }
-    }
-
     function bindControls(){
       byId("tabs").addEventListener("click",function(event){
         var button = event.target.closest("[data-tab]");
@@ -1494,25 +1315,14 @@
         saveDraft(true);
       });
 
-      byId("publishBtn").addEventListener("click",async function(){
-        var button = byId("publishBtn");
-        var buttonText = String(
-          button && button.textContent
-            ? button.textContent
-            : ""
-        ).trim().toLowerCase();
-
-        /*
-          Use the action shown on the button as the source of truth.
-          The cloud/dashboard script can correctly display
-          "Unpublish Website" before this local builder state has
-          finished syncing. Relying only on state.backend.published
-          caused an Unpublish click to send publish:true.
-        */
-        var shouldPublish = buttonText.indexOf("unpublish") === -1;
-
-        await updateWebsitePublication(shouldPublish);
-      });
+      /*
+        Publishing is controlled by /publish-site.js.
+        That shared controller handles both Publish and Unpublish and
+        prevents duplicate requests from older dashboard handlers.
+      */
+      if(window.BluvixaPublishing && typeof window.BluvixaPublishing.bind === "function"){
+        window.BluvixaPublishing.bind();
+      }
 
       byId("loadDraftBtn").addEventListener("click",loadDraft);
       byId("resetBtn").addEventListener("click",resetBuilder);
