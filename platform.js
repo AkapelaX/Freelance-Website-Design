@@ -2,7 +2,7 @@
 "use strict";
 
 /* =========================================================
-   BLUVIXA 7.1 VERIFIED CLOUD-SAVE WORKSPACE CONTROLLER
+   BLUVIXA 7.2 VERIFIED CLOUD-SAVE WORKSPACE CONTROLLER
    One router, one authentication controller, one project library.
    Supabase and Stripe API routes remain unchanged.
    ========================================================= */
@@ -96,6 +96,13 @@ function makeUuid(){
     return value.toString(16);
   });
 }
+function uniquePublishedSlug(project){
+  var existing=String(project&&project.slug||"").trim();
+  if(existing)return sanitizeSlug(existing);
+  var base=sanitizeSlug(project&&project.name||"website")||"website";
+  var suffix=String(project&&project.id||makeUuid()).replace(/-/g,"").slice(-8);
+  return base+"-"+suffix;
+}
 function normalizeProject(project){
   var copy=clone(project||{});
   if(!isUuid(copy.id))copy.id=makeUuid();
@@ -104,7 +111,7 @@ function normalizeProject(project){
   copy.createdAt=copy.createdAt||new Date().toISOString();
   copy.updatedAt=copy.updatedAt||copy.createdAt;
   copy.state=copy.state||{};
-  copy.slug=copy.slug||sanitizeSlug(copy.name);
+  copy.slug=copy.slug||"";
   copy.published=!!copy.published;
   copy.websiteBoughtOut=!!copy.websiteBoughtOut;
   copy.domainStatus=copy.domainStatus||"not_connected";
@@ -150,7 +157,7 @@ function projectToRow(project){
     id:project.id,
     owner_id:currentUser.id,
     name:project.name||"Untitled Website",
-    slug:project.slug||null,
+    slug:(project.published||project.domainStatus==="reserved"||project.customDomain)?(project.slug||uniquePublishedSlug(project)):null,
     plan:project.plan||"starter",
     project_data:state,
     status:project.published?"published":"draft",
@@ -616,7 +623,7 @@ function createProject(name,state){
     name:(name||"Untitled Website").trim()||"Untitled Website",
     plan:currentAccountPlan(),
     createdAt:now,updatedAt:now,published:false,
-    slug:sanitizeSlug((builderState.project&&builderState.project.slug)||name),
+    slug:(builderState.project&&builderState.project.slug)||"",
     customDomain:"",
     domainStatus:"not_connected",
     websiteBoughtOut:false,
@@ -709,9 +716,17 @@ function loadProject(projectId){
 function duplicateProject(projectId){
   var project=getProjects().find(function(item){return item.id===projectId;});
   if(!project)return;
-  createProject(project.name+" Copy",project.state);
+  var copiedState=clone(project.state||{});
+  copiedState.project=copiedState.project||{};
+  copiedState.project.slug="";
+  copiedState.project.customDomain="";
+  copiedState.project.domainStatus="not_connected";
+  copiedState.backend=copiedState.backend||{};
+  copiedState.backend.published=false;
+  var copy=createProject(project.name+" Copy",copiedState);
+  if(copy){copy.slug="";copy.customDomain="";copy.domainStatus="not_connected";copy.published=false;}
   renderProjects();renderDrafts();renderDomainSelectors();renderPublishing();
-  toast("Website duplicated.");
+  toast("Website duplicated as a new draft.");
 }
 function deleteProject(projectId){
   deleteCloudRecord(projectId);
@@ -919,7 +934,9 @@ function togglePublish(projectId){
   if(!project)return;
   project.published=!project.published;
   project.updatedAt=new Date().toISOString();
+  if(project.published&&!project.slug)project.slug=uniquePublishedSlug(project);
   if(project.state&&project.state.backend)project.state.backend.published=project.published;
+  if(project.state&&project.state.project&&project.published)project.state.project.slug=project.slug;
   setProjects(projects);
   renderProjects();renderDrafts();renderPublishing();
   toast(project.published?"Website marked ready for publishing.":"Website returned to draft.");
