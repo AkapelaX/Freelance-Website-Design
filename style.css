@@ -1160,21 +1160,9 @@ transition:all .25s ease;
 
 
 /* Backend-dependent interface is intentionally hidden until services are live. */
-.backend-only{
-  display:initial;
-}
+.backend-only{display:none!important;}
 
-button.backend-only{
-  display:inline-flex;
-}
-
-a.backend-only{
-  display:inline-flex;
-}
-
-section.backend-only{
-  display:block;
-}
+.hidden{display:none!important}
 
 
 /* Editable full-background About and Map sections */
@@ -1357,14 +1345,15 @@ section.backend-only{
   }
 }
 
-/* Final visible-scroll-area correction - EXTRA LARGE EDITOR */
+/* Final visible-scroll-area correction
+   Keep the entire website preview viewport inside the browser window. */
 .builder-shell{
-  height:1700px !important;
-  min-height:1700px !important;
+  height:clamp(560px,72vh,820px);
+  min-height:0;
 }
 .sidebar{
-  height:1700px !important;
-  min-height:1700px !important;
+  height:100%;
+  min-height:0;
   overflow:hidden;
 }
 .sidebar-body{
@@ -1372,15 +1361,15 @@ section.backend-only{
   overflow-y:auto;
 }
 .workspace{
-  height:1700px !important;
-  min-height:1700px !important;
+  height:100%;
+  min-height:0;
 }
 .preview-wrap{
-  height:1700px !important;
-  min-height:1700px !important;
-  overflow-y:auto;
-  overflow-x:auto;
+  height:100%;
+  min-height:0;
   padding-bottom:48px;
+  scroll-padding-top:90px;
+  scroll-padding-bottom:48px;
 }
 .preview{
   min-height:max-content;
@@ -1389,19 +1378,10 @@ section.backend-only{
 .preview .site-footer{
   margin-bottom:0;
 }
-@media (max-width:900px){
-  .builder-shell,
-  .sidebar,
-  .workspace,
-  .preview-wrap{
-    height:1400px !important;
-    min-height:1400px !important;
-  }
-}
 @media (max-height:760px){
   .builder-shell{
-    height:1400px !important;
-    min-height:1400px !important;
+    height:68vh;
+    min-height:500px;
   }
 }
 @media (max-width:900px){
@@ -2537,49 +2517,47 @@ main > section .step-card{
    theme/color settings and is intentionally excluded from these overrides. */
 
 /* =========================================================
-   BLUVIXA MOBILE EDITOR HEIGHT + PREVIEW CONTAINMENT FIX
-   Keeps the editor controls roomy and prevents the website
-   preview from extending behind the Starter pricing card.
-   This final block intentionally overrides earlier height rules.
+   BLUVIXA MOBILE WORK AREA ACCESSIBILITY FIX
+   Keeps the original working layout while giving phone users
+   more room to type and keeping the preview inside its card.
    ========================================================= */
 
 @media (max-width:900px){
-  #builder,
-  #builder .container{
-    overflow:visible !important;
-  }
-
   .builder-shell{
     display:flex !important;
     flex-direction:column !important;
     height:auto !important;
     min-height:0 !important;
-    overflow:visible !important;
+    overflow:hidden !important;
   }
 
   .sidebar{
-    flex:none !important;
-    height:1500px !important;
-    min-height:1500px !important;
+    display:flex !important;
+    flex-direction:column !important;
+    height:1080px !important;
+    min-height:1080px !important;
+    max-height:1080px !important;
     overflow:hidden !important;
-    border-bottom:1px solid rgba(96,167,255,.32) !important;
   }
 
-  .sidebar-head{
-    flex:none !important;
+  .sidebar-head,
+  .tabs,
+  .sidebar-footer{
+    flex:0 0 auto !important;
   }
 
   .tabs{
-    flex:none !important;
+    position:relative !important;
     grid-template-columns:repeat(2,minmax(0,1fr)) !important;
     gap:12px !important;
     padding:16px !important;
   }
 
   .tab{
-    min-height:76px !important;
-    padding:16px 12px !important;
-    font-size:16px !important;
+    min-height:68px !important;
+    padding:14px 10px !important;
+    font-size:14px !important;
+    line-height:1.2 !important;
   }
 
   .sidebar-body{
@@ -2592,137 +2570,131 @@ main > section .step-card{
   .panel{
     flex:1 1 auto !important;
     min-height:0 !important;
-    padding:24px 20px 34px !important;
+    padding:24px 18px 42px !important;
     overflow-y:auto !important;
     overflow-x:hidden !important;
-    overscroll-behavior:contain !important;
+    scroll-padding-bottom:110px !important;
+    -webkit-overflow-scrolling:touch !important;
+  }
+
+  .group{
+    margin-bottom:22px !important;
+  }
+
+  .group label{
+    margin-bottom:10px !important;
+    font-size:14px !important;
+  }
+
+  .input,
+  .select,
+  .textarea{
+    width:100% !important;
+    min-height:52px !important;
+    padding:14px 15px !important;
+    font-size:16px !important;
+    line-height:1.45 !important;
+    border-radius:14px !important;
+  }
+
+  .textarea{
+    min-height:150px !important;
+    resize:vertical !important;
+  }
+
+  .notice,
+  .upload,
+  .editor-item{
+    padding:16px !important;
   }
 
   .sidebar-footer{
-    flex:none !important;
-    position:relative !important;
-    z-index:20 !important;
+    padding:14px !important;
   }
 
   .workspace{
-    flex:none !important;
-    height:2200px !important;
-    min-height:2200px !important;
+    display:flex !important;
+    flex-direction:column !important;
+    height:820px !important;
+    min-height:820px !important;
+    max-height:820px !important;
     overflow:hidden !important;
   }
 
   .toolbar{
-    flex:none !important;
+    flex:0 0 auto !important;
   }
 
   .preview-wrap{
-    box-sizing:border-box !important;
-    height:calc(2200px - 78px) !important;
-    min-height:calc(2200px - 78px) !important;
-    max-height:calc(2200px - 78px) !important;
-    overflow-y:auto !important;
-    overflow-x:auto !important;
+    flex:1 1 auto !important;
+    width:100% !important;
+    height:auto !important;
+    min-height:0 !important;
+    max-height:none !important;
     padding:10px !important;
-    padding-bottom:64px !important;
+    overflow:auto !important;
+    box-sizing:border-box !important;
+    -webkit-overflow-scrolling:touch !important;
   }
 
   .preview{
-    height:auto !important;
+    width:100% !important;
+    max-width:100% !important;
+    min-width:0 !important;
     min-height:100% !important;
-    max-height:none !important;
-    overflow:visible !important;
     margin:0 auto !important;
-  }
-
-  .preview .site-footer{
-    margin-bottom:0 !important;
+    box-sizing:border-box !important;
   }
 }
 
 @media (max-width:560px){
   #builder .container{
-    width:min(100% - 14px,1680px) !important;
+    width:calc(100% - 12px) !important;
   }
 
   .sidebar{
-    height:1550px !important;
-    min-height:1550px !important;
+    height:1150px !important;
+    min-height:1150px !important;
+    max-height:1150px !important;
   }
 
   .tabs{
     gap:12px !important;
-    padding:16px !important;
+    padding:14px !important;
   }
 
   .tab{
-    min-height:78px !important;
-    border-radius:22px !important;
+    min-height:72px !important;
+    padding:15px 9px !important;
+    font-size:14px !important;
+    border-radius:18px !important;
   }
 
   .panel{
-    padding:26px 20px 38px !important;
+    padding:24px 16px 46px !important;
+  }
+
+  .input,
+  .select,
+  .textarea{
+    font-size:16px !important;
+  }
+
+  .textarea{
+    min-height:170px !important;
   }
 
   .workspace{
-    height:2300px !important;
-    min-height:2300px !important;
+    height:760px !important;
+    min-height:760px !important;
+    max-height:760px !important;
   }
 
   .preview-wrap{
-    height:calc(2300px - 78px) !important;
-    min-height:calc(2300px - 78px) !important;
-    max-height:calc(2300px - 78px) !important;
-  }
-}
-
-/* BLUVIXA TOP NAV STICKY RESTORE
-   iPhone Safari can disable position:sticky when a page ancestor uses
-   overflow:hidden. Keep horizontal clipping without creating a scroll
-   container, then force the main navigation above the editor/preview. */
-html,
-body{
-  overflow-x:clip !important;
-}
-
-.topbar{
-  position:-webkit-sticky !important;
-  position:sticky !important;
-  top:0 !important;
-  left:0 !important;
-  right:0 !important;
-  width:100% !important;
-  z-index:100000 !important;
-  isolation:isolate !important;
-  transform:translateZ(0);
-  -webkit-transform:translateZ(0);
-}
-
-.topbar .nav{
-  position:relative;
-  z-index:2;
-}
-
-@media (max-width:900px){
-  .topbar{
-    position:-webkit-sticky !important;
-    position:sticky !important;
-    top:0 !important;
-    z-index:100000 !important;
+    padding:6px !important;
   }
 
-  main,
-  #builder,
-  #builder .container,
-  .builder-shell{
-    position:relative;
-    z-index:auto;
-  }
-
-  .workspace,
-  .sidebar,
-  .toolbar,
-  .preview-wrap,
   .preview{
-    z-index:auto !important;
+    border-radius:10px !important;
   }
 }
