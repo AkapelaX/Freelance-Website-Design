@@ -2,7 +2,7 @@
 "use strict";
 
 /* =========================================================
-   BLUVIXA 6.0 STABLE PLATFORM CONTROLLER
+   BLUVIXA 6.1 SUPABASE CLOUD PLATFORM CONTROLLER
    One router, one authentication controller, one project library.
    Supabase and Stripe API routes remain unchanged.
    ========================================================= */
@@ -17,6 +17,11 @@ var PROJECTS_KEY="bluvixa_projects_v6";
 var SNAPSHOTS_KEY="bluvixa_snapshots_v6";
 var ACTIVE_PROJECT_KEY="bluvixa_active_project_v6";
 var draftFilter="all";
+
+var projectsCache=[];
+var snapshotsCache=[];
+var cloudWorkspaceLoaded=false;
+var cloudSyncTimer=null;
 
 function id(name){return document.getElementById(name);}
 function all(selector){return Array.prototype.slice.call(document.querySelectorAll(selector));}
@@ -60,18 +65,224 @@ function projectUrl(project){
   if(project&&project.customDomain)return "https://"+project.customDomain;
   return "https://"+sanitizeSlug(project&&project.slug||project&&project.name||"website")+".bluvixa.com";
 }
+function isUuid(value){
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(value||""));
+}
+function makeUuid(){
+  if(window.crypto&&typeof window.crypto.randomUUID==="function")return window.crypto.randomUUID();
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,function(character){
+    var random=Math.random()*16|0;
+    var value=character==="x"?random:(random&3|8);
+    return value.toString(16);
+  });
+}
+function normalizeProject(project){
+  var copy=clone(project||{});
+  if(!isUuid(copy.id))copy.id=makeUuid();
+  copy.name=copy.name||"Untitled Website";
+  copy.plan=copy.plan||"starter";
+  copy.createdAt=copy.createdAt||new Date().toISOString();
+  copy.updatedAt=copy.updatedAt||copy.createdAt;
+  copy.state=copy.state||{};
+  copy.slug=copy.slug||sanitizeSlug(copy.name);
+  copy.published=!!copy.published;
+  copy.websiteBoughtOut=!!copy.websiteBoughtOut;
+  copy.domainStatus=copy.domainStatus||"not_connected";
+  return copy;
+}
+function normalizeSnapshot(snapshot){
+  var copy=clone(snapshot||{});
+  if(!isUuid(copy.id))copy.id=makeUuid();
+  if(copy.projectId&&!isUuid(copy.projectId))copy.projectId="";
+  copy.name=copy.name||"Untitled Snapshot";
+  copy.plan=copy.plan||"starter";
+  copy.savedAt=copy.savedAt||new Date().toISOString();
+  copy.state=copy.state||{};
+  return copy;
+}
 function getProjects(){
+  if(currentUser&&cloudWorkspaceLoaded)return projectsCache;
   var value=safeJson(PROJECTS_KEY,[]);
-  return Array.isArray(value)?value:[];
+  return Array.isArray(value)?value.map(normalizeProject):[];
 }
-function setProjects(value){saveJson(PROJECTS_KEY,value);}
 function getSnapshots(){
+  if(currentUser&&cloudWorkspaceLoaded)return snapshotsCache;
   var value=safeJson(SNAPSHOTS_KEY,[]);
-  return Array.isArray(value)?value:[];
+  return Array.isArray(value)?value.map(normalizeSnapshot):[];
 }
-function setSnapshots(value){saveJson(SNAPSHOTS_KEY,value);}
+function setProjects(value){
+  projectsCache=(Array.isArray(value)?value:[]).map(normalizeProject);
+  saveJson(PROJECTS_KEY,projectsCache);
+  scheduleCloudSync();
+}
+function setSnapshots(value){
+  snapshotsCache=(Array.isArray(value)?value:[]).map(normalizeSnapshot);
+  saveJson(SNAPSHOTS_KEY,snapshotsCache);
+  scheduleCloudSync();
+}
 function activeProjectId(){return localStorage.getItem(ACTIVE_PROJECT_KEY)||"";}
 function setActiveProjectId(value){localStorage.setItem(ACTIVE_PROJECT_KEY,value||"");}
+
+function projectToRow(project){
+  var state=clone(project.state||{});
+  state.__bluvixa_record_type="project";
+  return {
+    id:project.id,
+    owner_id:currentUser.id,
+    name:project.name||"Untitled Website",
+    slug:project.slug||null,
+    plan:project.plan||"starter",
+    project_data:state,
+    status:project.published?"published":"draft",
+    custom_domain:project.customDomain||null,
+    domain_status:project.domainStatus||"not_connected",
+    website_bought_out:!!project.websiteBoughtOut,
+    buyout_plan:project.buyoutPlan||null,
+    buyout_completed_at:project.buyoutCompletedAt||null,
+    created_at:project.createdAt||new Date().toISOString(),
+    updated_at:project.updatedAt||new Date().toISOString()
+  };
+}
+function snapshotToRow(snapshot){
+  var state=clone(snapshot.state||{});
+  state.__bluvixa_record_type="snapshot";
+  state.__bluvixa_parent_project_id=snapshot.projectId||null;
+  state.__bluvixa_saved_at=snapshot.savedAt||new Date().toISOString();
+  return {
+    id:snapshot.id,
+    owner_id:currentUser.id,
+    name:snapshot.name||"Untitled Snapshot",
+    slug:null,
+    plan:snapshot.plan||"starter",
+    project_data:state,
+    status:"draft",
+    custom_domain:null,
+    domain_status:"not_connected",
+    website_bought_out:false,
+    buyout_plan:null,
+    buyout_completed_at:null,
+    created_at:snapshot.savedAt||new Date().toISOString(),
+    updated_at:snapshot.savedAt||new Date().toISOString()
+  };
+}
+function rowToProject(row){
+  var state=clone(row.project_data||{});
+  delete state.__bluvixa_record_type;
+  delete state.__bluvixa_parent_project_id;
+  delete state.__bluvixa_saved_at;
+  return normalizeProject({
+    id:row.id,
+    name:row.name,
+    slug:row.slug,
+    plan:row.plan,
+    state:state,
+    published:row.status==="published",
+    customDomain:row.custom_domain||"",
+    domainStatus:row.domain_status||"not_connected",
+    websiteBoughtOut:!!row.website_bought_out,
+    buyoutPlan:row.buyout_plan||null,
+    buyoutCompletedAt:row.buyout_completed_at||null,
+    createdAt:row.created_at,
+    updatedAt:row.updated_at
+  });
+}
+function rowToSnapshot(row){
+  var state=clone(row.project_data||{});
+  var parentId=state.__bluvixa_parent_project_id||"";
+  var savedAt=state.__bluvixa_saved_at||row.updated_at||row.created_at;
+  delete state.__bluvixa_record_type;
+  delete state.__bluvixa_parent_project_id;
+  delete state.__bluvixa_saved_at;
+  return normalizeSnapshot({
+    id:row.id,
+    projectId:parentId,
+    name:row.name,
+    plan:row.plan,
+    savedAt:savedAt,
+    state:state
+  });
+}
+async function syncCloudWorkspace(){
+  if(!currentUser||!supabaseClient||!cloudWorkspaceLoaded)return;
+  var rows=projectsCache.map(projectToRow).concat(snapshotsCache.map(snapshotToRow));
+  try{
+    if(rows.length){
+      var upsertResult=await supabaseClient
+        .from("website_projects")
+        .upsert(rows,{onConflict:"id"});
+      if(upsertResult.error)throw upsertResult.error;
+    }
+
+    var keepIds=rows.map(function(row){return row.id;});
+    var existingResult=await supabaseClient
+      .from("website_projects")
+      .select("id");
+    if(existingResult.error)throw existingResult.error;
+
+    var removeIds=(existingResult.data||[])
+      .map(function(row){return row.id;})
+      .filter(function(rowId){return keepIds.indexOf(rowId)<0;});
+
+    if(removeIds.length){
+      var deleteResult=await supabaseClient
+        .from("website_projects")
+        .delete()
+        .in("id",removeIds);
+      if(deleteResult.error)throw deleteResult.error;
+    }
+  }catch(error){
+    console.error("Bluvixa cloud synchronization failed:",error);
+    toast("Cloud save failed: "+(error.message||"Unknown error"));
+  }
+}
+function scheduleCloudSync(){
+  if(!currentUser||!supabaseClient||!cloudWorkspaceLoaded)return;
+  clearTimeout(cloudSyncTimer);
+  cloudSyncTimer=setTimeout(syncCloudWorkspace,250);
+}
+async function loadCloudWorkspace(){
+  if(!currentUser||!supabaseClient)return;
+  cloudWorkspaceLoaded=false;
+
+  var localProjects=safeJson(PROJECTS_KEY,[]);
+  var localSnapshots=safeJson(SNAPSHOTS_KEY,[]);
+
+  var result=await supabaseClient
+    .from("website_projects")
+    .select("*")
+    .order("updated_at",{ascending:false});
+
+  if(result.error)throw result.error;
+
+  var rows=result.data||[];
+  projectsCache=[];
+  snapshotsCache=[];
+
+  rows.forEach(function(row){
+    var recordType=row.project_data&&row.project_data.__bluvixa_record_type;
+    if(recordType==="snapshot")snapshotsCache.push(rowToSnapshot(row));
+    else projectsCache.push(rowToProject(row));
+  });
+
+  /* One-time migration of projects previously stored only in this browser. */
+  if(!rows.length&&(localProjects.length||localSnapshots.length)){
+    projectsCache=localProjects.map(normalizeProject);
+    snapshotsCache=localSnapshots.map(normalizeSnapshot);
+  }
+
+  saveJson(PROJECTS_KEY,projectsCache);
+  saveJson(SNAPSHOTS_KEY,snapshotsCache);
+  cloudWorkspaceLoaded=true;
+
+  if(!rows.length&&(projectsCache.length||snapshotsCache.length)){
+    await syncCloudWorkspace();
+  }
+
+  renderProjects();
+  renderDrafts();
+  renderDomainSelectors();
+  renderPublishing();
+}
 function currentBuilderState(){
   try{return typeof window.bluvixaExportState==="function"?window.bluvixaExportState():null;}
   catch(_error){return null;}
@@ -238,7 +449,18 @@ async function applySession(session){
 
   if(signedIn){
     await loadAccount();
+    try{
+      await loadCloudWorkspace();
+    }catch(error){
+      console.error("Bluvixa cloud workspace could not be loaded:",error);
+      cloudWorkspaceLoaded=false;
+      toast("Cloud projects could not be loaded. Local backup remains available.");
+    }
     if(["home","top",""].indexOf(routeName())>=0)location.hash="#projects";
+  }else{
+    cloudWorkspaceLoaded=false;
+    projectsCache=[];
+    snapshotsCache=[];
   }
 
   showRoute();
@@ -355,7 +577,7 @@ function createProject(name,state){
   if(!builderState){toast("The builder is still loading.");return null;}
   var now=new Date().toISOString();
   var project={
-    id:"site_"+Date.now()+"_"+Math.random().toString(16).slice(2),
+    id:makeUuid(),
     name:(name||"Untitled Website").trim()||"Untitled Website",
     plan:builderState.plan||"professional",
     createdAt:now,updatedAt:now,published:false,
@@ -474,7 +696,7 @@ function saveSnapshot(){
   var project=getProjects().find(function(item){return item.id===activeProjectId();});
   var snapshots=getSnapshots();
   snapshots.unshift({
-    id:"snap_"+Date.now()+"_"+Math.random().toString(16).slice(2),
+    id:makeUuid(),
     projectId:project?project.id:"",
     name:project?project.name+" Snapshot":"Untitled Snapshot",
     plan:state.plan||"professional",
