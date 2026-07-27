@@ -1,17 +1,37 @@
-BLUVIXA 7.2 — DRAFT SLUG FIX
+BLUVIXA 8.0 — AUTOSAVE + RECOVERY CLOUD WORKSPACE
 
-This version fixes the unique slug error reported by Supabase.
+Built from the confirmed-working Bluvixa 7.2 cloud-save package.
 
-FIXES
-- Draft websites now save with slug = NULL in Supabase.
-- Multiple Untitled Website drafts can be created and saved.
-- Snapshots continue to save with slug = NULL.
-- A unique slug is generated only when a project is published.
-- Generated published slugs include a project-specific suffix to prevent collisions.
-- Duplicated websites become clean drafts with no inherited slug or domain.
-- Starter accounts remain locked to the Starter plan in the builder.
+NEW IN 8.0
+- Automatic cloud save after the customer stops editing for about 1.6 seconds.
+- Live save status: Unsaved changes, Saving to cloud, All changes saved to cloud,
+  or Cloud save needs attention.
+- Manual Save Website still works and waits for Supabase confirmation.
+- The active project ID is remembered.
+- Returning directly to #builder reopens the last active cloud project.
+- Project state is cached locally as an emergency browser recovery copy.
+- Leaving or backgrounding the page triggers a final autosave attempt.
+- Existing My Websites, Saved Drafts, Starter-plan lock, RLS, Stripe, publishing,
+  domains, buyout, and export wiring remain intact.
 
 DEPLOYMENT
-Replace index.html, style.css, app.js, and platform.js. Keep the existing api folder, Vercel environment variables, Supabase tables, grants, and RLS policies.
+Replace:
+- index.html
+- style.css
+- app.js
+- platform.js
 
-No additional SQL is required for this fix.
+Keep:
+- your existing api folder
+- Supabase environment variables
+- Stripe environment variables and webhook
+- the existing website_projects table, grants, and RLS policies
+
+TEST
+1. Deploy to Vercel.
+2. Sign in and open a website.
+3. Change the business name.
+4. Wait about two seconds.
+5. Confirm the status reads “All changes saved to cloud.”
+6. Refresh the page and reopen the website.
+7. Confirm the change remains.

@@ -2,7 +2,7 @@
 "use strict";
 
 /* =========================================================
-   BLUVIXA 7.2 VERIFIED CLOUD-SAVE WORKSPACE CONTROLLER
+   BLUVIXA 8.0 AUTOSAVE + RECOVERY CLOUD WORKSPACE CONTROLLER
    One router, one authentication controller, one project library.
    Supabase and Stripe API routes remain unchanged.
    ========================================================= */
@@ -25,6 +25,15 @@ var cloudSyncTimer=null;
 var cloudRecordIds=new Set();
 var lastCloudError="";
 
+var AUTOSAVE_DELAY=1600;
+var autosaveTimer=null;
+var autosaveInFlight=false;
+var autosaveQueued=false;
+var autosaveEnabled=true;
+var suppressAutosaveUntil=0;
+var lastAutosaveSignature="";
+var lastOpenedProjectKey="bluvixa_last_opened_project_v8";
+
 function id(name){return document.getElementById(name);}
 function all(selector){return Array.prototype.slice.call(document.querySelectorAll(selector));}
 function text(name,value){var node=id(name);if(node)node.textContent=value==null?"":String(value);}
@@ -40,6 +49,59 @@ function toast(message){
   node.classList.add("show");
   clearTimeout(toast.timer);
   toast.timer=setTimeout(function(){node.classList.remove("show");},2800);
+}
+function setSaveStatus(message,mode){
+  var label=id("saveStatus");
+  var wrapper=label&&label.closest(".builder-save-status");
+  if(label)label.textContent=message||"";
+  if(wrapper){
+    wrapper.classList.toggle("is-saving",mode==="saving");
+    wrapper.classList.toggle("is-error",mode==="error");
+  }
+}
+function stableSignature(value){
+  try{return JSON.stringify(value||{});}
+  catch(_error){return String(Date.now());}
+}
+function scheduleAutosave(reason){
+  if(!autosaveEnabled||!currentUser||!supabaseClient)return;
+  if(Date.now()<suppressAutosaveUntil)return;
+  if(routeName()!=="builder")return;
+  clearTimeout(autosaveTimer);
+  setSaveStatus("Unsaved changes","saving");
+  autosaveTimer=setTimeout(function(){void runAutosave(reason||"change");},AUTOSAVE_DELAY);
+}
+async function runAutosave(_reason){
+  if(!autosaveEnabled||!currentUser||!supabaseClient)return false;
+  if(autosaveInFlight){autosaveQueued=true;return false;}
+  var state=currentBuilderState();
+  if(!state)return false;
+  var signature=stableSignature(state);
+  if(signature===lastAutosaveSignature){
+    setSaveStatus("All changes saved to cloud","");
+    return true;
+  }
+
+  autosaveInFlight=true;
+  autosaveQueued=false;
+  setSaveStatus("Saving to cloud…","saving");
+  try{
+    var ok=await saveActiveProject(false);
+    if(!ok)throw new Error(lastCloudError||"Cloud save failed.");
+    lastAutosaveSignature=stableSignature(currentBuilderState());
+    setSaveStatus("All changes saved to cloud","");
+    return true;
+  }catch(error){
+    setSaveStatus("Cloud save needs attention","error");
+    console.error("Bluvixa autosave failed:",error);
+    return false;
+  }finally{
+    autosaveInFlight=false;
+    if(autosaveQueued){
+      autosaveQueued=false;
+      scheduleAutosave("queued-change");
+    }
+  }
 }
 function safeJson(key,fallback){
   try{
@@ -383,7 +445,10 @@ function showRoute(){
   if(name==="projects")renderProjects();
   if(name==="drafts")renderDrafts();
   if(name==="domains"){renderDomainSelectors();renderPublishing();}
-  if(name==="builder")updateBuilderTitle();
+  if(name==="builder"){
+    updateBuilderTitle();
+    if(currentUser)setSaveStatus("Autosave is on","");
+  }
 
   closeMobileMenu();
   window.scrollTo(0,0);
@@ -497,7 +562,15 @@ async function applySession(session){
   if(signedIn){
     await loadAccount();
     await loadCloudWorkspace();
-    if(["home","top",""].indexOf(routeName())>=0)location.hash="#projects";
+
+    var requestedRoute=routeName();
+    var lastProjectId=localStorage.getItem(lastOpenedProjectKey)||activeProjectId();
+    var recoverProject=getProjects().find(function(item){return item.id===lastProjectId;});
+    if(requestedRoute==="builder"&&recoverProject){
+      loadProject(recoverProject.id,{silent:true});
+    }else if(["home","top",""].indexOf(requestedRoute)>=0){
+      location.hash="#projects";
+    }
   }else{
     cloudWorkspaceLoaded=false;
     projectsCache=[];
@@ -656,6 +729,10 @@ function newWebsite(){
     lockBuilderPlan();
     location.hash="#builder";
     updateBuilderTitle();
+    localStorage.setItem(lastOpenedProjectKey,project.id);
+    lastAutosaveSignature="";
+    setSaveStatus("New website ready — autosave is on","");
+    scheduleAutosave("new-project");
     toast("New website created.");
   }
 }
@@ -686,31 +763,41 @@ async function saveActiveProject(showMessage){
 
   if(currentUser&&supabaseClient){
     try{
+      setSaveStatus("Saving to cloud…","saving");
       await saveProjectToCloud(project);
+      lastAutosaveSignature=stableSignature(project.state);
+      localStorage.setItem(lastOpenedProjectKey,project.id);
+      setSaveStatus("All changes saved to cloud","");
       if(showMessage)toast("Website saved to your cloud account.");
       return true;
     }catch(error){
       lastCloudError=error.message||"Unknown cloud save error";
       console.error("Bluvixa project save failed:",error);
+      setSaveStatus("Cloud save needs attention","error");
       if(showMessage)toast("Cloud save failed: "+lastCloudError);
       return false;
     }
   }
 
+  setSaveStatus("Saved on this device","");
   if(showMessage)toast("Website saved on this device. Sign in to save it to the cloud.");
   return true;
 }
-function loadProject(projectId){
+function loadProject(projectId,options){
   var project=getProjects().find(function(item){return item.id===projectId;});
-  if(!project){toast("Website not found.");return;}
+  if(!project){if(!(options&&options.silent))toast("Website not found.");return;}
   setActiveProjectId(project.id);
+  localStorage.setItem(lastOpenedProjectKey,project.id);
+  suppressAutosaveUntil=Date.now()+2200;
   if(typeof window.bluvixaImportState==="function"){
     project.state.plan=currentAccountPlan();
     window.bluvixaImportState(clone(project.state));
     lockBuilderPlan();
+    lastAutosaveSignature=stableSignature(project.state);
     location.hash="#builder";
     updateBuilderTitle();
-    toast(project.name+" loaded.");
+    setSaveStatus("All changes saved to cloud","");
+    if(!(options&&options.silent))toast(project.name+" loaded.");
   }
 }
 function duplicateProject(projectId){
@@ -1052,6 +1139,35 @@ function bind(){
   if(id("authModal"))id("authModal").addEventListener("click",function(event){
     if(event.target===id("authModal"))closeAuth();
   });
+  var builderPage=document.querySelector('[data-page="builder"]');
+  if(builderPage){
+    builderPage.addEventListener("input",function(event){
+      if(event.target&&event.target.closest("input,textarea,select"))scheduleAutosave("input");
+    });
+    builderPage.addEventListener("change",function(event){
+      if(event.target&&event.target.closest("input,textarea,select"))scheduleAutosave("change");
+    });
+    builderPage.addEventListener("click",function(event){
+      var button=event.target&&event.target.closest("button");
+      if(!button)return;
+      if(["saveWebsiteProjectBtn","saveCurrentDraftBtn","saveSnapshotTopBtn"].indexOf(button.id)>=0)return;
+      if(button.closest(".tabs,.photo-actions,.gallery-actions,.panel,.sidebar-footer"))scheduleAutosave("builder-action");
+    });
+  }
+
+  document.addEventListener("visibilitychange",function(){
+    if(document.visibilityState==="hidden"&&currentUser&&routeName()==="builder"){
+      clearTimeout(autosaveTimer);
+      void runAutosave("page-hidden");
+    }
+  });
+  window.addEventListener("pagehide",function(){
+    if(currentUser&&routeName()==="builder"){
+      var state=currentBuilderState();
+      if(state)saveJson("bluvixa_emergency_builder_state_v8",state);
+    }
+  });
+
   if(id("projectSearchInput"))id("projectSearchInput").addEventListener("input",renderProjects);
   if(id("draftSearchInput"))id("draftSearchInput").addEventListener("input",renderDrafts);
   if(id("domainSearchInput"))id("domainSearchInput").addEventListener("keydown",function(event){
