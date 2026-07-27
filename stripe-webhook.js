@@ -1,7 +1,7 @@
 import {
   stripe,
   admin
-} from "./_lib.js";
+} from "./api/_lib.js";
 
 export const config = {
   api: {
