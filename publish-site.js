@@ -1,0 +1,219 @@
+function send(res, status, body) {
+  res.status(status).json(body);
+}
+
+function cleanSlug(value) {
+  return (
+    String(value || "website")
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "")
+      .slice(0, 48) || "website"
+  );
+}
+
+function parsePublishValue(value) {
+  return value === true || value === "true";
+}
+
+async function getAuthenticatedUser(
+  supabaseUrl,
+  anonKey,
+  authorization
+) {
+  const response = await fetch(`${supabaseUrl}/auth/v1/user`, {
+    headers: {
+      apikey: anonKey,
+      Authorization: authorization
+    }
+  });
+
+  if (!response.ok) {
+    return null;
+  }
+
+  return response.json();
+}
+
+export default async function handler(req, res) {
+  if (req.method !== "POST") {
+    res.setHeader("Allow", "POST");
+
+    return send(res, 405, {
+      error: "Method not allowed."
+    });
+  }
+
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const anonKey = process.env.SUPABASE_ANON_KEY;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const authorization = req.headers.authorization || "";
+
+  if (!supabaseUrl || !anonKey || !serviceRoleKey) {
+    return send(res, 500, {
+      error: "Publishing service is not configured."
+    });
+  }
+
+  const user = await getAuthenticatedUser(
+    supabaseUrl,
+    anonKey,
+    authorization
+  );
+
+  if (!user || !user.id) {
+    return send(res, 401, {
+      error: "Please sign in again."
+    });
+  }
+
+  const projectId = String(req.body?.projectId || "").trim();
+  const publish = parsePublishValue(req.body?.publish);
+
+  if (!projectId) {
+    return send(res, 400, {
+      error: "A website project is required."
+    });
+  }
+
+  const projectQuery = new URLSearchParams({
+    select: "id,owner_id,name,slug,status",
+    id: `eq.${projectId}`,
+    owner_id: `eq.${user.id}`,
+    limit: "1"
+  });
+
+  const projectResponse = await fetch(
+    `${supabaseUrl}/rest/v1/website_projects?${projectQuery.toString()}`,
+    {
+      headers: {
+        apikey: serviceRoleKey,
+        Authorization: `Bearer ${serviceRoleKey}`
+      }
+    }
+  );
+
+  if (!projectResponse.ok) {
+    const detail = await projectResponse.text();
+
+    console.error(
+      "Website verification failed:",
+      detail
+    );
+
+    return send(res, 500, {
+      error: "The website could not be verified."
+    });
+  }
+
+  const projects = await projectResponse.json();
+  const project = projects[0];
+
+  if (!project) {
+    return send(res, 404, {
+      error: "Website not found."
+    });
+  }
+
+  let slug =
+    project.slug ||
+    cleanSlug(req.body?.requestedSlug || project.name);
+
+  if (publish) {
+    const collisionQuery = new URLSearchParams({
+      select: "id",
+      slug: `eq.${slug}`,
+      id: `neq.${projectId}`,
+      limit: "1"
+    });
+
+    const collisionResponse = await fetch(
+      `${supabaseUrl}/rest/v1/website_projects?${collisionQuery.toString()}`,
+      {
+        headers: {
+          apikey: serviceRoleKey,
+          Authorization: `Bearer ${serviceRoleKey}`
+        }
+      }
+    );
+
+    if (!collisionResponse.ok) {
+      const detail = await collisionResponse.text();
+
+      console.error(
+        "Slug collision check failed:",
+        detail
+      );
+
+      return send(res, 500, {
+        error: "The website address could not be verified."
+      });
+    }
+
+    const collisions = await collisionResponse.json();
+    const collision = collisions[0];
+
+    if (collision) {
+      slug = `${slug}-${projectId
+        .replace(/-/g, "")
+        .slice(-8)}`;
+    }
+  }
+
+  const updateResponse = await fetch(
+    `${supabaseUrl}/rest/v1/website_projects?id=eq.${encodeURIComponent(
+      projectId
+    )}&owner_id=eq.${encodeURIComponent(user.id)}`,
+    {
+      method: "PATCH",
+      headers: {
+        apikey: serviceRoleKey,
+        Authorization: `Bearer ${serviceRoleKey}`,
+        "Content-Type": "application/json",
+        Prefer: "return=representation"
+      },
+      body: JSON.stringify({
+        status: publish ? "published" : "draft",
+        slug: publish ? slug : project.slug
+      })
+    }
+  );
+
+  if (!updateResponse.ok) {
+    const detail = await updateResponse.text();
+
+    console.error(
+      "Website publishing update failed:",
+      detail
+    );
+
+    return send(res, 500, {
+      error: "The publishing update failed."
+    });
+  }
+
+  const updatedProjects = await updateResponse.json();
+  const updatedProject = updatedProjects[0];
+
+  if (!updatedProject) {
+    return send(res, 500, {
+      error: "The website was not updated."
+    });
+  }
+
+  const protocol =
+    req.headers["x-forwarded-proto"] || "https";
+
+  const host = req.headers.host;
+
+  return send(res, 200, {
+    published:
+      updatedProject.status === "published",
+    status: updatedProject.status,
+    slug: updatedProject.slug || slug,
+    url: `${protocol}://${host}/site/${encodeURIComponent(
+      updatedProject.slug || slug
+    )}`
+  });
+}
