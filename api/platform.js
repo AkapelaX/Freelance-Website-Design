@@ -2,7 +2,7 @@
 "use strict";
 
 /* =========================================================
-   BLUVIXA 11.0 PUBLISHING CENTER CONTROLLER
+   BLUVIXA 11.2 PUBLISHING RELIABILITY CONTROLLER
    One router, one authentication controller, one project library.
    Supabase and Stripe API routes remain unchanged.
    ========================================================= */
@@ -36,6 +36,9 @@ var lastOpenedProjectKey="bluvixa_last_opened_project_v9";
 var publishingCenterProjectId="";
 var publishingProgressTimer=null;
 var publishingProgressValue=0;
+var publishingInFlight=false;
+var publishingStage="idle";
+var PUBLISH_VERSIONS_KEY="bluvixa_publish_versions_v112";
 var MEDIA_BUCKET="website-assets";
 var MEDIA_SIGNED_URL_SECONDS=315360000;
 var mediaUploadInFlight=0;
@@ -43,6 +46,14 @@ var mediaUploadInFlight=0;
 function id(name){return document.getElementById(name);}
 function all(selector){return Array.prototype.slice.call(document.querySelectorAll(selector));}
 function text(name,value){var node=id(name);if(node)node.textContent=value==null?"":String(value);}
+function withTimeout(promise,timeoutMs,label){
+  return Promise.race([
+    promise,
+    new Promise(function(_resolve,reject){
+      setTimeout(function(){reject(new Error((label||"Request")+" timed out."));},timeoutMs||12000);
+    })
+  ]);
+}
 function escapeHtml(value){
   return String(value==null?"":value).replace(/[&<>"']/g,function(character){
     return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[character];
@@ -657,9 +668,25 @@ async function applySession(session){
     secondary.href="#builder";
   }
 
+  closeLoading();
+  showRoute();
+
   if(signedIn){
-    await loadAccount();
-    await loadCloudWorkspace();
+    try{
+      await withTimeout(loadAccount(),12000,"Account check");
+    }catch(error){
+      console.warn("Bluvixa account check did not finish:",error);
+    }
+    try{
+      await withTimeout(loadCloudWorkspace(),15000,"Cloud workspace");
+    }catch(error){
+      console.warn("Bluvixa cloud workspace did not finish:",error);
+      cloudWorkspaceLoaded=false;
+      projectsCache=readJson(PROJECTS_KEY,[]).map(normalizeProject);
+      snapshotsCache=readJson(SNAPSHOTS_KEY,[]).map(normalizeSnapshot);
+      renderProjects();renderDrafts();renderDomainSelectors();renderPublishing();
+      toast("Signed in. Cloud data is taking longer than expected.");
+    }
 
     var requestedRoute=routeName();
     var lastProjectId=localStorage.getItem(lastOpenedProjectKey)||activeProjectId();
@@ -676,21 +703,20 @@ async function applySession(session){
   }
 
   showRoute();
-  closeLoading();
 }
 async function initAuth(){
   try{
-    var config=await api("/api/config");
+    var config=await withTimeout(api("/api/config"),10000,"Configuration");
     if(!config.supabaseUrl||!config.supabaseAnonKey){
       closeLoading();
       return;
     }
     if(!window.supabase)throw new Error("Supabase client did not load.");
     supabaseClient=window.supabase.createClient(config.supabaseUrl,config.supabaseAnonKey);
-    var sessionResult=await supabaseClient.auth.getSession();
+    var sessionResult=await withTimeout(supabaseClient.auth.getSession(),10000,"Session check");
     await applySession(sessionResult.data.session);
     supabaseClient.auth.onAuthStateChange(function(_event,session){
-      applySession(session);
+      setTimeout(function(){void applySession(session);},0);
     });
   }catch(error){
     console.error("Bluvixa auth initialization failed:",error);
@@ -1131,6 +1157,109 @@ async function connectCustomDomain(){
   }
 }
 
+
+function getPublishVersions(){
+  return readJson(PUBLISH_VERSIONS_KEY,[]);
+}
+function setPublishVersions(items){
+  writeJson(PUBLISH_VERSIONS_KEY,Array.isArray(items)?items:[]);
+}
+function nextPublishVersionNumber(projectId){
+  return getPublishVersions().filter(function(item){return item.projectId===projectId;}).length+1;
+}
+function createPublishVersion(project,verifiedUrl){
+  var versions=getPublishVersions();
+  var version={
+    id:uid("pubver"),
+    projectId:project.id,
+    name:"Published Version "+nextPublishVersionNumber(project.id),
+    publishedAt:new Date().toISOString(),
+    verifiedUrl:verifiedUrl||projectUrl(project),
+    state:clone(project.state||{})
+  };
+  versions.unshift(version);
+  setPublishVersions(versions);
+  return version;
+}
+function lastPublishedVersion(projectId){
+  return getPublishVersions()
+    .filter(function(item){return item.projectId===projectId;})
+    .sort(function(a,b){return new Date(b.publishedAt)-new Date(a.publishedAt);})[0]||null;
+}
+function projectHasUnpublishedChanges(project){
+  if(!project||!project.published)return false;
+  var version=lastPublishedVersion(project.id);
+  if(!version)return true;
+  return new Date(project.updatedAt||0).getTime()>new Date(version.publishedAt||0).getTime()+1000;
+}
+function setPublishingButtonBusy(isBusy){
+  publishingInFlight=!!isBusy;
+  var button=id("publishingPrimaryBtn");
+  if(button){
+    button.disabled=publishingInFlight;
+    button.setAttribute("aria-busy",publishingInFlight?"true":"false");
+    if(publishingInFlight)button.textContent="Publishing…";
+  }
+}
+function setReliabilityMessage(type,title,detail){
+  var box=id("publishingReliabilityMessage");
+  if(!box)return;
+  if(!title&&!detail){
+    box.className="publishing-reliability-message hidden";
+    box.innerHTML="";
+    return;
+  }
+  box.className="publishing-reliability-message "+(type||"info");
+  box.innerHTML="<strong>"+escapeHtml(title||"")+"</strong><span>"+escapeHtml(detail||"")+"</span>";
+}
+function publishingFailure(stage,error){
+  var raw=(error&&error.message)||String(error||"Unknown error");
+  var messages={
+    save:["Save failed","Bluvixa could not save the latest project changes."],
+    media:["Media check failed","One or more cloud uploads are unfinished."],
+    build:["Website preparation failed","The live website data could not be prepared."],
+    deploy:["Publishing failed","The publishing service did not complete successfully."],
+    verify:["Live verification failed","The project published, but its public address did not respond successfully."]
+  };
+  var selected=messages[stage]||messages.deploy;
+  return {title:selected[0],detail:selected[1]+" "+raw};
+}
+function markPublishStage(stage){
+  publishingStage=stage;
+  var values={save:10,media:34,build:57,deploy:78,verify:92};
+  var labels={
+    save:"Saving latest changes…",
+    media:"Confirming cloud media…",
+    build:"Preparing live website…",
+    deploy:"Publishing securely…",
+    verify:"Verifying public website…"
+  };
+  setPublishingProgress(values[stage]||0,stage==="verify"?"deploy":stage,labels[stage]||"Working…");
+  if(stage==="verify"){
+    var small=document.querySelector('[data-publish-step="deploy"] small');
+    if(small)small.textContent="Verifying live site…";
+  }
+}
+async function verifyPublishedUrl(url){
+  if(!url)throw new Error("No live URL was returned.");
+  var lastError=null;
+  for(var attempt=1;attempt<=5;attempt++){
+    try{
+      var separator=url.indexOf("?")===-1?"?":"&";
+      var response=await withTimeout(fetch(url+separator+"bluvixa_verify="+Date.now(),{
+        method:"GET",
+        cache:"no-store",
+        headers:{"Accept":"text/html"}
+      }),9000,"Live verification");
+      if(response.ok)return true;
+      lastError=new Error("Live website returned HTTP "+response.status+".");
+    }catch(error){
+      lastError=error;
+    }
+    if(attempt<5)await new Promise(function(resolve){setTimeout(resolve,1000*attempt);});
+  }
+  throw lastError||new Error("Live website could not be reached.");
+}
 function publishingSelectedProject(){
   var select=id("publishingCenterProjectSelect");
   var projectId=(select&&select.value)||publishingCenterProjectId||activeProjectId();
@@ -1165,19 +1294,17 @@ function setPublishingProgress(value,activeStep,message){
 }
 function beginPublishingProgress(){
   clearInterval(publishingProgressTimer);
-  setPublishingProgress(8,"save","Saving…");
-  publishingProgressTimer=setInterval(function(){
-    if(publishingProgressValue<24)setPublishingProgress(publishingProgressValue+3,"save","Saving…");
-    else if(publishingProgressValue<48)setPublishingProgress(publishingProgressValue+3,"media","Checking uploads…");
-    else if(publishingProgressValue<72)setPublishingProgress(publishingProgressValue+2,"build","Preparing website…");
-    else if(publishingProgressValue<88)setPublishingProgress(publishingProgressValue+1,"deploy","Deploying…");
-  },180);
+  publishingProgressTimer=null;
+  setReliabilityMessage("info","Publishing started","Bluvixa is checking every stage before confirming the website is live.");
+  markPublishStage("save");
 }
 function finishPublishingProgress(success){
   clearInterval(publishingProgressTimer);
   publishingProgressTimer=null;
-  if(success)setPublishingProgress(100,"deploy","Live");
-  else{
+  if(success){
+    setPublishingProgress(100,"deploy","Verified live");
+    setReliabilityMessage("success","Website verified live","Bluvixa confirmed that the public website is responding.");
+  }else{
     setPublishingProgress(Math.max(10,publishingProgressValue),"deploy","Needs attention");
     var deploy=document.querySelector('[data-publish-step="deploy"]');
     if(deploy)deploy.classList.add("is-error");
@@ -1211,14 +1338,22 @@ async function sharePublishedSite(){
 function renderPublishingVersions(project){
   var box=id("publishingVersionHistory");if(!box)return;
   if(!project){box.innerHTML='<div class="empty-state">No website selected.</div>';return;}
-  var versions=getSnapshots()
+  var publishedVersions=getPublishVersions()
+    .filter(function(item){return item.projectId===project.id;})
+    .sort(function(a,b){return new Date(b.publishedAt)-new Date(a.publishedAt);})
+    .slice(0,6);
+  var snapshots=getSnapshots()
     .filter(function(snapshot){return snapshot.projectId===project.id;})
     .sort(function(a,b){return new Date(b.savedAt)-new Date(a.savedAt);})
-    .slice(0,6);
-  var current='<article class="publishing-version-row current"><div><strong>Current cloud version</strong><small>'+escapeHtml(formatPublishedDate(project.updatedAt))+'</small></div><span>Current</span></article>';
-  box.innerHTML=current+(versions.length?versions.map(function(snapshot,index){
-    return '<article class="publishing-version-row"><div><strong>'+escapeHtml(snapshot.name||("Saved version "+(index+1)))+'</strong><small>'+escapeHtml(formatPublishedDate(snapshot.savedAt))+'</small></div><button class="btn btn-secondary" data-project-action="load-snapshot" data-snapshot-id="'+snapshot.id+'">Open</button></article>';
-  }).join(""):'<div class="publishing-version-empty">No saved snapshots yet. Use Save Snapshot in the builder to create restore points.</div>');
+    .slice(0,4);
+  var current='<article class="publishing-version-row current"><div><strong>Current builder version</strong><small>'+escapeHtml(formatPublishedDate(project.updatedAt))+'</small></div><span>Current</span></article>';
+  var publishedHtml=publishedVersions.map(function(version){
+    return '<article class="publishing-version-row published-version"><div><strong>'+escapeHtml(version.name)+'</strong><small>'+escapeHtml(formatPublishedDate(version.publishedAt))+' · Verified live</small></div><div class="publishing-version-actions"><button class="btn btn-secondary" data-project-action="restore-published-version" data-version-id="'+version.id+'">Restore</button><a class="btn btn-secondary" href="'+escapeHtml(version.verifiedUrl||projectUrl(project))+'" target="_blank" rel="noopener">View</a></div></article>';
+  }).join("");
+  var snapshotHtml=snapshots.map(function(snapshot,index){
+    return '<article class="publishing-version-row"><div><strong>'+escapeHtml(snapshot.name||("Saved snapshot "+(index+1)))+'</strong><small>'+escapeHtml(formatPublishedDate(snapshot.savedAt))+'</small></div><button class="btn btn-secondary" data-project-action="load-snapshot" data-snapshot-id="'+snapshot.id+'">Open</button></article>';
+  }).join("");
+  box.innerHTML=current+(publishedHtml||'<div class="publishing-version-empty">No verified published versions yet.</div>')+snapshotHtml;
 }
 function renderPublishingCenter(){
   var select=id("publishingCenterProjectSelect");
@@ -1253,12 +1388,15 @@ function renderPublishingCenter(){
   text("publishingMetricDomain",customConnected?project.customDomain:"Bluvixa address");
   text("publishingMetricDomainDetail",customConnected?"Custom domain connected":"No custom domain connected");
   text("publishingMetricSsl",published?"Active":"Ready");
+  var warning=id("publishingUnsavedWarning");
+  if(warning)warning.classList.toggle("hidden",!projectHasUnpublishedChanges(project));
   var dot=id("publishingStatusDot");if(dot)dot.classList.toggle("is-live",published);
   var primary=id("publishingPrimaryBtn");
   if(primary){
-    primary.textContent=published?"Unpublish Website":"Publish Now";
+    primary.textContent=publishingInFlight?"Publishing…":(published?"Unpublish Website":"Publish Now");
     primary.dataset.projectId=project.id;
-    primary.classList.toggle("btn-danger",published);
+    primary.classList.toggle("btn-danger",published&&!publishingInFlight);
+    primary.disabled=publishingInFlight;
   }
   var liveLink=id("publishingLiveUrl");
   if(liveLink){
@@ -1277,54 +1415,100 @@ function renderPublishingCenter(){
   if(!publishingProgressTimer)setPublishingProgress(published?100:0,published?"deploy":"",published?"Live":"Waiting");
 }
 async function togglePublish(projectId){
+  if(publishingInFlight){
+    toast("Publishing is already in progress.");
+    return;
+  }
   var projects=getProjects();
   var project=projects.find(function(item){return item.id===projectId;});
-  if(!project)return;
+  if(!project){toast("Website project not found.");return;}
+
+  if(project.published){
+    setPublishingButtonBusy(true);
+    setReliabilityMessage("info","Unpublishing website","Bluvixa is removing public access.");
+    try{
+      var unpublishResult=await authenticatedApi("/api/publish-site",{
+        projectId:projectId,
+        publish:false,
+        requestedSlug:project.slug||sanitizeSlug(project.name)
+      });
+      project.published=false;
+      project.updatedAt=new Date().toISOString();
+      if(project.state&&project.state.backend)project.state.backend.published=false;
+      setProjects(projects);
+      await saveProjectToCloud(project);
+      setPublishingProgress(0,"","Waiting");
+      setReliabilityMessage("success","Website unpublished","The public website is no longer available.");
+      toast((unpublishResult&&unpublishResult.message)||"Website unpublished.");
+    }catch(error){
+      var unpublishFailure=publishingFailure("deploy",error);
+      setReliabilityMessage("error",unpublishFailure.title,unpublishFailure.detail);
+      toast("Unpublish failed.");
+    }finally{
+      setPublishingButtonBusy(false);
+      renderProjects();renderDrafts();renderPublishing();renderDomainSelectors();
+    }
+    return;
+  }
+
+  setPublishingButtonBusy(true);
+  beginPublishingProgress();
 
   try{
-    beginPublishingProgress();
+    markPublishStage("save");
     if(activeProjectId()===projectId&&typeof window.bluvixaExportState==="function"){
       var saved=await saveActiveProject(false);
-      if(!saved)throw new Error(lastCloudError||"Save the website before publishing.");
+      if(!saved)throw new Error(lastCloudError||"The latest changes could not be saved.");
       projects=getProjects();
       project=projects.find(function(item){return item.id===projectId;});
     }
 
-    var shouldPublish=!project.published;
-    toast(shouldPublish?"Publishing website…":"Unpublishing website…");
+    markPublishStage("media");
+    var mediaItems=(project.state&&project.state.backend&&project.state.backend.media)||[];
+    var unfinished=mediaItems.filter(function(item){
+      return item&&(item.uploading||item.status==="uploading"||(!item.url&&!item.path));
+    });
+    if(unfinished.length)throw new Error(unfinished.length+" upload(s) are still processing.");
+
+    markPublishStage("build");
+    if(!project.state||typeof project.state!=="object")throw new Error("Project website data is missing.");
+    if(!String(project.name||"").trim())throw new Error("The website needs a project name.");
+
+    markPublishStage("deploy");
     var result=await authenticatedApi("/api/publish-site",{
       projectId:projectId,
-      publish:shouldPublish,
+      publish:true,
       requestedSlug:project.slug||sanitizeSlug(project.name)
     });
 
     project.published=!!result.published;
     project.slug=result.slug||project.slug||"";
     project.updatedAt=new Date().toISOString();
-    if(project.published)project.publishedAt=project.updatedAt;
+    project.publishedAt=project.updatedAt;
     if(project.state&&project.state.backend){
-      project.state.backend.published=project.published;
-      project.state.backend.publishedAt=project.publishedAt||null;
+      project.state.backend.published=true;
+      project.state.backend.publishedAt=project.publishedAt;
     }
-    if(project.state&&project.state.project){
-      project.state.project.slug=project.slug;
-      project.state.project.domainStatus=project.domainStatus;
-    }
+    if(project.state&&project.state.project)project.state.project.slug=project.slug;
     setProjects(projects);
     await saveProjectToCloud(project);
-    renderProjects();renderDrafts();renderPublishing();renderPublishingCenter();
-    finishPublishingProgress(true);
 
-    if(project.published){
-      toast("Website published successfully.");
-      window.open(result.url||projectUrl(project),"_blank","noopener");
-    }else{
-      toast("Website unpublished.");
-    }
+    markPublishStage("verify");
+    var liveUrl=result.url||projectUrl(project);
+    await verifyPublishedUrl(liveUrl);
+
+    createPublishVersion(project,liveUrl);
+    finishPublishingProgress(true);
+    toast("Website is live and verified.");
   }catch(error){
     finishPublishingProgress(false);
-    console.error("Bluvixa publishing failed:",error);
-    toast("Publishing failed: "+(error.message||"Unknown error"));
+    var failure=publishingFailure(publishingStage,error);
+    setReliabilityMessage("error",failure.title,failure.detail);
+    console.error("Bluvixa publishing failed during "+publishingStage+":",error);
+    toast(failure.title);
+  }finally{
+    setPublishingButtonBusy(false);
+    renderProjects();renderDrafts();renderPublishing();renderDomainSelectors();
   }
 }
 function renderPublishing(){renderPublishingCenter();}
@@ -1393,6 +1577,28 @@ function handleClick(event){
     if(projectAction==="drafts")location.hash="#drafts";
     if(projectAction==="delete")deleteProject(projectId);
     if(projectAction==="publish")void togglePublish(projectId);
+    if(projectAction==="restore-published-version"){
+      var versionId=button.getAttribute("data-version-id");
+      var version=getPublishVersions().find(function(item){return item.id===versionId;});
+      if(version&&typeof window.bluvixaImportState==="function"){
+        var projects=getProjects();
+        var project=projects.find(function(item){return item.id===version.projectId;});
+        if(project){
+          project.state=clone(version.state);
+          project.updatedAt=new Date().toISOString();
+          project.published=false;
+          if(project.state&&project.state.backend)project.state.backend.published=false;
+          setProjects(projects);
+          setActiveProjectId(project.id);
+          void saveProjectToCloud(project);
+        }
+        suppressAutosaveUntil=Date.now()+2200;
+        window.bluvixaImportState(clone(version.state));
+        location.hash="#builder";
+        updateBuilderTitle();
+        toast("Published version restored. Review it, then publish again.");
+      }
+    }
     if(projectAction==="load-snapshot"){
       var snapshotId=button.getAttribute("data-snapshot-id");
       var snapshot=getSnapshots().find(function(item){return item.id===snapshotId;});
@@ -1531,7 +1737,6 @@ window.BluvixaPlatform={
 };
 
 document.addEventListener("DOMContentLoaded",bind);
-})()
 async function authenticatedApi(path,payload){
   if(!supabaseClient)throw new Error("Supabase is not initialized.");
   var sessionResult=await supabaseClient.auth.getSession();
@@ -1550,4 +1755,4 @@ async function authenticatedApi(path,payload){
   return data;
 }
 
-;
+})();

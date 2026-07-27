@@ -3132,3 +3132,22 @@ button:disabled{opacity:.55;cursor:not-allowed}
 .publishing-version-panel{margin-top:14px}.publishing-version-history{display:grid;gap:8px}.publishing-version-row{display:flex;justify-content:space-between;gap:14px;align-items:center;padding:12px 14px;background:#07101d;border:1px solid #20364f;border-radius:12px}.publishing-version-row.current{border-color:#286ea9}.publishing-version-row strong,.publishing-version-row small{display:block}.publishing-version-row small{color:#778ca2;margin-top:4px}.publishing-version-row>span{color:#58c5ff;font-weight:900}.publishing-version-empty{padding:16px;color:#7f94aa;text-align:center}
 @media(max-width:900px){.publishing-center-head,.publishing-status-hero{align-items:stretch;flex-direction:column}.publishing-site-picker{width:100%;min-width:0}.publishing-primary-actions{justify-content:flex-start}.publishing-metrics-grid{grid-template-columns:repeat(2,1fr)}.publishing-action-grid{grid-template-columns:1fr}}
 @media(max-width:560px){.publishing-center{padding:14px;border-radius:16px}.publishing-metrics-grid{grid-template-columns:1fr}.publishing-link-box{grid-template-columns:1fr}.publishing-panel-head{align-items:flex-start;flex-direction:column}.publishing-version-row{align-items:flex-start;flex-direction:column}.publishing-primary-actions .btn,.publishing-primary-actions a{width:100%}}
+
+
+/* BLUVIXA 11.2 PUBLISHING RELIABILITY */
+.publishing-unsaved-warning{margin:0 0 16px;padding:12px 14px;border-radius:12px;border:1px solid #8d6825;background:rgba(145,99,16,.16)}
+.publishing-unsaved-warning strong,.publishing-unsaved-warning span{display:block}
+.publishing-unsaved-warning strong{color:#ffd27a;margin-bottom:3px}
+.publishing-unsaved-warning span{color:#c7a86b;font-size:12px}
+.publishing-reliability-message{display:grid;gap:4px;margin-top:14px;padding:12px 14px;border-radius:12px;border:1px solid #315171;background:#07101d}
+.publishing-reliability-message strong,.publishing-reliability-message span{display:block}
+.publishing-reliability-message span{font-size:12px;color:#93a7bc;line-height:1.5}
+.publishing-reliability-message.success{border-color:#287b58;background:rgba(25,116,78,.16)}
+.publishing-reliability-message.success strong{color:#62e0a6}
+.publishing-reliability-message.error{border-color:#9d4653;background:rgba(138,42,55,.16)}
+.publishing-reliability-message.error strong{color:#ff8792}
+.publishing-reliability-message.info{border-color:#315f91;background:rgba(31,94,154,.13)}
+.publishing-version-row.published-version{border-color:#2f7659;background:linear-gradient(90deg,rgba(31,113,75,.13),#07101d)}
+.publishing-version-actions{display:flex;gap:8px;flex-wrap:wrap}
+#publishingPrimaryBtn[disabled]{opacity:.65;cursor:not-allowed;filter:saturate(.65)}
+@media(max-width:560px){.publishing-version-actions{width:100%}.publishing-version-actions .btn{flex:1}}

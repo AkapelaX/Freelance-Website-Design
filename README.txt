@@ -1,27 +1,32 @@
-BLUVIXA 11.1 — PUBLISHING CENTER LOGIN FIX
+BLUVIXA 11.2 — PUBLISHING RELIABILITY
 
-This update fixes the screen remaining stuck on:
-"Checking your membership…"
-
-FIXES
-- The loading screen now closes as soon as Supabase determines whether a
-  session exists.
-- Account and cloud-project checks no longer block the login interface.
-- Network timeout protection was added for configuration, session, account,
-  and workspace loading.
-- Local saved projects are shown if the cloud request is temporarily slow.
-- The authenticated publishing API helper now runs inside the platform
-  controller, where it can correctly access the Supabase session.
-- A new script version prevents the browser from serving the broken cached
-  platform.js file.
+NEW
+- Verifies the public URL before showing "Website verified live."
+- Creates Published Version 1, 2, 3, and so on after successful verification.
+- Restores published versions into the builder for review and republishing.
+- Shows precise failures for Save, Media, Build, Deploy, and Verification.
+- Prevents double publishing by disabling the Publish button during the job.
+- Warns when builder changes are newer than the verified live version.
+- Uses real publishing stages instead of a decorative progress animation.
+- Keeps the 11.1 membership/login fix.
 
 DEPLOY
-Replace these files:
+Replace the complete package, or at minimum:
 - index.html
+- style.css
 - platform.js
 
-The full package is included, but no SQL or environment-variable changes are
-required.
+The existing API routes remain included.
 
-After deployment, redeploy Vercel and refresh the website. On iPhone, close the
-browser tab and reopen Bluvixa to ensure the corrected JavaScript loads.
+SQL
+Run SUPABASE-11.2-PUBLISHING-RELIABILITY.sql to prepare a secure
+server-backed publish-history table. The current release also keeps immediate
+version history locally so the feature works as soon as it is deployed.
+
+TEST
+1. Publish a draft.
+2. Confirm Publish disables while working.
+3. Confirm success appears only after the live URL responds.
+4. Edit the project and confirm the Unpublished Changes warning appears.
+5. Publish again and confirm Published Version 2 appears.
+6. Restore Published Version 1 and review it in the builder.

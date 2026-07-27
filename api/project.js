@@ -1,4 +1,4 @@
-import {admin,requireUser,sendError} from "./api/_lib.js";
+import {admin,requireUser,sendError} from "./_lib.js";
 export default async function handler(req,res){
   try{const user=await requireUser(req);
     if(req.method==="GET"){const {data,error}=await admin.from("projects").select("project_data").eq("user_id",user.id).order("updated_at",{ascending:false}).limit(1).maybeSingle();if(error)throw error;return res.status(200).json({project:data?.project_data||null});}
