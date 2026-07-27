@@ -1,40 +1,44 @@
-BLUVIXA 3.0 — COMPLETE FRONTEND PACKAGE
-=========================================
+BLUVIXA 4.0 COMPLETE REBUILD
 
-FILES
-- index.html
-- style.css
-- app.js
-- auth-payments.js
+This is a full frontend rebuild, not a CSS patch.
 
-WHAT THIS VERSION IMPROVES
-- Adds an unmistakable green “Bluvixa Member” confirmation at the top of the signed-in dashboard.
-- Shows the signed-in email, plan, subscription status, and ownership status clearly.
-- Keeps the full SaaS dashboard: Overview, My Website, Subscription, Publishing,
-  Ownership & Export, Domains, and Settings.
-- Keeps all existing builder controls, website preview rendering, themes, media,
-  plan limits, maps, domains, local drafts, Supabase authentication, Stripe Checkout,
-  Stripe Customer Portal, cloud save/load, and website-buyout logic.
-- Fixes the confusing mobile “browser blocked local saving” experience.
-- Uses IndexedDB as expanded device storage when large photos/videos exceed localStorage.
-- Gives clear save states: Saving, Saved on this device, Use Cloud Save, or Sign in for Cloud Save.
+NEW APPLICATION FLOW
+1. Public landing page
+2. Sign in or create account
+3. Member Dashboard
+4. Saved Drafts page
+5. Existing visual Builder with its preview preserved
+6. Billing & Ownership page with visible website-buyout options
+7. Domain center
 
-INSTALLATION
-1. Back up your current frontend.
-2. Replace index.html, style.css, app.js, and auth-payments.js with these files.
-3. Keep your current assets folder and hero-bluvixa-webicon.webp.
-4. Keep your existing Vercel API routes and environment variables.
-5. Redeploy.
+PRESERVED
+- Supabase configuration is still fetched from /api/config.
+- Supabase authentication remains unchanged.
+- Stripe Checkout still uses /api/create-checkout-session.
+- Stripe Customer Portal still uses /api/create-portal-session.
+- Cloud projects still use /api/project.
+- Account status still uses /api/account.
+- Existing builder state, visual preview, plan limits, media, maps, themes, domains,
+  local saving, cloud save/load, and publishing state remain in app.js.
 
-BACKEND TRUTH
-- Membership means the user is authenticated through Supabase.
-- Subscription status and plan come from /api/account and Stripe webhook data.
-- Cloud Save uses /api/project.
-- Billing uses /api/create-portal-session.
-- Buyout uses /api/create-checkout-session with purchaseType “buyout”.
-- Raw-code export calls GET /api/export-website and needs that server endpoint.
-- The builder’s Publish button records publishing state; real public deployment still
-  requires the publishing backend.
+SAVED DRAFTS
+- “Save to Drafts” creates named snapshots in the Saved Drafts page.
+- Users can search, load, and delete snapshots.
+- Up to 30 browser snapshots are retained.
+- Media-heavy projects should also be saved to the cloud because browser storage
+  limits vary by device.
 
-SECURITY
-Never place Stripe secret keys or the Supabase service-role key in these frontend files.
+WEBSITE BUYOUT
+- The Billing & Ownership page visibly shows the buyout option.
+- Starter: $499
+- Professional: $599
+- Advanced: $699
+- The buyout button uses the existing Stripe checkout route.
+- Website ownership remains permanent in the account data when the backend webhook
+  records websiteBoughtOut.
+- ZIP download calls /api/export-website after ownership is confirmed.
+
+INSTALL
+Replace index.html, style.css, app.js, auth-payments.js, and add dashboard.js.
+Keep your current assets folder, favicon files, Vercel API routes, Supabase variables,
+and Stripe variables.

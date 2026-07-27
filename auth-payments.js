@@ -74,11 +74,11 @@
         var fullName=el("authFullName").value.trim();
         var result=await supabaseClient.auth.signUp({email:email,password:password,options:{data:{full_name:fullName}}});
         if(result.error) throw result.error;
-        setMessage(result.data.session?"Account created and signed in.":"Account created. Check your email to verify it.",false);
+        setMessage(result.data.session?"Account created and signed in.":"Account created. Check your email to verify it.",false); if(result.data.session){closeAuth();location.hash="#account";}
       }else{
         var login=await supabaseClient.auth.signInWithPassword({email:email,password:password});
         if(login.error) throw login.error;
-        closeAuth(); toast("Welcome back to Bluvixa.");
+        closeAuth(); location.hash="#account"; toast("Welcome back to Bluvixa.");
       }
     }catch(error){setMessage(error.message||"Authentication failed.",true);}finally{button.disabled=false;}
   }
@@ -95,6 +95,11 @@
       ? "Signed in as "+currentUser.email+". Your plan and billing status appear below."
       : "Sign in to access your dashboard, cloud projects, billing, and ownership.");
     var accountSection=el("account"); if(accountSection) accountSection.classList.toggle("hidden",!signedIn);
+    ["drafts","billing","domains"].forEach(function(id){var page=el(id);if(page)page.classList.toggle("hidden",!signedIn);});
+    var publicNav=el("publicNav"); if(publicNav) publicNav.classList.toggle("hidden",signedIn);
+    var memberNav=el("memberNav"); if(memberNav) memberNav.classList.toggle("hidden",!signedIn);
+    safeText("sidebarMemberEmail",signedIn?currentUser.email:"—");
+    safeText("draftsMemberEmail",signedIn?currentUser.email:"—");
     if(signedIn){ await loadAccount(); }
   }
   async function signOut(){ if(supabaseClient) await supabaseClient.auth.signOut(); location.hash="#top"; toast("Signed out."); }
@@ -150,6 +155,10 @@
       safeText("dashboardSubscriptionPlan",plan);
       safeText("dashboardSubscriptionStatus",billing);
       safeText("dashboardSubscriptionDate",accountDate(data));
+      var prices={starter:499,professional:599,advanced:699};
+      var planKey=String(data.plan||"professional").toLowerCase();
+      safeText("dashboardBuyoutPrice","$"+(prices[planKey]||599));
+      safeText("buyoutPriceHeading","Buy out your "+(data.plan?plan:"Professional")+" website");
       safeText("dashboardPlanHelp",data.plan?"Your "+plan+" workspace is connected.":"Choose a plan to activate builder service.");
       safeText("dashboardRenewalText",accountDate(data));
       safeText("dashboardOwnershipText",owned?"Raw-code export is unlocked.":"Raw-code export remains locked.");

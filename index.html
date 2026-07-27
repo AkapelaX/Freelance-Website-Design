@@ -3,137 +3,181 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Bluvixa 2.5 — Website Builder</title>
-<meta content="Build, host, and manage a professional website with Bluvixa. Subscribers use the platform; a one-time buyout unlocks ownership and export of the complete raw-code website package." name="description"/>
+<title>Bluvixa 4.0 — Website Builder</title>
+<meta name="description" content="Build, save, publish, manage, and own professional websites with Bluvixa."/>
 <link href="hero-bluvixa-webicon.webp?v=5" rel="icon" type="image/webp"/>
-<link href="assets/bluvixa-favicon.png?v=5" rel="icon" sizes="512x512" type="image/png"/>
-<link href="assets/favicon.ico?v=5" rel="shortcut icon"/>
 <link href="assets/bluvixa-favicon.png?v=5" rel="apple-touch-icon"/>
-<link href="style.css?v=20260727-dashboard" rel="stylesheet"/>
+<link href="style.css?v=20260727-v4" rel="stylesheet"/>
 </head>
-<body>
-<header class="topbar">
-<div class="container nav">
-<a class="brand" href="#top">
-<div class="logo-mark"><img alt="Bluvixa logo" src="hero-bluvixa-webicon.webp"/></div>
-<div class="brand-copy">BLUVIXA<small>VERSION 2.5</small></div>
+<body class="route-home">
+<header class="app-header">
+<a class="app-brand" href="#home">
+<div class="app-brand-mark"><img src="hero-bluvixa-webicon.webp" alt="Bluvixa"/></div>
+<div><strong>BLUVIXA</strong><small>WEBSITE PLATFORM</small></div>
 </a>
-<nav class="nav-links">
-<a href="#how-it-works">How It Works</a>
-<a href="#builder">Builder</a>
-<a href="#ownership">Code Ownership</a>
-<a href="#pricing">Plans</a>
-<a href="#policies">Policies</a>
-
-<a class="hidden backend-only" href="#account" id="accountNavLink">Dashboard</a>
+<nav class="public-nav" id="publicNav">
+<a href="#home">Home</a>
+<a href="#pricing">Pricing</a>
+<a href="#builder">Try Builder</a>
 </nav>
-<div class="nav-actions">
-<a class="btn btn-secondary" href="#ownership">How Ownership Works</a>
-<button class="btn btn-secondary hidden" id="signInBtn" type="button">Sign In</button>
+<nav class="member-nav hidden" id="memberNav">
+<a href="#account" data-route-link="account">Dashboard</a>
+<a href="#drafts" data-route-link="drafts">Saved Drafts</a>
+<a href="#builder" data-route-link="builder">Builder</a>
+<a href="#billing" data-route-link="billing">Billing & Ownership</a>
+</nav>
+<div class="header-actions">
+<button class="btn btn-ghost hidden" id="signInBtn" type="button">Sign In</button>
 <button class="btn btn-primary hidden" id="startTrialBtn" type="button">Start Free Trial</button>
-<button class="btn btn-secondary hidden backend-only" id="signOutBtn" type="button">Sign Out</button>
-</div>
+<button class="avatar-button hidden backend-only" id="accountNavLink" type="button" aria-label="Open dashboard">B</button>
+<button class="btn btn-ghost hidden backend-only" id="signOutBtn" type="button">Sign Out</button>
 </div>
 </header>
-<main id="top">
-<section class="container hero">
-<div class="hero-card glass">
-<div class="eyebrow">Visual building. Real raw code.</div>
-<h1>Build and run your website with Bluvixa—or buy it out and own the code.</h1>
-<p>Design, host, update, and manage a professional website through one simple platform. When you purchase a website buyout, Bluvixa unlocks a complete export containing your HTML, CSS, JavaScript, and eligible assets.</p>
-<div class="hero-actions">
-<a class="btn btn-primary" href="#builder">Open Website Builder</a>
-<a class="btn btn-secondary" href="#pricing">Compare Packages</a>
+
+<main>
+<section class="app-page landing-page" id="home" data-page="home">
+<div class="landing-grid">
+<div class="landing-copy">
+<span class="landing-badge">A COMPLETE WEBSITE WORKSPACE</span>
+<h1>Build beautiful websites. Save every draft. Own the code when you are ready.</h1>
+<p>Bluvixa combines a visual website builder, member dashboard, saved-draft library, subscription management, publishing controls, and one-time website buyouts.</p>
+<div class="landing-actions">
+<button class="btn btn-primary btn-large" id="landingStartBtn" type="button">Start 7-Day Free Trial</button>
+<a class="btn btn-secondary btn-large" href="#builder">Preview the Builder</a>
 </div>
-<div class="trust">
-<span><b>✓</b> 7-day free trial</span>
-<span><b>✓</b> Annual subscription</span>
-<span><b>✓</b> Raw-code ownership after buyout</span>
+<div class="landing-proof">
+<div><strong>Visual Builder</strong><span>Design without code</span></div>
+<div><strong>Saved Drafts</strong><span>Return to earlier versions</span></div>
+<div><strong>Website Buyout</strong><span>Own the exported source code</span></div>
 </div>
 </div>
-<div class="plan-stack">
-<article class="plan-card glass">
-<div class="plan-top">
-<div><h3>Starter</h3><small>Simple professional website</small></div>
-<span class="buyout-tag">$499 buyout</span>
+<div class="landing-product-card">
+<div class="product-window-bar"><span></span><span></span><span></span><b>Bluvixa Dashboard</b></div>
+<div class="product-window-body">
+<aside>
+<div class="fake-logo">B</div>
+<div class="fake-nav active">Overview</div>
+<div class="fake-nav">My Websites</div>
+<div class="fake-nav">Saved Drafts</div>
+<div class="fake-nav">Billing</div>
+</aside>
+<div class="fake-dashboard">
+<div class="fake-welcome"><small>WELCOME BACK</small><strong>Your website workspace</strong></div>
+<div class="fake-stats"><span>Professional Plan</span><span>1 Website</span><span>3 Drafts</span></div>
+<div class="fake-site-card"><div class="fake-preview"></div><div><strong>My Business Website</strong><small>Draft saved today</small></div></div>
 </div>
-<div class="stats">
-<div class="stat"><b>10</b><span>Content uploads</span></div>
-<div class="stat"><b>1</b><span>Header bio</span></div>
-<div class="stat"><b>0</b><span>Gallery uploads</span></div>
 </div>
-</article>
-<article class="plan-card glass">
-<div class="plan-top">
-<div><h3>Professional</h3><small>More content and gallery tools</small></div>
-<span class="buyout-tag">$599 buyout</span>
 </div>
-<div class="stats">
-<div class="stat"><b>15</b><span>Content uploads</span></div>
-<div class="stat"><b>1</b><span>Header bio</span></div>
-<div class="stat"><b>12</b><span>Gallery uploads</span></div>
-</div>
-</article>
-<article class="plan-card glass">
-<div class="plan-top">
-<div><h3>Advanced</h3><small>Full custom controls</small></div>
-<span class="buyout-tag">$699 buyout</span>
-</div>
-<div class="stats">
-<div class="stat"><b>20</b><span>Content uploads</span></div>
-<div class="stat"><b>1</b><span>Header bio</span></div>
-<div class="stat"><b>12</b><span>Gallery uploads</span></div>
-</div>
-</article>
 </div>
 </section>
-<section class="section" id="how-it-works">
-<div class="container">
-<div class="section-head">
-<span class="section-kicker">ONE BUILDER, TWO WAYS TO USE IT</span>
-<h2>Stay subscribed or purchase full website ownership.</h2>
-<p>Bluvixa separates convenient ongoing website service from ownership of the exported source-code package.</p>
+
+<section class="app-page dashboard-page hidden backend-only" id="account" data-page="account">
+<div class="member-shell">
+<aside class="member-sidebar">
+<div class="sidebar-user">
+<div class="sidebar-avatar">B</div>
+<div><small>BLUVIXA MEMBER</small><strong id="sidebarMemberEmail">Loading…</strong></div>
 </div>
-<div class="ownership-compare">
-<article class="glass ownership-card">
-<div class="ownership-icon">∞</div>
-<span class="ownership-label">SUBSCRIPTION</span>
-<h3>Build, host, and manage with Bluvixa</h3>
-<p>Your annual subscription keeps the builder, hosting workflow, updates, backups, dashboard, analytics, domain tools, and support available.</p>
-<ul class="ownership-list">
-<li>Use the visual website builder</li>
-<li>Publish through Bluvixa hosting</li>
-<li>Connect a domain and manage updates</li>
-<li>Keep cloud projects and media available</li>
-<li>Source-code export remains locked</li>
-</ul>
-<a class="btn btn-primary" href="#pricing">Choose a Subscription</a>
-</article>
-<article class="glass ownership-card ownership-card-premium">
-<div class="ownership-icon">&lt;/&gt;</div>
-<span class="ownership-label">ONE-TIME BUYOUT</span>
-<h3>Own and export the finished website</h3>
-<p>A successful buyout payment unlocks a downloadable project package for that website. You can self-host it, edit it in a code editor, or give it to another developer.</p>
-<ul class="ownership-list">
-<li>Complete HTML, CSS, and JavaScript</li>
-<li>Customer-uploaded images and assets</li>
-<li>Organized folders and setup README</li>
-<li>Self-hosting and continued editing rights</li>
-<li>Re-download access from the dashboard</li>
-</ul>
-<a class="btn btn-secondary" href="#pricing">View Buyout Prices</a>
-</article>
+<nav>
+<a class="active" href="#account"><span>⌂</span> Overview</a>
+<a href="#drafts"><span>▤</span> Saved Drafts</a>
+<a href="#builder"><span>✎</span> Website Builder</a>
+<a href="#billing"><span>$</span> Billing & Ownership</a>
+<a href="#domains"><span>◎</span> Domains</a>
+</nav>
+<div class="sidebar-bottom">
+<button class="btn btn-ghost backend-only" id="accountSignOutBtn" type="button">Sign Out</button>
 </div>
-<div class="ownership-note">
-<strong>What the buyout does not transfer:</strong> the Bluvixa platform, builder software, backend systems, trademarks, reusable platform components, or third-party items that cannot legally be redistributed. The customer owns the exported website package and their own uploaded content.
-        </div>
+</aside>
+<div class="member-content">
+<div class="member-page-head">
+<div><span class="workspace-kicker">MEMBER DASHBOARD</span><h1 id="dashboardGreeting">Welcome to Bluvixa</h1><p id="memberConfirmationDetails">Your account details are loading.</p></div>
+<a class="btn btn-primary" href="#builder">Continue Building</a>
+</div>
+<div class="membership-strip" id="memberConfirmation">
+<div class="membership-check">✓</div>
+<div><small>ACCOUNT STATUS</small><strong id="memberConfirmationTitle">You are signed in</strong></div>
+<div class="membership-plan"><small>PLAN</small><strong id="accountPlan">No active plan</strong></div>
+<div class="membership-plan"><small>SUBSCRIPTION</small><strong id="accountBillingStatus">Not subscribed</strong></div>
+</div>
+
+<div class="metric-grid">
+<article><small>WEBSITE</small><strong id="accountProjectName">No cloud project saved</strong><span id="dashboardPublishStatus">Draft</span></article>
+<article><small>OWNERSHIP</small><strong id="accountOwnershipStatus">Not purchased</strong><span id="dashboardOwnershipText">Export locked</span></article>
+<article><small>WEBSITE ADDRESS</small><strong id="dashboardDomainStatus">Not published</strong><span id="dashboardPublishedUrl">Configure an address</span></article>
+<article><small>ACCOUNT</small><strong id="accountAuthStatus">Signed in</strong><span id="accountEmail">—</span></article>
+</div>
+
+<div class="dashboard-main-grid">
+<article class="dashboard-website-card">
+<div class="website-card-preview">
+<div class="mini-browser"><span></span><span></span><span></span></div>
+<div class="mini-site"><strong id="dashboardSiteName">Your Website</strong><small>Live builder preview</small></div>
+</div>
+<div class="website-card-body">
+<div><small>PRIMARY WEBSITE</small><h2 id="dashboardWebsiteTitle">Continue your website</h2><p>Open the same visual preview and editor you already use.</p></div>
+<div class="website-card-actions">
+<a class="btn btn-primary" href="#builder">Continue Building</a>
+<button class="btn btn-secondary backend-only" id="cloudSaveBtn" type="button">Save to Cloud</button>
+<button class="btn btn-secondary backend-only" id="cloudLoadBtn" type="button">Load Cloud Project</button>
+</div>
+</div>
+</article>
+<aside class="quick-actions-card">
+<h3>Quick Actions</h3>
+<a href="#drafts"><span>▤</span><div><strong>Saved Drafts</strong><small>View, load, and delete versions</small></div><b>›</b></a>
+<a href="#billing"><span>$</span><div><strong>Buy Out Website</strong><small>Own and export the code</small></div><b>›</b></a>
+<a href="#domains"><span>◎</span><div><strong>Connect Domain</strong><small>Choose your public address</small></div><b>›</b></a>
+<a href="#builder" data-open-builder-tab="project"><span>↗</span><div><strong>Publish</strong><small>Review launch settings</small></div><b>›</b></a>
+</aside>
+</div>
+
+<div class="recent-drafts-block">
+<div class="block-head"><div><small>RECENT WORK</small><h2>Saved drafts</h2></div><a href="#drafts">View all drafts</a></div>
+<div class="draft-preview-grid" id="dashboardDraftPreview"><div class="empty-state">No saved drafts yet. Open the builder and select “Save to Drafts.”</div></div>
+</div>
+</div>
 </div>
 </section>
-<section class="section" id="builder">
+
+<section class="app-page drafts-page hidden backend-only" id="drafts" data-page="drafts">
+<div class="member-shell">
+<aside class="member-sidebar">
+<div class="sidebar-user"><div class="sidebar-avatar">B</div><div><small>BLUVIXA MEMBER</small><strong id="draftsMemberEmail">Your account</strong></div></div>
+<nav>
+<a href="#account"><span>⌂</span> Overview</a>
+<a class="active" href="#drafts"><span>▤</span> Saved Drafts</a>
+<a href="#builder"><span>✎</span> Website Builder</a>
+<a href="#billing"><span>$</span> Billing & Ownership</a>
+<a href="#domains"><span>◎</span> Domains</a>
+</nav>
+</aside>
+<div class="member-content">
+<div class="member-page-head">
+<div><span class="workspace-kicker">SAVED DRAFTS</span><h1>Your website versions</h1><p>Save snapshots before major changes, return to an earlier design, or delete versions you no longer need.</p></div>
+<button class="btn btn-primary" id="saveCurrentDraftBtn" type="button">Save Current Website</button>
+</div>
+<div class="draft-toolbar">
+<div class="draft-search"><span>⌕</span><input id="draftSearchInput" placeholder="Search saved drafts"/></div>
+<div class="draft-count"><strong id="savedDraftCount">0</strong><span>saved drafts</span></div>
+</div>
+<div class="saved-drafts-grid" id="savedDraftsGrid"></div>
+</div>
+</div>
+</section>
+
+<section class="app-page builder-page" id="builder" data-page="builder">
 <div class="container">
-<div class="section-head">
-<h2>Bluvixa Master Builder</h2>
-<p>Build the complete visual website design here. Build the complete visual website design here. Domain configuration and local drafts are available now; account, billing, cloud storage, and publishing activate with the operating backend.</p>
+<div class="workspace-page-head">
+<div>
+<span class="workspace-kicker">VISUAL WEBSITE BUILDER</span>
+<h1>Build your website</h1>
+<p>The live website preview and all existing design controls remain intact.</p>
+</div>
+<div class="workspace-head-actions">
+<button class="btn btn-secondary" id="saveSnapshotTopBtn" type="button">Save to Drafts</button>
+<a class="btn btn-secondary" href="#drafts">View Saved Drafts</a>
+</div>
 </div>
 <div class="builder-shell">
 <aside class="sidebar" id="builderSidebar">
@@ -150,7 +194,7 @@
 <button class="tab" data-tab="gallery" type="button">Gallery</button>
 <button class="tab" data-tab="design" type="button">Design</button>
 <button class="tab" data-tab="map" type="button">Map</button>
-<button class="tab backend-only" data-tab="billing" type="button">Billing</button>
+
 <button class="tab domain-tab" data-tab="project" type="button">Domain</button>
 </div>
 <section class="panel active" data-panel="business">
@@ -350,7 +394,7 @@
 </div>
 <div class="tiny">Enter a street address, business name, city, or landmark. Bluvixa creates the embedded map automatically. Leave this blank to use the business address above.</div>
 </section>
-<section class="panel backend-only" data-panel="billing">
+<section class="panel backend-only hidden" data-panel="billing">
 <div class="notice" id="billingNotice"></div>
 <div class="group">
 <label for="subscriptionStatus">Subscription status</label>
@@ -547,7 +591,74 @@
 </div>
 </section>
 
-<section class="section" id="pricing">
+<section class="app-page billing-page hidden backend-only" id="billing" data-page="billing">
+<div class="member-shell">
+<aside class="member-sidebar">
+<div class="sidebar-user"><div class="sidebar-avatar">B</div><div><small>BLUVIXA MEMBER</small><strong>Billing center</strong></div></div>
+<nav>
+<a href="#account"><span>⌂</span> Overview</a>
+<a href="#drafts"><span>▤</span> Saved Drafts</a>
+<a href="#builder"><span>✎</span> Website Builder</a>
+<a class="active" href="#billing"><span>$</span> Billing & Ownership</a>
+<a href="#domains"><span>◎</span> Domains</a>
+</nav>
+</aside>
+<div class="member-content">
+<div class="member-page-head"><div><span class="workspace-kicker">BILLING & OWNERSHIP</span><h1>Subscription and website ownership</h1><p>Your subscription provides access to Bluvixa. A one-time buyout unlocks ownership of the exported website package.</p></div></div>
+<div class="billing-overview-grid">
+<article class="billing-status-card">
+<small>CURRENT PLAN</small><h2 id="dashboardSubscriptionPlan">No active plan</h2><p>Status: <strong id="dashboardSubscriptionStatus">Not subscribed</strong></p><p>Trial or renewal: <strong id="dashboardSubscriptionDate">Available after checkout</strong></p>
+<button class="btn btn-primary backend-only" id="manageBillingBtn" type="button">Manage Subscription</button>
+</article>
+<article class="buyout-focus-card">
+<div class="buyout-focus-top"><span>ONE-TIME PURCHASE</span><b>OWN YOUR WEBSITE</b></div>
+<h2 id="buyoutPriceHeading">Buy out this website</h2>
+<p>Receive the finished HTML, CSS, JavaScript, eligible images, and setup instructions. Your website ownership remains permanent even if the subscription ends.</p>
+<div class="buyout-price" id="dashboardBuyoutPrice">$599</div>
+<div class="buyout-state" id="ownershipDashboardState"><span class="status-pill offline">Not purchased</span><strong>Raw-code export is locked.</strong></div>
+<div class="buyout-actions">
+<button class="btn btn-primary" id="dashboardBuyoutBtn" type="button">Buy Out Website</button>
+<button class="btn btn-secondary backend-only" disabled id="exportWebsiteBtn" type="button">Download Website ZIP</button>
+</div>
+<p class="fine-print" id="accountExportHelp">Purchase the website buyout to unlock a complete raw-code ZIP export.</p>
+</article>
+</div>
+<div class="plan-comparison-member">
+<div class="block-head"><div><small>AVAILABLE PLANS</small><h2>Subscription options</h2></div><a href="#pricing">See full plan details</a></div>
+<div class="member-plan-grid">
+<article><small>STARTER</small><h3>$180/year</h3><span>$499 website buyout</span><button class="btn btn-secondary memberPlanCheckout" data-plan="starter">Choose Starter</button></article>
+<article class="featured"><small>PROFESSIONAL</small><h3>$348/year</h3><span>$599 website buyout</span><button class="btn btn-primary memberPlanCheckout" data-plan="professional">Choose Professional</button></article>
+<article><small>ADVANCED</small><h3>$588/year</h3><span>$699 website buyout</span><button class="btn btn-secondary memberPlanCheckout" data-plan="advanced">Choose Advanced</button></article>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<section class="app-page domains-page hidden backend-only" id="domains" data-page="domains">
+<div class="member-shell">
+<aside class="member-sidebar">
+<div class="sidebar-user"><div class="sidebar-avatar">B</div><div><small>BLUVIXA MEMBER</small><strong>Domain center</strong></div></div>
+<nav>
+<a href="#account"><span>⌂</span> Overview</a>
+<a href="#drafts"><span>▤</span> Saved Drafts</a>
+<a href="#builder"><span>✎</span> Website Builder</a>
+<a href="#billing"><span>$</span> Billing & Ownership</a>
+<a class="active" href="#domains"><span>◎</span> Domains</a>
+</nav>
+</aside>
+<div class="member-content">
+<div class="member-page-head"><div><span class="workspace-kicker">DOMAIN CENTER</span><h1>Website address and publishing</h1><p>Use a Bluvixa address or connect a custom domain through the existing builder controls.</p></div><a class="btn btn-primary" href="#builder" data-open-builder-tab="project">Open Domain Controls</a></div>
+<div class="domain-center-card">
+<small>CURRENT WEBSITE ADDRESS</small><h2 id="dashboardDomainUrl">Not configured</h2><p id="dashboardPublishingDescription">Configure your address in the Builder’s Domain tab.</p>
+<div class="domain-center-actions"><a class="btn btn-primary" href="#builder" data-open-builder-tab="project">Manage Domain</a><button class="btn btn-secondary" id="copyPublishedUrlBtn" type="button">Copy Address</button></div>
+</div>
+</div>
+</div>
+</section>
+
+<section class="app-page pricing-page" id="pricing" data-page="pricing">
+<div class="pricing-inner">
 <div class="container">
 <div class="section-head">
 <h2>Choose Your Package</h2>
@@ -607,433 +718,28 @@
 </article>
 </div>
 </div>
-</section>
-<section class="section" id="ownership">
-<div class="container">
-<div class="section-head">
-<span class="section-kicker">CLEAR OWNERSHIP TERMS</span>
-<h2>Your website service and your exported code are different products.</h2>
-<p>No hidden lock-in language: the subscription operates the website inside Bluvixa; the buyout transfers the downloadable website package.</p>
-</div>
-<div class="ownership-steps">
-<article><b>1</b><h3>Build</h3><p>Create the website visually and save it to your Bluvixa account.</p></article>
-<article><b>2</b><h3>Subscribe</h3><p>Use hosting, updates, domains, analytics, backups, and support while subscribed.</p></article>
-<article><b>3</b><h3>Buy out</h3><p>Purchase the specific website at the buyout price assigned to its plan.</p></article>
-<article><b>4</b><h3>Export</h3><p>Download a ZIP with clean source files, eligible assets, and instructions.</p></article>
-</div>
-<div class="license-panel glass">
-<h3>Website Buyout License Summary</h3>
-<div class="license-grid">
-<div><strong>Customer receives</strong><p>A perpetual right to use, modify, host, transfer, and commercially operate the purchased exported website package.</p></div>
-<div><strong>Bluvixa retains</strong><p>Ownership of its platform, builder, SaaS source code, backend, trademarks, generic components, and reusable templates.</p></div>
-<div><strong>Third-party assets</strong><p>Remain governed by their original licenses. Items that cannot be redistributed are identified or excluded from export.</p></div>
-<div><strong>After export</strong><p>Self-hosted code is no longer automatically maintained by Bluvixa unless a separate support or hosting service is active.</p></div>
-</div>
-</div>
 </div>
 </section>
-
-<section class="section" id="policies">
-<div class="container">
-<div class="section-head">
-<span class="section-kicker">CUSTOMER POLICIES &amp; SUPPORT</span>
-<h2>Clear terms before you subscribe or purchase.</h2>
-<p>These policies explain Bluvixa billing, trials, cancellations, refunds, digital delivery, privacy, and customer support.</p>
-</div>
-
-<div class="ownership-compare">
-<article class="glass ownership-card" id="refund-policy">
-<span class="ownership-label">REFUND &amp; DISPUTE POLICY</span>
-<h3>Refund eligibility</h3>
-<ul class="ownership-list">
-<li>Annual subscriptions include a 7-day free trial. Cancel before the trial ends to avoid the annual charge.</li>
-<li>After an annual subscription charge is processed, customers may request a refund within 14 calendar days of the charge. Refund requests are reviewed for account usage, duplicate billing, technical failure, fraud, or other relevant circumstances.</li>
-<li>No refund is guaranteed after substantial use of the builder, hosting, publishing, cloud storage, export tools, or other paid services, except where required by law.</li>
-<li>Approved refunds are returned to the original payment method. Bank processing times vary.</li>
-<li>Customers should contact Bluvixa before filing a payment dispute so we have an opportunity to investigate and resolve the issue.</li>
-</ul>
-</article>
-
-<article class="glass ownership-card" id="cancellation-policy">
-<span class="ownership-label">CANCELLATION POLICY</span>
-<h3>Cancel without losing clarity</h3>
-<ul class="ownership-list">
-<li>Subscriptions can be canceled through the Bluvixa billing portal or by contacting support.</li>
-<li>Cancellation stops future renewals. Access normally continues until the end of the paid billing period unless otherwise stated.</li>
-<li>Canceling during the 7-day trial prevents the annual subscription charge.</li>
-<li>Canceling a subscription does not automatically refund a payment already processed.</li>
-<li>Customers should export or save any content they need before access ends. Data may be removed after account closure or the applicable retention period.</li>
-</ul>
-</article>
-</div>
-
-<div class="ownership-compare" style="margin-top:20px">
-<article class="glass ownership-card" id="delivery-policy">
-<span class="ownership-label">DIGITAL DELIVERY &amp; FULFILLMENT</span>
-<h3>How services and website packages are delivered</h3>
-<ul class="ownership-list">
-<li>Subscription access is delivered electronically to the customer’s Bluvixa account after successful checkout and account verification.</li>
-<li>Builder access, hosting tools, project storage, and account features are provided online; no physical product is shipped.</li>
-<li>A website buyout is a one-time digital purchase for the specific completed website associated with the order.</li>
-<li>When a buyout payment is confirmed, eligible source files and customer-owned assets are made available through the account export feature or another secure electronic delivery method.</li>
-<li>Delivery may be delayed if payment review, identity verification, technical remediation, or third-party licensing review is required.</li>
-</ul>
-</article>
-
-<article class="glass ownership-card" id="buyout-refunds">
-<span class="ownership-label">WEBSITE BUYOUTS</span>
-<h3>Custom digital-product terms</h3>
-<ul class="ownership-list">
-<li>Before export or delivery, a buyout refund request may be considered if no downloadable package has been generated or provided.</li>
-<li>After the source-code package has been generated, downloaded, transferred, or otherwise delivered, the buyout is generally non-refundable because the digital files cannot be returned.</li>
-<li>This policy does not limit rights that cannot legally be waived.</li>
-<li>Third-party assets remain subject to their original licenses and may be excluded from the export when redistribution is not permitted.</li>
-</ul>
-</article>
-</div>
-
-<div class="license-panel glass" id="terms-of-service" style="margin-top:20px">
-<h3>Terms of Service</h3>
-<div class="license-grid">
-<div><strong>Eligibility and accounts</strong><p>You must provide accurate account information, protect your login credentials, and use Bluvixa only for lawful business or personal website projects.</p></div>
-<div><strong>Subscriptions and trials</strong><p>The 7-day trial converts to the selected annual plan unless canceled before the trial ends. Annual plans renew automatically until canceled. Pricing and renewal details are displayed before checkout.</p></div>
-<div><strong>Acceptable use</strong><p>You may not use Bluvixa to host unlawful, fraudulent, infringing, abusive, malicious, deceptive, or prohibited content, or to interfere with the platform or other users.</p></div>
-<div><strong>Customer content</strong><p>You retain ownership of content you upload and confirm that you have the rights needed to use it. You grant Bluvixa the limited permission required to store, process, display, back up, and publish that content as part of the service.</p></div>
-<div><strong>Bluvixa intellectual property</strong><p>Bluvixa retains ownership of its platform, builder, backend, reusable systems, trademarks, and software. A website buyout transfers only the eligible exported website package described at purchase.</p></div>
-<div><strong>Service availability</strong><p>We work to keep Bluvixa available and secure, but uninterrupted operation is not guaranteed. Maintenance, outages, third-party failures, security concerns, or legal requirements may affect access.</p></div>
-<div><strong>Suspension and termination</strong><p>Bluvixa may suspend or terminate accounts for nonpayment, security threats, prohibited use, legal requirements, or material violations of these terms.</p></div>
-<div><strong>Limitation</strong><p>To the maximum extent permitted by law, Bluvixa is not responsible for indirect, incidental, special, or consequential losses arising from use of the platform or exported websites.</p></div>
-</div>
-</div>
-
-<div class="license-panel glass" id="privacy-policy" style="margin-top:20px">
-<h3>Privacy Policy</h3>
-<div class="license-grid">
-<div><strong>Information collected</strong><p>Bluvixa may collect account details, contact information, project content, uploaded files, domain settings, device and usage data, support communications, and transaction-related records.</p></div>
-<div><strong>How information is used</strong><p>Information is used to create accounts, provide the builder and hosting services, process purchases, prevent fraud, secure the platform, deliver support, improve features, and comply with legal obligations.</p></div>
-<div><strong>Payment processing</strong><p>Payments are processed by Stripe. Bluvixa does not directly store complete payment-card numbers. Stripe may collect and process payment, device, fraud-prevention, and transaction information under its own privacy practices.</p></div>
-<div><strong>Service providers</strong><p>Bluvixa may use service providers such as Stripe for payments, Supabase for authentication and data services, and Vercel for website hosting and server functions. They process information only as needed to provide their services and under their applicable terms.</p></div>
-<div><strong>Sharing</strong><p>Bluvixa does not sell personal information. Information may be shared with service providers, professional advisers, authorities when legally required, or a successor in a business transaction.</p></div>
-<div><strong>Data retention and security</strong><p>Information is retained for as long as reasonably needed to provide services, maintain business and tax records, resolve disputes, and meet legal obligations. Reasonable administrative and technical safeguards are used, but no online system is completely risk-free.</p></div>
-<div><strong>Your choices</strong><p>You may request access, correction, deletion, or account closure by contacting support. Some records may be retained where required for fraud prevention, taxes, billing, disputes, security, or other legal obligations.</p></div>
-<div><strong>Children</strong><p>Bluvixa is not intended for children under 13, and we do not knowingly collect personal information from children under 13.</p></div>
-</div>
-</div>
-
-<div class="license-panel glass" id="promotion-terms" style="margin-top:20px">
-<h3>Trial and Promotion Terms</h3>
-<p>The 7-day free trial is available for eligible new subscriptions. A valid payment method may be required. Unless canceled before the trial expires, the selected annual subscription is charged automatically at the price shown during checkout. Promotions cannot be exchanged for cash, combined unless expressly allowed, or applied retroactively. Bluvixa may limit or withdraw promotions where abuse, duplication, fraud, or ineligibility is detected.</p>
-</div>
-
-<div class="license-panel glass" id="contact-us" style="margin-top:20px">
-<h3>Customer Service</h3>
-<div class="license-grid">
-<div><strong>Email support</strong><p><a href="mailto:Brown.rickey95@gmail.com">Brown.rickey95@gmail.com</a></p></div>
-<div><strong>Phone support</strong><p><a href="tel:+15596763875">(559) 676-3875</a></p></div>
-<div><strong>Business location</strong><p>Oakhurst, California, United States</p></div>
-<div><strong>Support requests</strong><p>Include your account email, transaction date, plan, and a short description of the issue. Do not send complete card numbers or passwords.</p></div>
-</div>
-</div>
-
-<div class="ownership-note" style="margin-top:20px">
-<strong>Policy effective date:</strong> July 26, 2026. These policies may be updated as Bluvixa develops. Material changes will be posted on this page. Nothing in these policies limits consumer rights that cannot legally be waived.
-</div>
-</div>
-</section>
-
-
-<section class="section hidden backend-only account-dashboard-section" id="account">
-<div class="container">
-<div class="member-confirmation glass" id="memberConfirmation">
-<div class="member-confirmation-icon">✓</div>
-<div>
-<span class="member-confirmation-label">BLUVIXA MEMBER</span>
-<strong id="memberConfirmationTitle">You are signed in</strong>
-<small id="memberConfirmationDetails">Your membership and billing status are loading.</small>
-</div>
-<a class="btn btn-secondary" href="#builder">Open Builder</a>
-</div>
-
-<div class="dashboard-hero glass">
-<div>
-<span class="section-kicker">BLUVIXA CONTROL CENTER</span>
-<h2>Your Website Dashboard</h2>
-<p>Build, save, publish, manage billing, connect a domain, and unlock ownership from one place.</p>
-</div>
-<div class="dashboard-hero-actions">
-<a class="btn btn-primary" href="#builder">Continue Building</a>
-<button class="btn btn-secondary backend-only" id="accountSignOutBtn" type="button">Sign Out</button>
-</div>
-</div>
-
-<div class="dashboard-status-grid" aria-label="Account overview">
-<article class="glass dashboard-status-card">
-<span>Account</span>
-<strong id="accountAuthStatus">Signed out</strong>
-<small id="accountEmail">—</small>
-</article>
-<article class="glass dashboard-status-card">
-<span>Current plan</span>
-<strong id="accountPlan">No active plan</strong>
-<small id="dashboardPlanHelp">Choose a plan to activate builder service.</small>
-</article>
-<article class="glass dashboard-status-card">
-<span>Subscription</span>
-<strong id="accountBillingStatus">Not subscribed</strong>
-<small id="dashboardRenewalText">Billing details appear after checkout.</small>
-</article>
-<article class="glass dashboard-status-card">
-<span>Ownership</span>
-<strong id="accountOwnershipStatus">Not purchased</strong>
-<small id="dashboardOwnershipText">Raw-code export remains locked.</small>
-</article>
-<article class="glass dashboard-status-card">
-<span>Website</span>
-<strong id="dashboardPublishStatus">Draft</strong>
-<small id="accountProjectName">No cloud project saved</small>
-</article>
-<article class="glass dashboard-status-card">
-<span>Website address</span>
-<strong id="dashboardDomainStatus">Not published</strong>
-<small id="dashboardPublishedUrl">Configure an address in the Domain tab.</small>
-</article>
-</div>
-
-<div class="dashboard-layout">
-<aside class="glass dashboard-menu" aria-label="Dashboard sections">
-<button class="dashboard-menu-button active" data-dashboard-panel="overview" type="button"><span>⌂</span> Overview</button>
-<button class="dashboard-menu-button" data-dashboard-panel="website" type="button"><span>▣</span> My Website</button>
-<button class="dashboard-menu-button" data-dashboard-panel="subscription" type="button"><span>$</span> Subscription</button>
-<button class="dashboard-menu-button" data-dashboard-panel="publishing" type="button"><span>↗</span> Publishing</button>
-<button class="dashboard-menu-button" data-dashboard-panel="ownership" type="button"><span>&lt;/&gt;</span> Ownership &amp; Export</button>
-<button class="dashboard-menu-button" data-dashboard-panel="domains" type="button"><span>◎</span> Domains</button>
-<button class="dashboard-menu-button" data-dashboard-panel="settings" type="button"><span>⚙</span> Settings</button>
-</aside>
-
-<div class="dashboard-panels">
-<section class="dashboard-panel active" data-dashboard-view="overview">
-<div class="dashboard-panel-head">
-<div><span class="section-kicker">OVERVIEW</span><h3>Everything needed to run your website</h3></div>
-<a class="btn btn-primary" href="#builder">Open Builder</a>
-</div>
-<div class="dashboard-action-grid">
-<article class="glass account-card">
-<div class="dashboard-card-icon">✎</div>
-<h3>Continue Building</h3>
-<p>Edit business details, images, sections, colors, layout, maps, and domain settings in the live builder.</p>
-<a class="btn btn-primary" href="#builder">Open Website Builder</a>
-</article>
-<article class="glass account-card">
-<div class="dashboard-card-icon">☁</div>
-<h3>Cloud Project</h3>
-<p>Keep the current builder project connected to your Bluvixa account.</p>
-<div class="account-actions">
-<button class="btn btn-primary backend-only" id="cloudSaveBtn" type="button">Save to Cloud</button>
-<button class="btn btn-secondary backend-only" id="cloudLoadBtn" type="button">Load from Cloud</button>
-</div>
-</article>
-<article class="glass account-card">
-<div class="dashboard-card-icon">↗</div>
-<h3>Publish Website</h3>
-<p id="dashboardPublishHelp">Choose a website address and publish when the design is ready.</p>
-<a class="btn btn-secondary" href="#builder" data-open-builder-tab="project">Publishing &amp; Domain</a>
-</article>
-<article class="glass account-card">
-<div class="dashboard-card-icon">$</div>
-<h3>Billing</h3>
-<p>Review your plan, payment method, invoices, renewal, cancellation, or trial through Stripe.</p>
-<button class="btn btn-primary backend-only" id="manageBillingBtn" type="button">Manage Billing</button>
-</article>
-</div>
-</section>
-
-<section class="dashboard-panel" data-dashboard-view="website">
-<div class="dashboard-panel-head"><div><span class="section-kicker">MY WEBSITE</span><h3>Project controls</h3></div></div>
-<div class="dashboard-action-grid">
-<article class="glass account-card account-card-wide">
-<h3>Website Builder</h3>
-<p>Your existing builder remains the single source of truth for the website design. All current editor controls, plan limits, media, maps, themes, preview sizes, local drafts, and cloud project hooks remain available.</p>
-<div class="account-actions">
-<a class="btn btn-primary" href="#builder">Continue Building</a>
-<a class="btn btn-secondary" href="#builder" data-open-builder-tab="business">Business Details</a>
-<a class="btn btn-secondary" href="#builder" data-open-builder-tab="design">Design Controls</a>
-</div>
-</article>
-<article class="glass account-card">
-<h3>Local Draft</h3>
-<p>Use the Save Draft and Load Draft controls inside the builder for browser-based recovery.</p>
-<a class="btn btn-secondary" href="#builder">Open Draft Controls</a>
-</article>
-<article class="glass account-card">
-<h3>Cloud Backup</h3>
-<p>Save the project to your authenticated account, then load it on another supported device.</p>
-<div class="account-actions">
-<button class="btn btn-primary backend-only dashboard-cloud-save" type="button">Save to Cloud</button>
-<button class="btn btn-secondary backend-only dashboard-cloud-load" type="button">Load from Cloud</button>
-</div>
-</article>
-</div>
-</section>
-
-<section class="dashboard-panel" data-dashboard-view="subscription">
-<div class="dashboard-panel-head"><div><span class="section-kicker">SUBSCRIPTION</span><h3>Plan and billing</h3></div></div>
-<div class="dashboard-action-grid">
-<article class="glass account-card">
-<h3>Current Subscription</h3>
-<p><strong>Plan:</strong> <span id="dashboardSubscriptionPlan">No active plan</span></p>
-<p><strong>Status:</strong> <span id="dashboardSubscriptionStatus">Not subscribed</span></p>
-<p><strong>Trial or renewal:</strong> <span id="dashboardSubscriptionDate">Available after checkout</span></p>
-<button class="btn btn-primary backend-only dashboard-manage-billing" type="button">Manage Billing</button>
-</article>
-<article class="glass account-card">
-<h3>Plan Benefits</h3>
-<p id="dashboardPlanBenefits">Your upload limits and buyout price follow the selected subscription plan.</p>
-<a class="btn btn-secondary" href="#pricing">Compare Plans</a>
-</article>
-</div>
-</section>
-
-<section class="dashboard-panel" data-dashboard-view="publishing">
-<div class="dashboard-panel-head"><div><span class="section-kicker">PUBLISHING</span><h3>Website launch center</h3></div></div>
-<div class="dashboard-action-grid">
-<article class="glass account-card account-card-wide">
-<h3 id="dashboardPublishingTitle">Website draft</h3>
-<p id="dashboardPublishingDescription">The builder currently prepares and stores publishing settings. Actual public deployment requires the connected publishing API.</p>
-<div class="publish-url-box"><span>Website URL</span><strong id="dashboardPublishingUrl">Not published</strong></div>
-<div class="account-actions">
-<a class="btn btn-primary" href="#builder" data-open-builder-tab="project">Open Publishing Controls</a>
-<button class="btn btn-secondary" id="copyPublishedUrlBtn" type="button">Copy URL</button>
-</div>
-</article>
-</div>
-</section>
-
-<section class="dashboard-panel" data-dashboard-view="ownership">
-<div class="dashboard-panel-head"><div><span class="section-kicker">OWNERSHIP &amp; EXPORT</span><h3>Own the finished website code</h3></div></div>
-<div class="dashboard-action-grid">
-<article class="glass account-card ownership-account-card account-card-wide">
-<h3>Website Ownership</h3>
-<p id="accountExportHelp">Purchase the website buyout to unlock a complete raw-code ZIP export.</p>
-<div class="ownership-dashboard-state" id="ownershipDashboardState">
-<span class="status-pill offline">Locked</span>
-<strong>Subscription access does not include raw-code ownership.</strong>
-</div>
-<div class="account-actions">
-<button class="btn btn-primary" id="dashboardBuyoutBtn" type="button">Buy This Website</button>
-<button class="btn btn-secondary backend-only" disabled id="exportWebsiteBtn" type="button">Export Website ZIP</button>
-</div>
-</article>
-</div>
-</section>
-
-<section class="dashboard-panel" data-dashboard-view="domains">
-<div class="dashboard-panel-head"><div><span class="section-kicker">DOMAINS</span><h3>Your website address</h3></div></div>
-<div class="dashboard-action-grid">
-<article class="glass account-card account-card-wide">
-<h3>Domain Management</h3>
-<p>Choose a Bluvixa subdomain or prepare a custom domain connection from the Domain tab in the builder.</p>
-<div class="publish-url-box"><span>Current address</span><strong id="dashboardDomainUrl">Not configured</strong></div>
-<a class="btn btn-primary" href="#builder" data-open-builder-tab="project">Manage Domain</a>
-</article>
-</div>
-</section>
-
-<section class="dashboard-panel" data-dashboard-view="settings">
-<div class="dashboard-panel-head"><div><span class="section-kicker">SETTINGS</span><h3>Account controls</h3></div></div>
-<div class="dashboard-action-grid">
-<article class="glass account-card">
-<h3>Account Email</h3>
-<p id="dashboardSettingsEmail">—</p>
-<button class="btn btn-secondary backend-only dashboard-sign-out" type="button">Sign Out</button>
-</article>
-<article class="glass account-card">
-<h3>Security</h3>
-<p>Password resets are securely delivered through the email connected to your Supabase account.</p>
-<button class="btn btn-secondary" id="dashboardPasswordResetBtn" type="button">Send Password Reset</button>
-</article>
-</div>
-</section>
-</div>
-</div>
-</div>
-</section>
-
 </main>
-
-<footer class="section" style="padding-top:24px;padding-bottom:36px">
-<div class="container">
-<div class="glass" style="padding:22px;display:flex;gap:18px;justify-content:space-between;align-items:center;flex-wrap:wrap">
-<div>
-<strong>Bluvixa</strong>
-<div class="tiny">Cloud-based website building, hosting, and raw-code website buyouts.</div>
-</div>
-<nav aria-label="Legal and customer-service links" style="display:flex;gap:14px;flex-wrap:wrap">
-<a href="#refund-policy">Refunds</a>
-<a href="#cancellation-policy">Cancellation</a>
-<a href="#delivery-policy">Digital Delivery</a>
-<a href="#terms-of-service">Terms</a>
-<a href="#privacy-policy">Privacy</a>
-<a href="#contact-us">Contact</a>
-</nav>
-<div class="tiny">Secure checkout powered by Stripe · Prices shown in USD</div>
-</div>
-</div>
-</footer>
 
 <div class="modal hidden backend-only" id="authModal">
 <div class="modal-card auth-card">
-<div class="modal-head">
-<div>
-<h3 id="authTitle">Sign in to Bluvixa</h3>
-<div class="tiny">Access your websites, subscription, and billing.</div>
-</div>
-<button class="btn btn-secondary btn-small" id="closeAuthBtn" type="button">Close</button>
-</div>
-<div class="auth-tabs">
-<button class="auth-tab active" id="showSignInTab" type="button">Sign In</button>
-<button class="auth-tab" id="showSignUpTab" type="button">Create Account</button>
-</div>
+<div class="modal-head"><div><h3 id="authTitle">Sign in to Bluvixa</h3><div class="tiny">Access your dashboard, drafts, subscription, and websites.</div></div><button class="btn btn-secondary btn-small" id="closeAuthBtn" type="button">Close</button></div>
+<div class="auth-tabs"><button class="auth-tab active" id="showSignInTab" type="button">Sign In</button><button class="auth-tab" id="showSignUpTab" type="button">Create Account</button></div>
 <form id="authForm">
-<div class="group hidden" id="fullNameGroup">
-<label for="authFullName">Full name</label>
-<input autocomplete="name" class="input" id="authFullName">
-</input></div>
-<div class="group">
-<label for="authEmail">Email</label>
-<input autocomplete="email" class="input" id="authEmail" required="" type="email">
-</input></div>
-<div class="group">
-<label for="authPassword">Password</label>
-<input autocomplete="current-password" class="input" id="authPassword" minlength="8" required="" type="password">
-</input></div>
+<div class="group hidden" id="fullNameGroup"><label for="authFullName">Full name</label><input autocomplete="name" class="input" id="authFullName"/></div>
+<div class="group"><label for="authEmail">Email</label><input autocomplete="email" class="input" id="authEmail" required type="email"/></div>
+<div class="group"><label for="authPassword">Password</label><input autocomplete="current-password" class="input" id="authPassword" minlength="8" required type="password"/></div>
 <button class="btn btn-primary" id="authSubmitBtn" style="width:100%" type="submit">Sign In</button>
 </form>
-<button class="text-button" id="forgotPasswordBtn" type="button">Forgot your password?</button>
-<div class="notice hidden" id="authMessage"></div>
+<button class="text-button" id="forgotPasswordBtn" type="button">Forgot your password?</button><div class="notice hidden" id="authMessage"></div>
 </div>
 </div>
-<div class="modal hidden backend-only" id="backendModal">
-<div class="modal-card">
-<div class="modal-head">
-<div>
-<h3>Backend Controls</h3>
-<div class="tiny">Development-only preview.</div>
-</div>
-<button class="btn btn-secondary btn-small" id="closeBackendBtn" type="button">Close</button>
-</div>
-<div class="backend-grid">
-<div class="backend-card"><strong>Authentication</strong><small>Supabase Auth</small></div>
-<div class="backend-card"><strong>Database</strong><small>Supabase Postgres</small></div>
-<div class="backend-card"><strong>Storage</strong><small>Supabase Storage</small></div>
-<div class="backend-card"><strong>Billing</strong><small>Stripe</small></div>
-</div>
-<button class="btn btn-primary" id="refreshJsonBtn" style="width:100%;margin-bottom:12px" type="button">Refresh Backend JSON</button>
-<pre id="backendJson"></pre>
-</div>
-</div>
+<div class="modal hidden backend-only" id="backendModal"><div class="modal-card"><div class="modal-head"><div><h3>Backend Controls</h3><div class="tiny">Development-only preview.</div></div><button class="btn btn-secondary btn-small" id="closeBackendBtn" type="button">Close</button></div><div class="backend-grid"><div class="backend-card"><strong>Authentication</strong><small>Supabase Auth</small></div><div class="backend-card"><strong>Database</strong><small>Supabase Postgres</small></div><div class="backend-card"><strong>Storage</strong><small>Supabase Storage</small></div><div class="backend-card"><strong>Billing</strong><small>Stripe</small></div></div><button class="btn btn-primary" id="refreshJsonBtn" style="width:100%;margin-bottom:12px" type="button">Refresh Backend JSON</button><pre id="backendJson"></pre></div></div>
 <div class="toast" id="toast"></div>
-<script defer src="app.js?v=20260727-dashboard"></script>
+<script defer src="app.js?v=20260727-v4"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script defer src="auth-payments.js?v=20260727-dashboard"></script>
+<script defer src="auth-payments.js?v=20260727-v4"></script>
+<script defer src="dashboard.js?v=20260727-v4"></script>
 </body>
 </html>
