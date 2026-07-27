@@ -1,66 +1,84 @@
-BLUVIXA 5.0 — MULTI-WEBSITE WORKSPACE
+BLUVIXA 6.0 — STABLE WORKSPACE REBUILD
 
-THIS IS A COMPLETE FRONTEND WORKSPACE UPDATE
+WHY THIS VERSION EXISTS
+The previous frontend had two separate application controllers fighting over:
+- routing
+- authentication state
+- mobile navigation
+- pricing buttons
+- member pages
 
-SIGNED-IN PAGES
+Bluvixa 6.0 removes that conflict. It uses:
+- app.js only for the existing visual builder and preview
+- platform.js for routing, authentication, subscriptions, projects, drafts, domains,
+  publishing controls, mobile navigation, buyouts, and exports
+
+WORKING PUBLIC ACTIONS
+- Sign In
+- Start Free Trial
+- All pricing Start Free Trial buttons
+- Preview Builder
+- Mobile navigation
+
+WORKING MEMBER PAGES
 - My Websites
 - Saved Drafts
 - Website Builder
 - Billing & Ownership
 - Domains & Publishing
 
-MY WEBSITES
-- Members can create as many local website projects as desired.
-- Every website begins as a draft.
-- Websites can be edited, duplicated, deleted, and marked for publishing.
-- Each website stores its own plan, website state, URL settings, publishing status,
-  ownership status, and timestamps.
-- The current project is loaded into the existing visual builder and preview.
+WORKING PROJECT ACTIONS
+- Create new website
+- Save website
+- Edit website
+- Duplicate website
+- Delete website
+- Save snapshot
+- Load snapshot
+- Delete snapshot
+- Buy out a selected website
+- Export a purchased website through /api/export-website
+- Reserve a Bluvixa subdomain
+- Prepare a custom-domain connection
+- Search domain suggestions
+- Mark websites published or return them to draft
 
-SAVED DRAFTS
-- Shows all website projects, including incomplete websites.
-- Shows manual snapshots saved from the builder.
-- Supports search and filters.
-- Website projects can be loaded, duplicated, bought out, or exported after ownership.
-- Buyout prices are displayed per website:
-  Starter $499, Professional $599, Advanced $699.
-- Snapshots can be loaded or deleted.
+SUPABASE AND STRIPE SETTINGS WERE NOT REPLACED
+The frontend still uses:
+- GET /api/config
+- Supabase Auth
+- GET /api/account
+- POST /api/project
+- POST /api/create-checkout-session
+- POST /api/create-portal-session
+- GET /api/export-website
+- POST /api/domain-search when available
 
-BILLING & OWNERSHIP
-- Clearly separates subscription access from website ownership.
-- Explains that subscriptions provide platform access.
-- Explains that each buyout belongs to one specific website.
-- Explains that ownership is permanent after the backend records it.
-- Explains that hosting and domain registration are separate from code ownership.
+IMPORTANT PRODUCTION NOTES
+1. Multi-website projects and snapshots are currently demonstrated with browser storage.
+   Move them to Supabase tables for cross-device synchronization.
+2. Per-website buyout checkout sends websiteId. Your Stripe webhook should store the
+   purchase on that specific website record.
+3. Generated *.bluvixa.com addresses are not publicly live until wildcard DNS and the
+   publishing backend are connected.
+4. Domain suggestions work without a provider. Live availability and registration
+   require /api/domain-search and a registrar API.
+5. Keep all current Vercel environment variables and webhook settings.
 
-DOMAINS & PUBLISHING
-- Generates domain suggestions immediately.
-- Attempts POST /api/domain-search for live provider results.
-- Reserves a per-project Bluvixa subdomain in the frontend workspace.
-- Stores custom-domain connection requests per project.
-- Displays DNS preparation records.
-- Shows every website’s publishing state.
-- Real public deployment still requires the publishing backend and wildcard routing.
+INSTALLATION
+Replace:
+- index.html
+- style.css
+- app.js
 
-PRESERVED SUPABASE AND STRIPE SETTINGS
-- /api/config
-- Supabase authentication
-- /api/account
-- /api/project
-- /api/create-checkout-session
-- /api/create-portal-session
-- /api/export-website
-- Existing environment variables and webhook settings are not embedded or replaced.
+Add:
+- platform.js
 
-BACKEND PAYLOAD UPDATE
-For per-website buyouts, /api/create-checkout-session now receives:
-  websiteId: the selected website project ID
+Remove from deployment:
+- auth-payments.js
+- dashboard.js
 
-The Stripe webhook should save the ownership result against that website record, not
-only as a single account-wide boolean. The existing account-wide fields can remain
-for backward compatibility.
-
-LOCAL STORAGE NOTE
-This frontend demonstrates the complete multi-website experience using browser
-storage. Production should move projects, snapshots, ownership records, domains, and
-publishing records into Supabase tables so they synchronize across devices.
+Keep:
+- assets folder
+- hero-bluvixa-webicon.webp
+- all Vercel API routes and environment variables

@@ -3088,3 +3088,25 @@ body.member-authenticated .landing-page{display:none!important}
  .domain-search-form{grid-template-columns:1fr}
  .page-head-actions{display:grid}.page-head-actions .btn{width:100%}
 }
+
+
+/* =========================================================
+   BLUVIXA 6.0 STABILITY OVERRIDES
+   ========================================================= */
+.app-page{display:none!important}
+.app-page.route-active{display:block!important}
+.app-page[hidden]{display:none!important}
+.backend-only{visibility:visible}
+body:not(.member-authenticated) .backend-only.app-page{display:none!important}
+body.member-authenticated .landing-page.route-active{display:none!important}
+.session-loading-screen.ready{display:none!important}
+.modal:not(.hidden){display:grid!important}
+.mobile-menu:not(.hidden){display:block!important}
+button,a{touch-action:manipulation}
+button:disabled{opacity:.55;cursor:not-allowed}
+@media(max-width:760px){
+  .mobile-menu{overscroll-behavior:contain}
+  .member-sidebar{display:none!important}
+  .member-shell{display:block!important}
+  .member-content{width:100%!important;max-width:none!important}
+}

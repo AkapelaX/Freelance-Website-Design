@@ -106,7 +106,7 @@
 </section>
 
 
-<section class="app-page projects-page hidden backend-only" id="projects" data-page="projects">
+<section class="app-page projects-page backend-only" id="projects" data-page="projects">
 <div class="member-shell">
 <aside class="member-sidebar">
 <div class="sidebar-user">
@@ -168,7 +168,7 @@
 </section>
 
 
-<section class="app-page drafts-page hidden backend-only" id="drafts" data-page="drafts">
+<section class="app-page drafts-page backend-only" id="drafts" data-page="drafts">
 <div class="member-shell">
 <aside class="member-sidebar">
 <div class="sidebar-user"><div class="sidebar-avatar">B</div><div><small>BLUVIXA MEMBER</small><strong id="draftsMemberEmail">Your account</strong></div></div>
@@ -647,7 +647,7 @@
 </section>
 
 
-<section class="app-page billing-page hidden backend-only" id="billing" data-page="billing">
+<section class="app-page billing-page backend-only" id="billing" data-page="billing">
 <div class="member-shell">
 <aside class="member-sidebar">
 <div class="sidebar-user"><div class="sidebar-avatar">B</div><div><small>BLUVIXA MEMBER</small><strong>Billing center</strong></div></div>
@@ -720,7 +720,7 @@
 </section>
 
 
-<section class="app-page domains-page hidden backend-only" id="domains" data-page="domains">
+<section class="app-page domains-page backend-only" id="domains" data-page="domains">
 <div class="member-shell">
 <aside class="member-sidebar">
 <div class="sidebar-user"><div class="sidebar-avatar">B</div><div><small>BLUVIXA MEMBER</small><strong>Domain center</strong></div></div>
@@ -867,7 +867,7 @@
 </section>
 </main>
 
-<div class="modal hidden backend-only" id="authModal">
+<div class="modal hidden" id="authModal">
 <div class="modal-card auth-card">
 <div class="modal-head"><div><h3 id="authTitle">Sign in to Bluvixa</h3><div class="tiny">Access your dashboard, drafts, subscription, and websites.</div></div><button class="btn btn-secondary btn-small" id="closeAuthBtn" type="button">Close</button></div>
 <div class="auth-tabs"><button class="auth-tab active" id="showSignInTab" type="button">Sign In</button><button class="auth-tab" id="showSignUpTab" type="button">Create Account</button></div>
@@ -882,9 +882,8 @@
 </div>
 <div class="modal hidden backend-only" id="backendModal"><div class="modal-card"><div class="modal-head"><div><h3>Backend Controls</h3><div class="tiny">Development-only preview.</div></div><button class="btn btn-secondary btn-small" id="closeBackendBtn" type="button">Close</button></div><div class="backend-grid"><div class="backend-card"><strong>Authentication</strong><small>Supabase Auth</small></div><div class="backend-card"><strong>Database</strong><small>Supabase Postgres</small></div><div class="backend-card"><strong>Storage</strong><small>Supabase Storage</small></div><div class="backend-card"><strong>Billing</strong><small>Stripe</small></div></div><button class="btn btn-primary" id="refreshJsonBtn" style="width:100%;margin-bottom:12px" type="button">Refresh Backend JSON</button><pre id="backendJson"></pre></div></div>
 <div class="toast" id="toast"></div>
-<script defer src="app.js?v=20260727-v4"></script>
+<script defer src="app.js?v=20260727-v6"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script defer src="auth-payments.js?v=20260727-v4"></script>
-<script defer src="dashboard.js?v=20260727-v4"></script>
+<script defer src="platform.js?v=20260727-v6"></script>
 </body>
 </html>
