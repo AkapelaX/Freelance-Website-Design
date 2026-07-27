@@ -254,12 +254,11 @@
 </div>
 <section class="panel active" data-panel="business">
 <div class="group">
-<label for="planSelect">Subscription plan</label>
-<select class="select" id="planSelect">
-<option value="starter">Starter</option>
-<option selected="" value="professional">Professional</option>
-<option value="advanced">Advanced</option>
+<label for="planSelect">Your plan</label>
+<select class="select" id="planSelect" disabled aria-readonly="true">
+<option selected value="starter">Starter</option>
 </select>
+<small class="plan-lock-note">Plan changes are managed from Billing.</small>
 </div>
 <div class="group">
 <label for="businessName">Business name</label>
@@ -884,6 +883,6 @@
 <div class="toast" id="toast"></div>
 <script defer src="app.js?v=20260727-v6"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script defer src="platform.js?v=20260727-v61"></script>
+<script defer src="platform.js?v=20260727-v62"></script>
 </body>
 </html>

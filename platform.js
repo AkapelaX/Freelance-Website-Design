@@ -2,7 +2,7 @@
 "use strict";
 
 /* =========================================================
-   BLUVIXA 6.1 SUPABASE CLOUD PLATFORM CONTROLLER
+   BLUVIXA 6.2 STARTER PLAN + SILENT CLOUD RETRY CONTROLLER
    One router, one authentication controller, one project library.
    Supabase and Stripe API routes remain unchanged.
    ========================================================= */
@@ -59,7 +59,25 @@ function sanitizeSlug(value){
   return String(value||"website").toLowerCase().trim().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,48)||"website";
 }
 function buyoutPrice(plan){
-  return {starter:499,professional:599,advanced:699}[String(plan||"professional").toLowerCase()]||599;
+  return {starter:499,professional:599,advanced:699}[String(plan||"starter").toLowerCase()]||499;
+}
+function currentAccountPlan(){
+  var value=accountData&&accountData.plan?String(accountData.plan).toLowerCase():"starter";
+  return ["starter","professional","advanced"].indexOf(value)>=0?value:"starter";
+}
+function lockBuilderPlan(){
+  var select=id("planSelect");
+  if(!select)return;
+  var plan=currentAccountPlan();
+  select.innerHTML='<option value="'+plan+'">'+titleCase(plan)+'</option>';
+  select.value=plan;
+  select.disabled=true;
+  select.setAttribute("aria-readonly","true");
+  var state=currentBuilderState();
+  if(state){
+    state.plan=plan;
+    if(typeof window.bluvixaImportState==="function")window.bluvixaImportState(state);
+  }
 }
 function projectUrl(project){
   if(project&&project.customDomain)return "https://"+project.customDomain;
@@ -283,6 +301,18 @@ async function loadCloudWorkspace(){
   renderDomainSelectors();
   renderPublishing();
 }
+function scheduleCloudWorkspaceRetry(){
+  clearTimeout(scheduleCloudWorkspaceRetry.timer);
+  scheduleCloudWorkspaceRetry.timer=setTimeout(async function(){
+    if(!currentUser||cloudWorkspaceLoaded)return;
+    try{
+      await loadCloudWorkspace();
+    }catch(error){
+      console.warn("Bluvixa cloud workspace retry failed; local cache remains active:",error);
+    }
+  },5000);
+}
+
 function currentBuilderState(){
   try{return typeof window.bluvixaExportState==="function"?window.bluvixaExportState():null;}
   catch(_error){return null;}
@@ -452,9 +482,9 @@ async function applySession(session){
     try{
       await loadCloudWorkspace();
     }catch(error){
-      console.error("Bluvixa cloud workspace could not be loaded:",error);
+      console.warn("Bluvixa cloud workspace was temporarily unavailable; using the local cache and retrying silently:",error);
       cloudWorkspaceLoaded=false;
-      toast("Cloud projects could not be loaded. Local backup remains available.");
+      scheduleCloudWorkspaceRetry();
     }
     if(["home","top",""].indexOf(routeName())>=0)location.hash="#projects";
   }else{
@@ -498,7 +528,7 @@ async function loadAccount(){
   try{
     var data=await api("/api/account");
     accountData=data;
-    var plan=data.plan?titleCase(data.plan):"No active plan";
+    var plan=data.plan?titleCase(data.plan):"Starter";
     var status=data.subscriptionStatus?titleCase(data.subscriptionStatus):"Not subscribed";
     var owned=!!data.websiteBoughtOut;
 
@@ -515,6 +545,7 @@ async function loadAccount(){
       :"Your Bluvixa account is ready.");
     text("mobileMemberPlan",plan);
     text("mobileMemberStatus",status);
+    lockBuilderPlan();
   }catch(error){
     console.warn("Account data could not be loaded:",error);
     text("trialHomeTitle","Your Bluvixa workspace");
@@ -579,7 +610,7 @@ function createProject(name,state){
   var project={
     id:makeUuid(),
     name:(name||"Untitled Website").trim()||"Untitled Website",
-    plan:builderState.plan||"professional",
+    plan:currentAccountPlan(),
     createdAt:now,updatedAt:now,published:false,
     slug:sanitizeSlug((builderState.project&&builderState.project.slug)||name),
     customDomain:"",
@@ -609,7 +640,9 @@ function newWebsite(){
   if(!state){toast("Open the builder once, then create a website.");location.hash="#builder";return;}
   var project=createProject("Untitled Website",state);
   if(project&&typeof window.bluvixaImportState==="function"){
+    project.state.plan=currentAccountPlan();
     window.bluvixaImportState(clone(project.state));
+    lockBuilderPlan();
     location.hash="#builder";
     updateBuilderTitle();
     toast("New website created.");
@@ -626,7 +659,8 @@ function saveActiveProject(showMessage){
   }else{
     project.state=clone(state);
     project.name=(state.business&&state.business.name)?state.business.name+" Website":project.name;
-    project.plan=state.plan||project.plan;
+    project.plan=currentAccountPlan();
+    project.state.plan=project.plan;
     project.updatedAt=new Date().toISOString();
     project.published=!!(state.backend&&state.backend.published);
     project.slug=(state.project&&state.project.slug)||project.slug;
@@ -642,7 +676,9 @@ function loadProject(projectId){
   if(!project){toast("Website not found.");return;}
   setActiveProjectId(project.id);
   if(typeof window.bluvixaImportState==="function"){
+    project.state.plan=currentAccountPlan();
     window.bluvixaImportState(clone(project.state));
+    lockBuilderPlan();
     location.hash="#builder";
     updateBuilderTitle();
     toast(project.name+" loaded.");
@@ -699,7 +735,7 @@ function saveSnapshot(){
     id:makeUuid(),
     projectId:project?project.id:"",
     name:project?project.name+" Snapshot":"Untitled Snapshot",
-    plan:state.plan||"professional",
+    plan:currentAccountPlan(),
     savedAt:new Date().toISOString(),
     state:clone(state)
   });
@@ -712,7 +748,9 @@ function loadSnapshot(snapshotId){
   if(!snapshot){toast("Snapshot not found.");return;}
   setActiveProjectId(snapshot.projectId||"");
   if(typeof window.bluvixaImportState==="function"){
+    snapshot.state.plan=currentAccountPlan();
     window.bluvixaImportState(clone(snapshot.state));
+    lockBuilderPlan();
     location.hash="#builder";
     toast("Snapshot loaded.");
   }
