@@ -2,7 +2,7 @@
 "use strict";
 
 /* =========================================================
-   BLUVIXA 11.2 PUBLISHING RELIABILITY CONTROLLER
+   BLUVIXA 11.2.1 PUBLISH FIX CONTROLLER
    One router, one authentication controller, one project library.
    Supabase and Stripe API routes remain unchanged.
    ========================================================= */
@@ -1240,25 +1240,28 @@ function markPublishStage(stage){
     if(small)small.textContent="Verifying live site…";
   }
 }
-async function verifyPublishedUrl(url){
-  if(!url)throw new Error("No live URL was returned.");
+async function verifyPublishedUrl(url,project){
+  if(!project||!project.slug)throw new Error("The publishing service did not return a website slug.");
+  var endpoint="/api/public-site?slug="+encodeURIComponent(project.slug)+"&verify="+Date.now();
   var lastError=null;
-  for(var attempt=1;attempt<=5;attempt++){
+  for(var attempt=1;attempt<=6;attempt++){
     try{
-      var separator=url.indexOf("?")===-1?"?":"&";
-      var response=await withTimeout(fetch(url+separator+"bluvixa_verify="+Date.now(),{
+      var response=await withTimeout(fetch(endpoint,{
         method:"GET",
         cache:"no-store",
-        headers:{"Accept":"text/html"}
-      }),9000,"Live verification");
-      if(response.ok)return true;
-      lastError=new Error("Live website returned HTTP "+response.status+".");
+        headers:{"Accept":"application/json"}
+      }),10000,"Live verification");
+      var data=await response.json().catch(function(){return {};});
+      if(response.ok&&data&&data.website&&data.website.id===project.id){
+        return {ok:true,url:url,website:data.website};
+      }
+      lastError=new Error(data.error||("Verification returned HTTP "+response.status+"."));
     }catch(error){
       lastError=error;
     }
-    if(attempt<5)await new Promise(function(resolve){setTimeout(resolve,1000*attempt);});
+    if(attempt<6)await new Promise(function(resolve){setTimeout(resolve,1200*attempt);});
   }
-  throw lastError||new Error("Live website could not be reached.");
+  throw lastError||new Error("The published website could not be verified.");
 }
 function publishingSelectedProject(){
   var select=id("publishingCenterProjectSelect");
@@ -1466,8 +1469,14 @@ async function togglePublish(projectId){
     markPublishStage("media");
     var mediaItems=(project.state&&project.state.backend&&project.state.backend.media)||[];
     var unfinished=mediaItems.filter(function(item){
-      return item&&(item.uploading||item.status==="uploading"||(!item.url&&!item.path));
+      if(!item||typeof item!=="object")return false;
+      var status=String(item.status||"").toLowerCase();
+      return item.uploading===true||status==="uploading"||status==="processing"||status==="pending";
     });
+    var failedMedia=mediaItems.filter(function(item){
+      return item&&typeof item==="object"&&String(item.status||"").toLowerCase()==="failed";
+    });
+    if(failedMedia.length)throw new Error(failedMedia.length+" media upload(s) failed. Replace or remove them before publishing.");
     if(unfinished.length)throw new Error(unfinished.length+" upload(s) are still processing.");
 
     markPublishStage("build");
@@ -1495,7 +1504,7 @@ async function togglePublish(projectId){
 
     markPublishStage("verify");
     var liveUrl=result.url||projectUrl(project);
-    await verifyPublishedUrl(liveUrl);
+    await verifyPublishedUrl(liveUrl,project);
 
     createPublishVersion(project,liveUrl);
     finishPublishingProgress(true);
@@ -1503,6 +1512,10 @@ async function togglePublish(projectId){
   }catch(error){
     finishPublishingProgress(false);
     var failure=publishingFailure(publishingStage,error);
+    if(publishingStage==="verify"&&project&&project.published){
+      failure.title="Published — verification delayed";
+      failure.detail="The publishing update succeeded, but Bluvixa could not immediately confirm the live page. Use View Live and try verification again after a few seconds. "+((error&&error.message)||"");
+    }
     setReliabilityMessage("error",failure.title,failure.detail);
     console.error("Bluvixa publishing failed during "+publishingStage+":",error);
     toast(failure.title);
@@ -1750,8 +1763,13 @@ async function authenticatedApi(path,payload){
     },
     body:JSON.stringify(payload||{})
   });
-  var data=await response.json().catch(function(){return {};});
-  if(!response.ok)throw new Error(data.error||data.message||"Request failed.");
+  var raw=await response.text();
+  var data={};
+  try{data=raw?JSON.parse(raw):{};}catch(_error){data={message:raw};}
+  if(!response.ok){
+    var detail=data.error||data.message||("Request failed with HTTP "+response.status+".");
+    throw new Error(detail);
+  }
   return data;
 }
 
