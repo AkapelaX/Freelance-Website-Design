@@ -262,7 +262,12 @@
     }
 
     function enforcePlan(){
-      var config = PLAN_CONFIG[state.plan];
+      if(!state || typeof state !== "object"){return;}
+      var planKey = String(state.plan || "starter").toLowerCase();
+      var config = PLAN_CONFIG[planKey] || PLAN_CONFIG.starter;
+      state.plan = planKey in PLAN_CONFIG ? planKey : "starter";
+      state.photos = Array.isArray(state.photos) ? state.photos : [];
+      state.gallery = Array.isArray(state.gallery) ? state.gallery : [];
 
       state.photos = state.photos.slice(0,config.photos);
       state.gallery = state.gallery.slice(0,config.gallery);

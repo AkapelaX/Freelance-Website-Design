@@ -1,0 +1,17 @@
+{
+  "name": "bluvixa-platform",
+  "version": "12.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vercel dev",
+    "check": "node --check app.js && node --check platform.js && find api -name \"*.js\" -print0 | xargs -0 -n1 node --check"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.1",
+    "stripe": "^17.7.0"
+  },
+  "devDependencies": {
+    "vercel": "^41.4.1"
+  }
+}

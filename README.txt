@@ -1,27 +1,21 @@
-BLUVIXA 11.1 — PUBLISHING CENTER LOGIN FIX
+BLUVIXA 12.0 — STABILITY FIX
 
-This update fixes the screen remaining stuck on:
-"Checking your membership…"
+This package fixes the current account and builder crashes without including any secret environment file.
 
-FIXES
-- The loading screen now closes as soon as Supabase determines whether a
-  session exists.
-- Account and cloud-project checks no longer block the login interface.
-- Network timeout protection was added for configuration, session, account,
-  and workspace loading.
-- Local saved projects are shown if the cloud request is temporarily slow.
-- The authenticated publishing API helper now runs inside the platform
-  controller, where it can correctly access the Supabase session.
-- A new script version prevents the browser from serving the broken cached
-  platform.js file.
+FIXED
+- /api/account 500: profile lookup uses select(*) so optional/missing columns no longer break the route.
+- Account recovery: if the profile is stale, the route searches Stripe by the signed-in email, restores the customer/subscription link, and updates Supabase.
+- app.js photos crash: enforcePlan now validates the plan and initializes photos/gallery arrays before slicing.
+- Stripe webhook, checkout, and billing portal use one ESM backend library and consistent metadata.
+- Added all frontend-requested API routes.
+- Browser cache version bumped.
 
 DEPLOY
-Replace these files:
-- index.html
-- platform.js
+1. Do not upload .env.local. Keep the same values in Vercel Environment Variables.
+2. Replace the deployed project files with this package.
+3. Run npm install, commit, and deploy through Vercel.
+4. In Stripe, confirm the webhook endpoint is https://bluvixa.com/api/stripe-webhook.
+5. Sign out, close the Bluvixa tab, reopen it, and sign in.
 
-The full package is included, but no SQL or environment-variable changes are
-required.
-
-After deployment, redeploy Vercel and refresh the website. On iPhone, close the
-browser tab and reopen Bluvixa to ensure the corrected JavaScript loads.
+SECURITY
+The ZIP contains .env.example only. Your uploaded secret keys were deliberately excluded.
