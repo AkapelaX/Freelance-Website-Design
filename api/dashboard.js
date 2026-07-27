@@ -306,13 +306,112 @@ function renderPublishing(){
     return '<article class="publishing-card"><strong>'+escapeHtml(project.name)+'</strong><small>'+escapeHtml(projectUrl(project))+'</small><small>Status: '+(project.published?"Published in project state":"Draft")+' · Domain: '+escapeHtml(project.domainStatus||"not connected")+'</small><div class="publishing-card-actions"><button class="btn btn-primary" data-project-load="'+project.id+'">Open</button><button class="btn btn-secondary" data-project-publish="'+project.id+'">'+(project.published?"Unpublish":"Publish")+'</button></div></article>';
   }).join(""):'<div class="empty-state">Create a website before configuring publishing.</div>';
 }
-function togglePublish(id){
-  var items=projects();var project=items.find(function(item){return item.id===id;});if(!project)return;
-  project.published=!project.published;project.updatedAt=new Date().toISOString();
-  if(project.state&&project.state.backend)project.state.backend.published=project.published;
-  writeJson(PROJECTS_KEY,items);
-  renderAll();
-  toast(project.published?"Website marked ready for publishing.":"Website returned to draft.");
+async function getPublishingAccessToken(){
+  if(!window.supabase){
+    throw new Error("Supabase did not load.");
+  }
+
+  var configResponse=await fetch("/api/config",{headers:{Accept:"application/json"}});
+  var config={};
+
+  try{
+    config=await configResponse.json();
+  }catch(_error){}
+
+  if(!configResponse.ok){
+    throw new Error(config.error||"Supabase configuration could not be loaded.");
+  }
+
+  var supabaseUrl=config.supabaseUrl||config.supabase_url||config.url;
+  var supabaseAnonKey=config.supabaseAnonKey||config.supabase_anon_key||config.anonKey||config.anon_key;
+
+  if(!supabaseUrl||!supabaseAnonKey){
+    throw new Error("Supabase configuration is incomplete.");
+  }
+
+  if(!window.__bluvixaDashboardSupabase){
+    window.__bluvixaDashboardSupabase=window.supabase.createClient(supabaseUrl,supabaseAnonKey);
+  }
+
+  var sessionResult=await window.__bluvixaDashboardSupabase.auth.getSession();
+  var session=sessionResult&&sessionResult.data&&sessionResult.data.session;
+
+  if(!session||!session.access_token){
+    throw new Error("Please sign in again.");
+  }
+
+  return session.access_token;
+}
+
+async function togglePublish(id){
+  var items=projects();
+  var project=items.find(function(item){return item.id===id;});
+  if(!project)return;
+
+  var shouldPublish=!project.published;
+
+  try{
+    toast(shouldPublish?"Publishing website…":"Unpublishing website…");
+
+    var accessToken=await getPublishingAccessToken();
+    var response=await fetch("/api/publish-site",{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json",
+        Authorization:"Bearer "+accessToken
+      },
+      body:JSON.stringify({
+        projectId:project.id,
+        publish:shouldPublish,
+        requestedSlug:project.slug||sanitizeSlug(project.name)
+      })
+    });
+
+    var result={};
+
+    try{
+      result=await response.json();
+    }catch(_error){}
+
+    if(!response.ok){
+      throw new Error(result.error||(shouldPublish
+        ?"The website could not be published."
+        :"The website could not be unpublished."));
+    }
+
+    if(typeof result.published!=="boolean"){
+      throw new Error("The server returned an invalid publishing status.");
+    }
+
+    project.published=result.published;
+    project.slug=result.slug||project.slug||"";
+    project.updatedAt=new Date().toISOString();
+
+    if(project.state){
+      project.state.backend=project.state.backend||{};
+      project.state.project=project.state.project||{};
+      project.state.backend.published=project.published;
+      project.state.backend.updatedAt=project.updatedAt;
+      project.state.project.slug=project.slug;
+    }
+
+    writeJson(PROJECTS_KEY,items);
+
+    if(
+      activeProjectId()===project.id &&
+      typeof window.bluvixaImportState==="function"
+    ){
+      window.bluvixaImportState(clone(project.state));
+    }
+
+    renderAll();
+    toast(project.published
+      ?"Website published successfully."
+      :"Website unpublished successfully.");
+  }catch(error){
+    console.error("Bluvixa publishing failed:",error);
+    toast("Publishing failed: "+(error.message||"Unknown error"));
+  }
 }
 function updateBuilderHeading(project){
   if(byId("builderProjectTitle"))byId("builderProjectTitle").textContent=project?project.name:"Build your website";
