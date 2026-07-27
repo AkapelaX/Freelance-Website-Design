@@ -9,7 +9,7 @@
 <link href="assets/bluvixa-favicon.png?v=5" rel="icon" sizes="512x512" type="image/png"/>
 <link href="assets/favicon.ico?v=5" rel="shortcut icon"/>
 <link href="assets/bluvixa-favicon.png?v=5" rel="apple-touch-icon"/>
-<link href="style.css?v=20260725-dark-blue-all-devices" rel="stylesheet"/>
+<link href="style.css?v=20260727-dashboard" rel="stylesheet"/>
 </head>
 <body>
 <header class="topbar">
@@ -25,7 +25,7 @@
 <a href="#pricing">Plans</a>
 <a href="#policies">Policies</a>
 
-<a class="hidden backend-only" href="#account" id="accountNavLink">My Account</a>
+<a class="hidden backend-only" href="#account" id="accountNavLink">Dashboard</a>
 </nav>
 <div class="nav-actions">
 <a class="btn btn-secondary" href="#ownership">How Ownership Works</a>
@@ -739,39 +739,209 @@
 </div>
 </section>
 
-<section class="section hidden backend-only" id="account">
+
+<section class="section hidden backend-only account-dashboard-section" id="account">
 <div class="container">
-<div class="section-head">
-<h2>My Bluvixa Account</h2>
-<p>Manage your profile, subscription, saved project, and billing.</p>
+<div class="dashboard-hero glass">
+<div>
+<span class="section-kicker">BLUVIXA CONTROL CENTER</span>
+<h2>Your Website Dashboard</h2>
+<p>Build, save, publish, manage billing, connect a domain, and unlock ownership from one place.</p>
 </div>
-<div class="account-grid">
-<article class="glass account-card">
-<h3>Account</h3>
-<p><strong>Email:</strong> <span id="accountEmail">—</span></p>
-<p><strong>Status:</strong> <span id="accountAuthStatus">Signed out</span></p>
+<div class="dashboard-hero-actions">
+<a class="btn btn-primary" href="#builder">Continue Building</a>
 <button class="btn btn-secondary backend-only" id="accountSignOutBtn" type="button">Sign Out</button>
+</div>
+</div>
+
+<div class="dashboard-status-grid" aria-label="Account overview">
+<article class="glass dashboard-status-card">
+<span>Account</span>
+<strong id="accountAuthStatus">Signed out</strong>
+<small id="accountEmail">—</small>
+</article>
+<article class="glass dashboard-status-card">
+<span>Current plan</span>
+<strong id="accountPlan">No active plan</strong>
+<small id="dashboardPlanHelp">Choose a plan to activate builder service.</small>
+</article>
+<article class="glass dashboard-status-card">
+<span>Subscription</span>
+<strong id="accountBillingStatus">Not subscribed</strong>
+<small id="dashboardRenewalText">Billing details appear after checkout.</small>
+</article>
+<article class="glass dashboard-status-card">
+<span>Ownership</span>
+<strong id="accountOwnershipStatus">Not purchased</strong>
+<small id="dashboardOwnershipText">Raw-code export remains locked.</small>
+</article>
+<article class="glass dashboard-status-card">
+<span>Website</span>
+<strong id="dashboardPublishStatus">Draft</strong>
+<small id="accountProjectName">No cloud project saved</small>
+</article>
+<article class="glass dashboard-status-card">
+<span>Website address</span>
+<strong id="dashboardDomainStatus">Not published</strong>
+<small id="dashboardPublishedUrl">Configure an address in the Domain tab.</small>
+</article>
+</div>
+
+<div class="dashboard-layout">
+<aside class="glass dashboard-menu" aria-label="Dashboard sections">
+<button class="dashboard-menu-button active" data-dashboard-panel="overview" type="button"><span>⌂</span> Overview</button>
+<button class="dashboard-menu-button" data-dashboard-panel="website" type="button"><span>▣</span> My Website</button>
+<button class="dashboard-menu-button" data-dashboard-panel="subscription" type="button"><span>$</span> Subscription</button>
+<button class="dashboard-menu-button" data-dashboard-panel="publishing" type="button"><span>↗</span> Publishing</button>
+<button class="dashboard-menu-button" data-dashboard-panel="ownership" type="button"><span>&lt;/&gt;</span> Ownership &amp; Export</button>
+<button class="dashboard-menu-button" data-dashboard-panel="domains" type="button"><span>◎</span> Domains</button>
+<button class="dashboard-menu-button" data-dashboard-panel="settings" type="button"><span>⚙</span> Settings</button>
+</aside>
+
+<div class="dashboard-panels">
+<section class="dashboard-panel active" data-dashboard-view="overview">
+<div class="dashboard-panel-head">
+<div><span class="section-kicker">OVERVIEW</span><h3>Everything needed to run your website</h3></div>
+<a class="btn btn-primary" href="#builder">Open Builder</a>
+</div>
+<div class="dashboard-action-grid">
+<article class="glass account-card">
+<div class="dashboard-card-icon">✎</div>
+<h3>Continue Building</h3>
+<p>Edit business details, images, sections, colors, layout, maps, and domain settings in the live builder.</p>
+<a class="btn btn-primary" href="#builder">Open Website Builder</a>
 </article>
 <article class="glass account-card">
-<h3>Subscription</h3>
-<p><strong>Plan:</strong> <span id="accountPlan">No active plan</span></p>
-<p><strong>Billing:</strong> <span id="accountBillingStatus">Not connected</span></p>
-<button class="btn btn-primary backend-only" id="manageBillingBtn" type="button">Manage Billing</button>
-</article>
-<article class="glass account-card">
-<h3>Website Project</h3>
-<p><strong>Project:</strong> <span id="accountProjectName">No cloud project saved</span></p>
+<div class="dashboard-card-icon">☁</div>
+<h3>Cloud Project</h3>
+<p>Keep the current builder project connected to your Bluvixa account.</p>
 <div class="account-actions">
 <button class="btn btn-primary backend-only" id="cloudSaveBtn" type="button">Save to Cloud</button>
 <button class="btn btn-secondary backend-only" id="cloudLoadBtn" type="button">Load from Cloud</button>
 </div>
 </article>
-<article class="glass account-card ownership-account-card">
-<h3>Code Ownership &amp; Export</h3>
-<p><strong>Ownership:</strong> <span id="accountOwnershipStatus">Not purchased</span></p>
-<p id="accountExportHelp">Purchase the website buyout to unlock a complete raw-code ZIP export.</p>
-<button class="btn btn-secondary backend-only" disabled="" id="exportWebsiteBtn" type="button">Export Website ZIP</button>
+<article class="glass account-card">
+<div class="dashboard-card-icon">↗</div>
+<h3>Publish Website</h3>
+<p id="dashboardPublishHelp">Choose a website address and publish when the design is ready.</p>
+<a class="btn btn-secondary" href="#builder" data-open-builder-tab="project">Publishing &amp; Domain</a>
 </article>
+<article class="glass account-card">
+<div class="dashboard-card-icon">$</div>
+<h3>Billing</h3>
+<p>Review your plan, payment method, invoices, renewal, cancellation, or trial through Stripe.</p>
+<button class="btn btn-primary backend-only" id="manageBillingBtn" type="button">Manage Billing</button>
+</article>
+</div>
+</section>
+
+<section class="dashboard-panel" data-dashboard-view="website">
+<div class="dashboard-panel-head"><div><span class="section-kicker">MY WEBSITE</span><h3>Project controls</h3></div></div>
+<div class="dashboard-action-grid">
+<article class="glass account-card account-card-wide">
+<h3>Website Builder</h3>
+<p>Your existing builder remains the single source of truth for the website design. All current editor controls, plan limits, media, maps, themes, preview sizes, local drafts, and cloud project hooks remain available.</p>
+<div class="account-actions">
+<a class="btn btn-primary" href="#builder">Continue Building</a>
+<a class="btn btn-secondary" href="#builder" data-open-builder-tab="business">Business Details</a>
+<a class="btn btn-secondary" href="#builder" data-open-builder-tab="design">Design Controls</a>
+</div>
+</article>
+<article class="glass account-card">
+<h3>Local Draft</h3>
+<p>Use the Save Draft and Load Draft controls inside the builder for browser-based recovery.</p>
+<a class="btn btn-secondary" href="#builder">Open Draft Controls</a>
+</article>
+<article class="glass account-card">
+<h3>Cloud Backup</h3>
+<p>Save the project to your authenticated account, then load it on another supported device.</p>
+<div class="account-actions">
+<button class="btn btn-primary backend-only dashboard-cloud-save" type="button">Save to Cloud</button>
+<button class="btn btn-secondary backend-only dashboard-cloud-load" type="button">Load from Cloud</button>
+</div>
+</article>
+</div>
+</section>
+
+<section class="dashboard-panel" data-dashboard-view="subscription">
+<div class="dashboard-panel-head"><div><span class="section-kicker">SUBSCRIPTION</span><h3>Plan and billing</h3></div></div>
+<div class="dashboard-action-grid">
+<article class="glass account-card">
+<h3>Current Subscription</h3>
+<p><strong>Plan:</strong> <span id="dashboardSubscriptionPlan">No active plan</span></p>
+<p><strong>Status:</strong> <span id="dashboardSubscriptionStatus">Not subscribed</span></p>
+<p><strong>Trial or renewal:</strong> <span id="dashboardSubscriptionDate">Available after checkout</span></p>
+<button class="btn btn-primary backend-only dashboard-manage-billing" type="button">Manage Billing</button>
+</article>
+<article class="glass account-card">
+<h3>Plan Benefits</h3>
+<p id="dashboardPlanBenefits">Your upload limits and buyout price follow the selected subscription plan.</p>
+<a class="btn btn-secondary" href="#pricing">Compare Plans</a>
+</article>
+</div>
+</section>
+
+<section class="dashboard-panel" data-dashboard-view="publishing">
+<div class="dashboard-panel-head"><div><span class="section-kicker">PUBLISHING</span><h3>Website launch center</h3></div></div>
+<div class="dashboard-action-grid">
+<article class="glass account-card account-card-wide">
+<h3 id="dashboardPublishingTitle">Website draft</h3>
+<p id="dashboardPublishingDescription">The builder currently prepares and stores publishing settings. Actual public deployment requires the connected publishing API.</p>
+<div class="publish-url-box"><span>Website URL</span><strong id="dashboardPublishingUrl">Not published</strong></div>
+<div class="account-actions">
+<a class="btn btn-primary" href="#builder" data-open-builder-tab="project">Open Publishing Controls</a>
+<button class="btn btn-secondary" id="copyPublishedUrlBtn" type="button">Copy URL</button>
+</div>
+</article>
+</div>
+</section>
+
+<section class="dashboard-panel" data-dashboard-view="ownership">
+<div class="dashboard-panel-head"><div><span class="section-kicker">OWNERSHIP &amp; EXPORT</span><h3>Own the finished website code</h3></div></div>
+<div class="dashboard-action-grid">
+<article class="glass account-card ownership-account-card account-card-wide">
+<h3>Website Ownership</h3>
+<p id="accountExportHelp">Purchase the website buyout to unlock a complete raw-code ZIP export.</p>
+<div class="ownership-dashboard-state" id="ownershipDashboardState">
+<span class="status-pill offline">Locked</span>
+<strong>Subscription access does not include raw-code ownership.</strong>
+</div>
+<div class="account-actions">
+<button class="btn btn-primary" id="dashboardBuyoutBtn" type="button">Buy This Website</button>
+<button class="btn btn-secondary backend-only" disabled id="exportWebsiteBtn" type="button">Export Website ZIP</button>
+</div>
+</article>
+</div>
+</section>
+
+<section class="dashboard-panel" data-dashboard-view="domains">
+<div class="dashboard-panel-head"><div><span class="section-kicker">DOMAINS</span><h3>Your website address</h3></div></div>
+<div class="dashboard-action-grid">
+<article class="glass account-card account-card-wide">
+<h3>Domain Management</h3>
+<p>Choose a Bluvixa subdomain or prepare a custom domain connection from the Domain tab in the builder.</p>
+<div class="publish-url-box"><span>Current address</span><strong id="dashboardDomainUrl">Not configured</strong></div>
+<a class="btn btn-primary" href="#builder" data-open-builder-tab="project">Manage Domain</a>
+</article>
+</div>
+</section>
+
+<section class="dashboard-panel" data-dashboard-view="settings">
+<div class="dashboard-panel-head"><div><span class="section-kicker">SETTINGS</span><h3>Account controls</h3></div></div>
+<div class="dashboard-action-grid">
+<article class="glass account-card">
+<h3>Account Email</h3>
+<p id="dashboardSettingsEmail">—</p>
+<button class="btn btn-secondary backend-only dashboard-sign-out" type="button">Sign Out</button>
+</article>
+<article class="glass account-card">
+<h3>Security</h3>
+<p>Password resets are securely delivered through the email connected to your Supabase account.</p>
+<button class="btn btn-secondary" id="dashboardPasswordResetBtn" type="button">Send Password Reset</button>
+</article>
+</div>
+</section>
+</div>
 </div>
 </div>
 </section>
@@ -850,8 +1020,8 @@
 </div>
 </div>
 <div class="toast" id="toast"></div>
-<script defer src="app.js?v=backend-starter-1"></script>
+<script defer src="app.js?v=20260727-dashboard"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script defer src="auth-payments.js?v=backend-starter-1"></script>
+<script defer src="auth-payments.js?v=20260727-dashboard"></script>
 </body>
 </html>

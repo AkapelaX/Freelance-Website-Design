@@ -2698,3 +2698,105 @@ main > section .step-card{
     border-radius:10px !important;
   }
 }
+
+
+/* =========================================================
+   BLUVIXA ACCOUNT DASHBOARD — 2026 RESTRUCTURE
+   Additive styles preserve the existing builder and landing page.
+   ========================================================= */
+.account-dashboard-section{padding-top:38px}
+.dashboard-hero{
+  border-radius:28px;
+  padding:28px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:24px;
+  margin-bottom:18px;
+}
+.dashboard-hero h2{margin:8px 0 8px;font-size:clamp(32px,4vw,52px);line-height:1;text-transform:uppercase}
+.dashboard-hero p{margin:0;color:var(--muted);max-width:760px;line-height:1.65}
+.dashboard-hero-actions{display:flex;gap:10px;flex-wrap:wrap}
+.dashboard-status-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px;margin-bottom:18px}
+.dashboard-status-card{border-radius:18px;padding:17px;min-width:0}
+.dashboard-status-card span{display:block;color:#84bff1;font-size:10px;font-weight:950;letter-spacing:.16em;text-transform:uppercase}
+.dashboard-status-card strong{display:block;margin-top:8px;font-size:17px;overflow-wrap:anywhere}
+.dashboard-status-card small{display:block;margin-top:5px;color:var(--muted);font-size:11px;line-height:1.4;overflow-wrap:anywhere}
+.dashboard-layout{display:grid;grid-template-columns:250px minmax(0,1fr);gap:16px;align-items:start}
+.dashboard-menu{position:sticky;top:96px;border-radius:20px;padding:10px;display:grid;gap:6px}
+.dashboard-menu-button{
+  border:1px solid transparent;border-radius:13px;padding:13px 14px;
+  display:flex;align-items:center;gap:11px;text-align:left;
+  color:#bdcde2;background:transparent;font-weight:850;
+}
+.dashboard-menu-button span{width:24px;color:#6fc5ff;text-align:center;font-weight:1000}
+.dashboard-menu-button:hover{background:rgba(34,147,255,.08);border-color:rgba(91,164,255,.18)}
+.dashboard-menu-button.active{
+  color:#fff;background:linear-gradient(180deg,rgba(28,145,255,.92),rgba(19,85,196,.96));
+  border-color:rgba(133,208,255,.65);box-shadow:0 10px 24px rgba(14,91,204,.25)
+}
+.dashboard-panels{min-width:0}
+.dashboard-panel{display:none}
+.dashboard-panel.active{display:block}
+.dashboard-panel-head{
+  min-height:78px;border:1px solid var(--line);border-radius:20px;padding:18px 20px;
+  margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:16px;
+  background:linear-gradient(180deg,rgba(8,31,68,.92),rgba(3,14,31,.96));
+}
+.dashboard-panel-head h3{margin:4px 0 0;font-size:24px}
+.dashboard-action-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.dashboard-action-grid .account-card{border-radius:20px;padding:22px;margin:0}
+.dashboard-action-grid .account-card h3{margin:0 0 8px;font-size:20px}
+.dashboard-action-grid .account-card p{color:var(--muted);line-height:1.6}
+.dashboard-card-icon{
+  width:44px;height:44px;border-radius:14px;display:grid;place-items:center;margin-bottom:16px;
+  font-size:21px;font-weight:1000;color:#fff;background:linear-gradient(145deg,#2ab8ff,#145ed4);
+  border:1px solid rgba(155,221,255,.6);box-shadow:0 10px 24px rgba(20,104,229,.28)
+}
+.account-card-wide{grid-column:1/-1}
+.publish-url-box{
+  display:grid;gap:6px;margin:18px 0;padding:15px;border-radius:14px;
+  background:rgba(2,12,28,.72);border:1px solid rgba(91,158,255,.25)
+}
+.publish-url-box span{color:#84bff1;font-size:10px;font-weight:950;letter-spacing:.15em;text-transform:uppercase}
+.publish-url-box strong{font-size:16px;overflow-wrap:anywhere}
+.ownership-dashboard-state{
+  display:flex;align-items:center;gap:12px;padding:14px;margin:16px 0;border-radius:14px;
+  background:rgba(2,12,28,.72);border:1px solid rgba(91,158,255,.22)
+}
+.ownership-dashboard-state strong{font-size:13px}
+.account-actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:15px}
+.account-actions .btn{flex:0 1 auto}
+.dashboard-panel .status-pill{display:inline-flex;align-items:center;justify-content:center;padding:6px 10px;border-radius:999px;font-size:10px;font-weight:950;white-space:nowrap}
+.dashboard-panel .status-pill.offline{color:#ffd0da;background:rgba(227,61,100,.12);border:1px solid rgba(227,61,100,.34)}
+.dashboard-panel .status-pill.connected{color:#b8ffe7;background:rgba(47,214,160,.10);border:1px solid rgba(47,214,160,.35)}
+.dashboard-panel .status-pill.waiting{color:#ffe7ad;background:rgba(242,200,107,.10);border:1px solid rgba(242,200,107,.35)}
+
+@media(max-width:1100px){
+  .dashboard-status-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:820px){
+  .dashboard-hero{align-items:flex-start;flex-direction:column}
+  .dashboard-layout{grid-template-columns:1fr}
+  .dashboard-menu{
+    position:static;display:flex;overflow-x:auto;scrollbar-width:thin;padding:8px;
+  }
+  .dashboard-menu-button{white-space:nowrap;flex:0 0 auto}
+  .dashboard-action-grid{grid-template-columns:1fr}
+  .account-card-wide{grid-column:auto}
+}
+@media(max-width:560px){
+  .account-dashboard-section{padding-top:22px}
+  .dashboard-hero{padding:21px;border-radius:22px}
+  .dashboard-hero-actions,.dashboard-hero-actions .btn{width:100%}
+  .dashboard-status-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .dashboard-status-card{padding:14px}
+  .dashboard-panel-head{align-items:flex-start;flex-direction:column}
+  .dashboard-panel-head .btn{width:100%}
+  .dashboard-action-grid .account-card{padding:18px}
+  .account-actions{display:grid;grid-template-columns:1fr}
+  .account-actions .btn{width:100%}
+}
+@media(max-width:390px){
+  .dashboard-status-grid{grid-template-columns:1fr}
+}
