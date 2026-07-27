@@ -2,7 +2,7 @@
 "use strict";
 
 /* =========================================================
-   BLUVIXA 8.0 AUTOSAVE + RECOVERY CLOUD WORKSPACE CONTROLLER
+   BLUVIXA 9.0 SUPABASE MEDIA CLOUD WORKSPACE CONTROLLER
    One router, one authentication controller, one project library.
    Supabase and Stripe API routes remain unchanged.
    ========================================================= */
@@ -32,7 +32,10 @@ var autosaveQueued=false;
 var autosaveEnabled=true;
 var suppressAutosaveUntil=0;
 var lastAutosaveSignature="";
-var lastOpenedProjectKey="bluvixa_last_opened_project_v8";
+var lastOpenedProjectKey="bluvixa_last_opened_project_v9";
+var MEDIA_BUCKET="website-assets";
+var MEDIA_SIGNED_URL_SECONDS=315360000;
+var mediaUploadInFlight=0;
 
 function id(name){return document.getElementById(name);}
 function all(selector){return Array.prototype.slice.call(document.querySelectorAll(selector));}
@@ -212,6 +215,94 @@ function setSnapshots(value){
 function activeProjectId(){return localStorage.getItem(ACTIVE_PROJECT_KEY)||"";}
 function setActiveProjectId(value){localStorage.setItem(ACTIVE_PROJECT_KEY,value||"");}
 
+function fileExtension(file){
+  var name=String(file&&file.name||"");
+  var match=name.toLowerCase().match(/\.([a-z0-9]{1,8})$/);
+  if(match)return match[1];
+  var type=String(file&&file.type||"").toLowerCase();
+  var fallback={"image/jpeg":"jpg","image/png":"png","image/webp":"webp","image/gif":"gif","video/mp4":"mp4","video/webm":"webm","video/quicktime":"mov"};
+  return fallback[type]||"bin";
+}
+function cleanMediaName(value){
+  return String(value||"media")
+    .toLowerCase()
+    .replace(/[^a-z0-9._-]+/g,"-")
+    .replace(/-+/g,"-")
+    .replace(/^-|-$/g,"")
+    .slice(0,80)||"media";
+}
+function dataUrlToBlob(dataUrl){
+  var parts=String(dataUrl||"").split(",");
+  if(parts.length<2)throw new Error("Invalid embedded media data.");
+  var mimeMatch=parts[0].match(/^data:([^;]+);base64$/i);
+  if(!mimeMatch)throw new Error("Unsupported embedded media format.");
+  var binary=atob(parts[1]);
+  var bytes=new Uint8Array(binary.length);
+  for(var index=0;index<binary.length;index++)bytes[index]=binary.charCodeAt(index);
+  return new Blob([bytes],{type:mimeMatch[1]});
+}
+async function createLongLivedMediaUrl(path){
+  var signed=await supabaseClient.storage.from(MEDIA_BUCKET).createSignedUrl(path,MEDIA_SIGNED_URL_SECONDS);
+  if(signed.error)throw signed.error;
+  return signed.data&&signed.data.signedUrl?signed.data.signedUrl:"";
+}
+async function uploadMediaBlob(blob,originalName,projectId){
+  if(!currentUser||!supabaseClient)throw new Error("Sign in before uploading media.");
+  projectId=isUuid(projectId)?projectId:(activeProjectId()||makeUuid());
+  var fileLike=blob;
+  var extension=fileExtension({name:originalName,type:blob.type});
+  var baseName=cleanMediaName(String(originalName||"media").replace(/\.[^.]+$/,"")||"media");
+  var path=currentUser.id+"/"+projectId+"/"+Date.now()+"-"+makeUuid()+"-"+baseName+"."+extension;
+  mediaUploadInFlight++;
+  setSaveStatus("Uploading media to cloud…","saving");
+  try{
+    var result=await supabaseClient.storage.from(MEDIA_BUCKET).upload(path,fileLike,{cacheControl:"31536000",contentType:blob.type||"application/octet-stream",upsert:false});
+    if(result.error)throw result.error;
+    var url=await createLongLivedMediaUrl(path);
+    if(!url)throw new Error("The media URL could not be created.");
+    return {url:url,path:path,type:String(blob.type||"").indexOf("video/")===0?"video":"image"};
+  }finally{
+    mediaUploadInFlight=Math.max(0,mediaUploadInFlight-1);
+    if(!mediaUploadInFlight)setSaveStatus("All changes saved to cloud","");
+  }
+}
+async function uploadMediaFile(file,kind){
+  if(!file)throw new Error("No file was selected.");
+  var isVideo=String(file.type||"").indexOf("video/")===0;
+  var maxBytes=isVideo?100*1024*1024:25*1024*1024;
+  if(file.size>maxBytes)throw new Error(isVideo?"Videos must be 100 MB or smaller.":"Images must be 25 MB or smaller.");
+  if(String(file.type||"").indexOf("image/")!==0&&!isVideo)throw new Error("Please choose an image or video file.");
+  return uploadMediaBlob(file,file.name,activeProjectId());
+}
+async function migrateEmbeddedMedia(value,projectId,keyPath){
+  if(typeof value==="string"&&value.indexOf("data:")===0&&value.indexOf(";base64,")>0){
+    var blob=dataUrlToBlob(value);
+    var hint=(keyPath||"media").split(".").pop()||"media";
+    var ext=fileExtension({type:blob.type});
+    var uploaded=await uploadMediaBlob(blob,hint+"."+ext,projectId);
+    return uploaded.url;
+  }
+  if(Array.isArray(value)){
+    for(var i=0;i<value.length;i++)value[i]=await migrateEmbeddedMedia(value[i],projectId,(keyPath||"state")+"."+i);
+    return value;
+  }
+  if(value&&typeof value==="object"){
+    var keys=Object.keys(value);
+    for(var k=0;k<keys.length;k++)value[keys[k]]=await migrateEmbeddedMedia(value[keys[k]],projectId,(keyPath||"state")+"."+keys[k]);
+  }
+  return value;
+}
+window.bluvixaUploadMedia=async function(file,kind){
+  try{
+    var uploaded=await uploadMediaFile(file,kind);
+    toast(uploaded.type==="video"?"Video uploaded to cloud.":"Image uploaded to cloud.");
+    return uploaded;
+  }catch(error){
+    setSaveStatus("Media upload needs attention","error");
+    throw error;
+  }
+};
+
 function projectToRow(project){
   var state=clone(project.state||{});
   state.__bluvixa_record_type="project";
@@ -301,9 +392,11 @@ async function saveCloudRow(row){
   return result.data;
 }
 async function saveProjectToCloud(project){
+  project.state=await migrateEmbeddedMedia(project.state||{},project.id,"project");
   return saveCloudRow(projectToRow(project));
 }
 async function saveSnapshotToCloud(snapshot){
+  snapshot.state=await migrateEmbeddedMedia(snapshot.state||{},snapshot.projectId||snapshot.id,"snapshot");
   return saveCloudRow(snapshotToRow(snapshot));
 }
 async function syncCloudWorkspace(){
@@ -1154,6 +1247,8 @@ function bind(){
       if(button.closest(".tabs,.photo-actions,.gallery-actions,.panel,.sidebar-footer"))scheduleAutosave("builder-action");
     });
   }
+
+  document.addEventListener("bluvixa:builder-change",function(){scheduleAutosave("media-change");});
 
   document.addEventListener("visibilitychange",function(){
     if(document.visibilityState==="hidden"&&currentUser&&routeName()==="builder"){

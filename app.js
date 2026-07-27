@@ -146,7 +146,7 @@
       showToast.timer = setTimeout(function(){toast.classList.remove("show");},2600);
     }
 
-    function readFile(file,allowedTypes,callback){
+    async function readFile(file,allowedTypes,callback){
       if(!file){return;}
       var allowed = allowedTypes.some(function(prefix){return file.type.indexOf(prefix) === 0;});
       if(!allowed){
@@ -154,8 +154,23 @@
         return;
       }
 
+      if(typeof window.bluvixaUploadMedia === "function"){
+        try{
+          var uploaded = await window.bluvixaUploadMedia(file,allowedTypes.indexOf("video/") >= 0 ? "media" : "image");
+          callback(uploaded.url,uploaded.type,uploaded.path);
+          document.dispatchEvent(new CustomEvent("bluvixa:builder-change",{detail:{reason:"media-upload",path:uploaded.path}}));
+          return;
+        }catch(error){
+          showToast("Cloud upload failed: " + (error.message || "Unknown error"));
+          return;
+        }
+      }
+
       var reader = new FileReader();
-      reader.onload = function(){callback(reader.result,file.type.indexOf("video/") === 0 ? "video" : "image");};
+      reader.onload = function(){
+        callback(reader.result,file.type.indexOf("video/") === 0 ? "video" : "image","");
+        document.dispatchEvent(new CustomEvent("bluvixa:builder-change",{detail:{reason:"local-media"}}));
+      };
       reader.onerror = function(){showToast("That file could not be read.");};
       reader.readAsDataURL(file);
     }
@@ -1077,15 +1092,15 @@
       });
 
       byId("photoFile").addEventListener("change",function(event){
-        readMedia(event.target.files[0],function(data,type){
-          pendingPhotoMedia = {src:data,type:type};
+        readMedia(event.target.files[0],function(data,type,storagePath){
+          pendingPhotoMedia = {src:data,type:type,storagePath:storagePath||""};
           showToast(type === "video" ? "Video selected." : "Photo selected.");
         });
       });
 
       byId("galleryFile").addEventListener("change",function(event){
-        readMedia(event.target.files[0],function(data,type){
-          pendingGalleryMedia = {src:data,type:type};
+        readMedia(event.target.files[0],function(data,type,storagePath){
+          pendingGalleryMedia = {src:data,type:type,storagePath:storagePath||""};
           showToast(type === "video" ? "Gallery video selected." : "Gallery photo selected.");
         });
       });
@@ -1370,7 +1385,7 @@
     render();
     switchTab("business");
     setDevice("desktop");
-    byId("saveStatus").textContent = "Ready to build";
+    byId("saveStatus").textContent = "Autosave and cloud media are on";
 
 
 /* BLUVIXA FINAL WORKSPACE CONTROLS */
