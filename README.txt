@@ -1,26 +1,27 @@
-BLUVIXA 11.0 — PUBLISHING CENTER
+BLUVIXA 11.1 — PUBLISHING CENTER LOGIN FIX
 
-Built on the working Bluvixa 10.0 one-click publishing system.
+This update fixes the screen remaining stuck on:
+"Checking your membership…"
 
-NEW
-- Dedicated Publishing Center inside Domains & Publishing.
-- Website selector for managing each project independently.
-- Live/Draft status dashboard.
-- Live URL, View Live, Copy Link, and Share Website controls.
-- Last-published date, domain status, and SSL readiness.
-- Four-stage publishing progress.
-- Direct custom-domain management shortcut.
-- Saved snapshot/version history for the selected website.
-- Open a saved version directly in the builder.
-- Responsive mobile layout.
+FIXES
+- The loading screen now closes as soon as Supabase determines whether a
+  session exists.
+- Account and cloud-project checks no longer block the login interface.
+- Network timeout protection was added for configuration, session, account,
+  and workspace loading.
+- Local saved projects are shown if the cloud request is temporarily slow.
+- The authenticated publishing API helper now runs inside the platform
+  controller, where it can correctly access the Supabase session.
+- A new script version prevents the browser from serving the broken cached
+  platform.js file.
 
-DEPLOYMENT
-Replace:
+DEPLOY
+Replace these files:
 - index.html
-- style.css
-- app.js
 - platform.js
 
-Keep all Bluvixa 10.0 publishing files and API routes.
+The full package is included, but no SQL or environment-variable changes are
+required.
 
-No new SQL is required.
+After deployment, redeploy Vercel and refresh the website. On iPhone, close the
+browser tab and reopen Bluvixa to ensure the corrected JavaScript loads.
