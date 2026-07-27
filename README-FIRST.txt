@@ -1,45 +1,30 @@
-BLUVIXA 12.1 — HOBBY PLAN CLEAN DEPLOY
+BLUVIXA 12.2 — ACCOUNT INVOCATION FIX
 
-WHY THE LAST DEPLOYMENT FAILED
-Vercel rejected the deployment because the GitHub repository still contained
-more than 12 files inside the api folder. Since the deployment failed, Bluvixa
-continued serving the previous broken deployment.
+The Vercel log showed:
+FUNCTION_INVOCATION_FAILED on GET /api/account
 
-IMPORTANT: DO NOT MERGE THIS PACKAGE INTO THE OLD API FOLDER.
+That means the previous function crashed while its module was loading, before
+the normal error handler could respond.
 
-DEPLOY STEPS
-1. In the GitHub/Vercel project, delete the ENTIRE existing api folder.
-2. Commit that deletion if GitHub asks you to.
-3. Copy the api folder from this package into the project.
-4. Replace the matching frontend files with the files from this package.
-5. Do not upload .env.local. Keep secrets in Vercel Environment Variables.
-6. Commit and push.
-7. Confirm the Vercel deployment says Ready, not Error.
-8. Sign out of Bluvixa, close the browser tab, reopen it, and sign in.
+This version replaces api/account.js with a standalone endpoint that:
+- has no imports
+- does not initialize Stripe or Supabase SDK clients at module load
+- verifies the Supabase access token through the Auth REST endpoint
+- reads the profiles row through the Supabase REST endpoint
+- returns the exact plan/status fields expected by platform.js
+- returns useful JSON errors instead of FUNCTION_INVOCATION_FAILED
 
-THIS PACKAGE CONTAINS 9 SERVERLESS ENDPOINTS
-- account
-- config
-- connect-domain
-- create-checkout-session
-- create-portal-session
-- export-website
-- public-site
-- publish-site
-- stripe-webhook
+DEPLOY
+1. Replace the entire old api folder with the api folder in this package.
+2. Replace the matching root files.
+3. Commit and push.
+4. Wait until Vercel says Ready.
+5. Sign out, close the Bluvixa browser tab, reopen it, and sign back in.
 
-The _lib.js file is a shared helper, not an endpoint.
-
-REMOVED
-- domain-search.js was removed because it is optional and generated domain
-  suggestions already work in the frontend without it.
-- The Vercel CLI devDependency was removed to eliminate the build warning.
-
-DO NOT LEAVE OLD ROUTES SUCH AS THESE IN api/
-- dashboard.js
-- project.js
-- export_website.js
-- duplicate copies with (1), (2), or (3) in their names
-- old account, checkout, publishing, or webhook files
-
-A successful deployment is required before any account/API fix can appear live.
+Do not upload .env.local. Confirm these exist in Vercel Production:
+SUPABASE_URL
+SUPABASE_ANON_KEY
+SUPABASE_SERVICE_ROLE_KEY
+STRIPE_SECRET_KEY
+STRIPE_WEBHOOK_SECRET
+and the Stripe price IDs used by checkout.
