@@ -1,7 +1,7 @@
 import {
   stripe,
   admin
-} from "./api/_lib.js";
+} from "./_lib.js";
 
 export const config = {
   api: {
@@ -29,6 +29,16 @@ function createHttpError(message, status = 500) {
   return error;
 }
 
+function normalizePlan(plan) {
+  if (!plan) {
+    return null;
+  }
+
+  return String(plan)
+    .trim()
+    .toLowerCase();
+}
+
 async function updateProfileByUserId(userId, values) {
   const {
     error
@@ -37,7 +47,8 @@ async function updateProfileByUserId(userId, values) {
     .upsert(
       {
         id: userId,
-        ...values
+        ...values,
+        updated_at: new Date().toISOString()
       },
       {
         onConflict: "id"
@@ -51,22 +62,42 @@ async function updateProfileByUserId(userId, values) {
 
 async function updateProfileByCustomerId(customerId, values) {
   const {
+    data,
     error
   } = await admin
     .from("profiles")
-    .update(values)
-    .eq("stripe_customer_id", customerId);
+    .update({
+      ...values,
+      updated_at: new Date().toISOString()
+    })
+    .eq("stripe_customer_id", customerId)
+    .select("id");
 
   if (error) {
     throw error;
   }
+
+  if (!data || data.length === 0) {
+    console.warn(
+      "No profile found for Stripe customer:",
+      customerId
+    );
+  }
 }
 
 async function handleCheckoutCompleted(session) {
-  const userId = session.metadata?.user_id;
-  const plan = session.metadata?.plan;
+  const userId =
+    session.metadata?.user_id ||
+    session.client_reference_id ||
+    null;
+
+  const plan = normalizePlan(
+    session.metadata?.plan
+  );
+
   const purchaseType =
-    session.metadata?.purchase_type;
+    session.metadata?.purchase_type ||
+    null;
 
   if (!userId) {
     throw createHttpError(
@@ -96,21 +127,29 @@ async function handleCheckoutCompleted(session) {
     return;
   }
 
-  let subscriptionStatus = "trialing";
+  let subscriptionStatus = "active";
+  let subscriptionId = null;
 
   if (session.subscription) {
+    subscriptionId =
+      String(session.subscription);
+
     const subscription =
       await stripe.subscriptions.retrieve(
-        String(session.subscription)
+        subscriptionId
       );
 
-    subscriptionStatus = subscription.status;
+    subscriptionStatus =
+      subscription.status || "active";
   }
 
   await updateProfileByUserId(userId, {
     stripe_customer_id: customerId,
+    stripe_subscription_id:
+      subscriptionId,
     plan,
-    subscription_status: subscriptionStatus
+    subscription_status:
+      subscriptionStatus
   });
 }
 
@@ -126,12 +165,30 @@ async function handleSubscriptionChange(subscription) {
     );
   }
 
+  const plan = normalizePlan(
+    subscription.metadata?.plan
+  );
+
   const values = {
-    subscription_status: subscription.status
+    stripe_subscription_id:
+      subscription.id
+        ? String(subscription.id)
+        : null,
+    subscription_status:
+      subscription.status || "inactive"
   };
 
-  if (subscription.metadata?.plan) {
-    values.plan = subscription.metadata.plan;
+  if (plan) {
+    values.plan = plan;
+  }
+
+  if (
+    subscription.status === "canceled" ||
+    subscription.status === "unpaid" ||
+    subscription.status === "incomplete_expired"
+  ) {
+    values.subscription_status =
+      subscription.status;
   }
 
   await updateProfileByCustomerId(
@@ -171,11 +228,26 @@ async function handleInvoicePaymentSucceeded(invoice) {
       String(invoice.subscription)
     );
 
+  const values = {
+    stripe_subscription_id:
+      subscription.id
+        ? String(subscription.id)
+        : null,
+    subscription_status:
+      subscription.status || "active"
+  };
+
+  const plan = normalizePlan(
+    subscription.metadata?.plan
+  );
+
+  if (plan) {
+    values.plan = plan;
+  }
+
   await updateProfileByCustomerId(
     customerId,
-    {
-      subscription_status: subscription.status
-    }
+    values
   );
 }
 
@@ -249,6 +321,10 @@ export default async function handler(req, res) {
         break;
 
       default:
+        console.log(
+          "Unhandled Stripe event:",
+          event.type
+        );
         break;
     }
 
