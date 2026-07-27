@@ -1306,36 +1306,60 @@ async function togglePublish(projectId){
 
   try{
     beginPublishingProgress();
+
     if(activeProjectId()===projectId&&typeof window.bluvixaExportState==="function"){
       var saved=await saveActiveProject(false);
       if(!saved)throw new Error(lastCloudError||"Save the website before publishing.");
       projects=getProjects();
       project=projects.find(function(item){return item.id===projectId;});
+      if(!project)throw new Error("Website project could not be reloaded.");
     }
 
-    var shouldPublish=!project.published;
+    /*
+      The visible dashboard button is the action the user selected.
+      Do not trust project.published here because local project data can
+      still be stale after a previous deployment.
+    */
+    var primaryButton=id("publishingPrimaryBtn");
+    var buttonText=String(primaryButton&&primaryButton.textContent||"").trim().toLowerCase();
+    var shouldPublish=buttonText.indexOf("unpublish")===-1;
+
     toast(shouldPublish?"Publishing website…":"Unpublishing website…");
+
     var result=await authenticatedApi("/api/publish-site",{
       projectId:projectId,
       publish:shouldPublish,
       requestedSlug:project.slug||sanitizeSlug(project.name)
     });
 
-    project.published=!!result.published;
+    if(typeof result.published!=="boolean"){
+      throw new Error("The server returned an invalid publishing status.");
+    }
+
+    project.published=result.published;
     project.slug=result.slug||project.slug||"";
     project.updatedAt=new Date().toISOString();
-    if(project.published)project.publishedAt=project.updatedAt;
-    if(project.state&&project.state.backend){
+    project.publishedAt=project.published?project.updatedAt:null;
+
+    if(project.state){
+      project.state.backend=project.state.backend||{};
+      project.state.project=project.state.project||{};
       project.state.backend.published=project.published;
-      project.state.backend.publishedAt=project.publishedAt||null;
-    }
-    if(project.state&&project.state.project){
+      project.state.backend.publishedAt=project.publishedAt;
       project.state.project.slug=project.slug;
       project.state.project.domainStatus=project.domainStatus;
     }
+
+    /*
+      The API has already written the final published/draft status.
+      Do not immediately call saveProjectToCloud here because a second
+      cloud write can overwrite the status that was just set by the API.
+    */
     setProjects(projects);
-    await saveProjectToCloud(project);
-    renderProjects();renderDrafts();renderPublishing();renderPublishingCenter();
+    renderProjects();
+    renderDrafts();
+    renderPublishing();
+    renderPublishingCenter();
     finishPublishingProgress(true);
 
     if(project.published){

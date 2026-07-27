@@ -1,0 +1,15 @@
+BLUVIXA PUBLISHING REAL FIX
+
+Replace these exact files:
+1. platform.js
+2. app.js
+3. api/publish-site.js
+
+IMPORTANT:
+- Remove any <script src="/publish-site.js"></script> line from your HTML.
+- Keep platform.js loaded only once.
+- Keep app.js loaded only once.
+- Redeploy, then hard refresh or open the site in a private browser tab.
+
+The dashboard Publish/Unpublish button is controlled by platform.js.
+The previous packages did not replace that actual handler.
