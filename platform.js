@@ -2,7 +2,7 @@
 "use strict";
 
 /* =========================================================
-   BLUVIXA 11.2.2 LOGGED-IN LOADING FIX CONTROLLER
+   BLUVIXA 11.2.3 AUTHENTICATION CONNECTION FIX CONTROLLER
    One router, one authentication controller, one project library.
    Supabase and Stripe API routes remain unchanged.
    ========================================================= */
@@ -729,8 +729,7 @@ async function initAuth(){
   try{
     var config=await withTimeout(api("/api/config"),10000,"Configuration");
     if(!config.supabaseUrl||!config.supabaseAnonKey){
-      closeLoading();
-      return;
+      throw new Error(config.error||"Supabase configuration is unavailable.");
     }
     if(!window.supabase)throw new Error("Supabase client did not load.");
     supabaseClient=window.supabase.createClient(config.supabaseUrl,config.supabaseAnonKey);
@@ -741,8 +740,10 @@ async function initAuth(){
     });
   }catch(error){
     console.error("Bluvixa auth initialization failed:",error);
+    supabaseClient=null;
     closeLoading();
     showRoute();
+    authMessage("Authentication connection failed. "+((error&&error.message)||"Check the Vercel Supabase environment variables."),true);
   }
 }
 
