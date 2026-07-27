@@ -1,4 +1,6 @@
-:root{
+[hidden] {
+  display: none !important;
+}:root{
       --bg:#020b18;
       --bg2:#061b38;
       --panel:#071b38;
