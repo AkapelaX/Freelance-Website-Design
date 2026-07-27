@@ -39,6 +39,7 @@
       var config=await api("/api/config");
       if(!config.supabaseUrl || !config.supabaseAnonKey){
         setMessage("Authentication is ready for configuration. Add Supabase environment variables to activate it.",false);
+        var loading=el("sessionLoadingScreen"); if(loading) loading.classList.add("ready");
         return;
       }
       if(!window.supabase) throw new Error("Supabase client library did not load.");
@@ -46,7 +47,7 @@
       var result=await supabaseClient.auth.getSession();
       await applySession(result.data.session);
       supabaseClient.auth.onAuthStateChange(function(_event,session){ applySession(session); });
-    }catch(error){ console.warn(error); }
+    }catch(error){ console.warn(error); var loading=el("sessionLoadingScreen"); if(loading) loading.classList.add("ready"); }
   }
   function openAuth(mode){
     setMode(mode||"signin"); setMessage("");
@@ -85,22 +86,56 @@
   async function applySession(session){
     currentUser=session?session.user:null;
     var signedIn=!!currentUser;
+    document.body.classList.toggle("member-authenticated",signedIn);
+
     ["signInBtn","startTrialBtn"].forEach(function(id){if(el(id))el(id).classList.toggle("hidden",signedIn);});
     ["signOutBtn","accountNavLink"].forEach(function(id){if(el(id))el(id).classList.toggle("hidden",!signedIn);});
+
+    var mobilePublic=el("mobileMenuPublic");
+    var mobileMember=el("mobileMenuMember");
+    if(mobilePublic) mobilePublic.classList.toggle("hidden",signedIn);
+    if(mobileMember) mobileMember.classList.toggle("hidden",!signedIn);
+
     safeText("accountEmail",signedIn?currentUser.email:"—");
     safeText("dashboardSettingsEmail",signedIn?currentUser.email:"—");
     safeText("accountAuthStatus",signedIn?"Signed in":"Signed out");
-    safeText("memberConfirmationTitle",signedIn?"You are a Bluvixa member":"Sign in required");
+    safeText("memberConfirmationTitle",signedIn?"Your Bluvixa account is active":"Sign in required");
     safeText("memberConfirmationDetails",signedIn
-      ? "Signed in as "+currentUser.email+". Your plan and billing status appear below."
+      ? "Welcome home. Signed in as "+currentUser.email+"."
       : "Sign in to access your dashboard, cloud projects, billing, and ownership.");
+
     var accountSection=el("account"); if(accountSection) accountSection.classList.toggle("hidden",!signedIn);
     ["drafts","billing","domains"].forEach(function(id){var page=el(id);if(page)page.classList.toggle("hidden",!signedIn);});
     var publicNav=el("publicNav"); if(publicNav) publicNav.classList.toggle("hidden",signedIn);
     var memberNav=el("memberNav"); if(memberNav) memberNav.classList.toggle("hidden",!signedIn);
     safeText("sidebarMemberEmail",signedIn?currentUser.email:"—");
     safeText("draftsMemberEmail",signedIn?currentUser.email:"—");
-    if(signedIn){ await loadAccount(); }
+
+    var landingStart=el("landingStartBtn");
+    var landingSecondary=el("landingSecondaryBtn");
+    if(landingStart){
+      landingStart.textContent=signedIn?"Open My Dashboard":"Start 7-Day Free Trial";
+      landingStart.onclick=signedIn?function(){location.hash="#account";}:null;
+    }
+    if(landingSecondary){
+      landingSecondary.textContent=signedIn?"Continue Building":"Preview the Builder";
+      landingSecondary.href=signedIn?"#builder":"#builder";
+    }
+
+    if(signedIn){
+      await loadAccount();
+      var current=(location.hash||"#home").slice(1);
+      if(!current || current==="home" || current==="top"){
+        location.hash="#account";
+      }
+    }else{
+      if(["account","drafts","billing","domains"].indexOf((location.hash||"").slice(1))>=0){
+        location.hash="#home";
+      }
+    }
+
+    var loading=el("sessionLoadingScreen");
+    if(loading) loading.classList.add("ready");
   }
   async function signOut(){ if(supabaseClient) await supabaseClient.auth.signOut(); location.hash="#top"; toast("Signed out."); }
   async function forgot(){
@@ -155,6 +190,25 @@
       safeText("dashboardSubscriptionPlan",plan);
       safeText("dashboardSubscriptionStatus",billing);
       safeText("dashboardSubscriptionDate",accountDate(data));
+      var statusKey=String(data.subscriptionStatus||"").toLowerCase();
+      var dateText=accountDate(data);
+      var activeTrial=statusKey==="trialing";
+      var activePaid=["active","past_due"].indexOf(statusKey)>=0;
+      safeText("trialHomeEyebrow",activeTrial?"7-DAY FREE TRIAL":(activePaid?"ACTIVE MEMBERSHIP":"MEMBERSHIP STATUS"));
+      safeText("trialHomeTitle",activeTrial
+        ? plan+" trial is active"
+        : (activePaid?plan+" subscription is active":(owned?"Website owned":"No active subscription")));
+      safeText("trialHomeMessage",activeTrial
+        ? (dateText==="Available after checkout"
+            ? "You are signed in and your Starter trial is active. Stripe has not supplied the trial end date to this screen yet."
+            : "Your trial is active through "+dateText+". You can build, save drafts, and manage billing now.")
+        : (activePaid
+            ? "Your Bluvixa subscription is active. Continue building whenever you are ready."
+            : (owned
+                ? "You own this website. Export remains available even if your subscription ends."
+                : "Choose a subscription to activate the complete member workspace.")));
+      safeText("mobileMemberPlan",data.plan?plan+" Plan":"Bluvixa Member");
+      safeText("mobileMemberStatus",activeTrial?"Trial active":(activePaid?"Subscription active":(owned?"Website owned":billing)));
       var prices={starter:499,professional:599,advanced:699};
       var planKey=String(data.plan||"professional").toLowerCase();
       safeText("dashboardBuyoutPrice","$"+(prices[planKey]||599));
@@ -167,9 +221,10 @@
         ? "Member account active — website owned"
         : (data.plan ? plan+" member account active" : "Bluvixa member account active"));
       safeText("memberConfirmationDetails",
-        "Signed in as "+(currentUser?currentUser.email:"member")+
-        ". Subscription status: "+billing+
-        (owned?". Website ownership is complete.":"."));
+        "Welcome home, "+((currentUser&&currentUser.user_metadata&&currentUser.user_metadata.full_name)||"member")+
+        ". You are signed in as "+(currentUser?currentUser.email:"member")+".");
+      safeText("dashboardGreeting",
+        "Welcome home, "+((currentUser&&currentUser.user_metadata&&currentUser.user_metadata.full_name)||"member"));
       var exportHelp=owned?"Your raw-code export is unlocked. Export generation requires the connected export API.":"Purchase the website buyout to unlock a complete raw-code ZIP export.";
       safeText("accountExportHelp",exportHelp);
       var exportButton=el("exportWebsiteBtn");
@@ -250,8 +305,26 @@
     });
     window.addEventListener("hashchange",function(){if(location.hash==="#account")syncBuilderDashboard();});
   }
+  function closeMobileMenu(){
+    var menu=el("mobileMenu"),button=el("mobileMenuButton");
+    if(menu) menu.classList.add("hidden");
+    if(button){button.classList.remove("open");button.setAttribute("aria-expanded","false");}
+  }
+  function toggleMobileMenu(){
+    var menu=el("mobileMenu"),button=el("mobileMenuButton");
+    if(!menu||!button)return;
+    var opening=menu.classList.contains("hidden");
+    menu.classList.toggle("hidden",!opening);
+    button.classList.toggle("open",opening);
+    button.setAttribute("aria-expanded",String(opening));
+  }
   function bind(){
+    if(el("mobileMenuButton")) el("mobileMenuButton").addEventListener("click",toggleMobileMenu);
+    each("#mobileMenu a",function(link){link.addEventListener("click",closeMobileMenu);});
     if(el("signInBtn")) el("signInBtn").addEventListener("click",function(){openAuth("signin");});
+    if(el("mobileSignInBtn")) el("mobileSignInBtn").addEventListener("click",function(){closeMobileMenu();openAuth("signin");});
+    if(el("mobileStartTrialBtn")) el("mobileStartTrialBtn").addEventListener("click",function(){closeMobileMenu();openAuth("signup");});
+    if(el("mobileSignOutBtn")) el("mobileSignOutBtn").addEventListener("click",function(){closeMobileMenu();signOut();});
     if(el("startTrialBtn")) el("startTrialBtn").addEventListener("click",function(){openAuth("signup");});
     if(el("closeAuthBtn")) el("closeAuthBtn").addEventListener("click",closeAuth);
     if(el("authModal")) el("authModal").addEventListener("click",function(e){if(e.target===el("authModal"))closeAuth();});

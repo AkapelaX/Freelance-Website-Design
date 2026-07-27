@@ -2946,3 +2946,75 @@ body:before{content:none}
 @media(max-width:760px){
  body{padding-top:66px}.app-header{height:66px;padding:0 13px}.public-nav,.member-nav{display:none}.app-brand strong{font-size:12px}.app-brand small{font-size:7px}.header-actions .btn{padding:9px 11px;font-size:11px}.landing-grid{padding:42px 18px}.landing-copy h1{font-size:46px}.landing-proof{grid-template-columns:1fr}.product-window-body{grid-template-columns:90px 1fr}.member-content{padding:20px 14px}.member-page-head,.workspace-page-head,.website-card-body{flex-direction:column;align-items:stretch}.membership-strip{grid-template-columns:auto 1fr}.membership-plan{grid-column:1/-1;border-left:0;border-top:1px solid #294359;padding:12px 0 0}.metric-grid{grid-template-columns:1fr}.draft-preview-grid,.saved-drafts-grid,.member-plan-grid{grid-template-columns:1fr}.website-card-actions,.buyout-actions,.domain-center-actions{display:grid}.website-card-actions .btn,.buyout-actions .btn,.domain-center-actions .btn{width:100%}.draft-toolbar{align-items:stretch;flex-direction:column}.draft-search{max-width:none}.workspace-head-actions{display:grid}
 }
+
+
+/* =========================================================
+   BLUVIXA 4.1 — AUTHENTICATED HOME, TRIAL CLARITY, MOBILE NAV
+   ========================================================= */
+.session-loading-screen{
+  position:fixed;inset:0;z-index:5000;display:grid;place-items:center;
+  background:#07101f;transition:opacity .22s ease,visibility .22s ease
+}
+.session-loading-screen.ready{opacity:0;visibility:hidden;pointer-events:none}
+.session-loading-card{display:grid;justify-items:center;gap:9px;color:#fff}
+.session-loading-logo{
+  width:60px;height:60px;border-radius:18px;display:grid;place-items:center;
+  background:linear-gradient(145deg,#46b8ff,#2448e8);font-size:30px;font-weight:1000;
+  border:1px solid #8bd7ff;box-shadow:0 18px 50px rgba(31,112,255,.32)
+}
+.session-loading-card span{color:#91a5bd;font-size:13px}
+.mobile-menu-button{
+  display:none;width:42px;height:42px;padding:10px;border:1px solid #29415f;border-radius:11px;
+  background:#0d1b2f
+}
+.mobile-menu-button span{display:block;height:2px;background:#dbeeff;margin:4px 0;border-radius:2px;transition:.2s}
+.mobile-menu-button.open span:nth-child(1){transform:translateY(6px) rotate(45deg)}
+.mobile-menu-button.open span:nth-child(2){opacity:0}
+.mobile-menu-button.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+.mobile-menu{
+  position:fixed;z-index:999;top:66px;left:10px;right:10px;
+  max-height:calc(100vh - 80px);overflow:auto;padding:12px;
+  background:rgba(8,19,34,.98);border:1px solid #2b4668;border-radius:16px;
+  box-shadow:0 24px 70px rgba(0,0,0,.55)
+}
+.mobile-menu-public,.mobile-menu-member{display:grid;gap:7px}
+.mobile-menu a{
+  display:block;padding:14px;border-radius:11px;color:#dbe9fa;text-decoration:none;
+  font-weight:850;background:#0e1d31;border:1px solid #1f3653
+}
+.mobile-menu .btn{width:100%}
+.mobile-member-status{
+  padding:15px;margin-bottom:4px;border-radius:12px;
+  background:linear-gradient(135deg,rgba(36,125,255,.22),rgba(51,214,166,.10));
+  border:1px solid rgba(79,155,255,.35)
+}
+.mobile-member-status small,.mobile-member-status strong,.mobile-member-status span{display:block}
+.mobile-member-status small{color:#69c5ff;font-size:9px;letter-spacing:.16em}
+.mobile-member-status strong{font-size:18px;margin-top:5px}
+.mobile-member-status span{color:#8fa8c2;font-size:12px;margin-top:4px}
+.trial-home-card{
+  display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:18px;
+  margin-bottom:18px;padding:22px;border-radius:18px;
+  background:
+    radial-gradient(circle at 0 50%,rgba(44,131,255,.20),transparent 34%),
+    linear-gradient(120deg,#102743,#0d192b 68%);
+  border:1px solid #376da9
+}
+.trial-home-icon{
+  width:58px;height:58px;border-radius:18px;display:grid;place-items:center;
+  font-size:25px;font-weight:1000;background:linear-gradient(145deg,#48c2ff,#2c4af0);
+  border:1px solid #8bdcff;box-shadow:0 15px 35px rgba(36,100,235,.27)
+}
+.trial-home-copy small{color:#6ac6ff;font-size:9px;letter-spacing:.16em;font-weight:1000}
+.trial-home-copy h2{margin:5px 0 5px;font-size:24px}
+.trial-home-copy p{margin:0;color:#91a5bd}
+.trial-home-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+body.member-authenticated .landing-page{display:none!important}
+
+@media(max-width:760px){
+  .mobile-menu-button{display:block}
+  .header-actions #signInBtn,.header-actions #startTrialBtn,.header-actions #signOutBtn,.header-actions #accountNavLink{display:none!important}
+  .trial-home-card{grid-template-columns:auto 1fr}
+  .trial-home-actions{grid-column:1/-1;display:grid;grid-template-columns:1fr}
+  .trial-home-actions .btn{width:100%}
+}

@@ -17,6 +17,8 @@ function currentRoute(){
 }
 function route(){
   var name=currentRoute();
+  if(document.body.classList.contains("member-authenticated") && name==="home"){name="account";}
+  if(!document.body.classList.contains("member-authenticated") && ["account","drafts","billing","domains"].indexOf(name)>=0){name="home";}
   qa(".app-page").forEach(function(page){page.classList.toggle("route-active",page.dataset.page===name);});
   qa("[data-route-link]").forEach(function(link){link.classList.toggle("active",link.dataset.routeLink===name);});
   document.body.className="route-"+name;
@@ -103,7 +105,10 @@ function deleteDraft(id){
 }
 function bind(){
   window.addEventListener("hashchange",route);
-  var landing=byId("landingStartBtn");if(landing)landing.addEventListener("click",function(){window.BluvixaMVP?window.BluvixaMVP.openAuth("signup"):toast("Authentication is loading.");});
+  var landing=byId("landingStartBtn");if(landing)landing.addEventListener("click",function(){
+    if(document.body.classList.contains("member-authenticated")){location.hash="#account";return;}
+    window.BluvixaMVP?window.BluvixaMVP.openAuth("signup"):toast("Authentication is loading.");
+  });
   var avatar=byId("accountNavLink");if(avatar)avatar.addEventListener("click",function(){location.hash="#account";});
   ["saveCurrentDraftBtn","saveSnapshotTopBtn"].forEach(function(id){var b=byId(id);if(b)b.addEventListener("click",saveSnapshot);});
   var search=byId("draftSearchInput");if(search)search.addEventListener("input",renderDrafts);

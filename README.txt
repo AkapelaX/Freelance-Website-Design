@@ -1,44 +1,49 @@
-BLUVIXA 4.0 COMPLETE REBUILD
+BLUVIXA 4.1 — MEMBER HOME & TRIAL CLARITY
 
-This is a full frontend rebuild, not a CSS patch.
+THIS UPDATE FIXES
+- Signed-in customers are automatically sent to the Member Dashboard instead of
+  remaining on the public marketing page.
+- The public “Start Free Trial” button is replaced by “Open My Dashboard” for a
+  recognized Supabase session.
+- The dashboard clearly displays the real plan and subscription status returned by
+  /api/account, including Starter + Trial Active.
+- A full mobile hamburger menu now provides Dashboard, Saved Drafts, Builder,
+  Billing & Ownership, Domains, and Sign Out.
+- A loading screen prevents the public page from flashing while Supabase checks the
+  session.
+- The member dashboard welcomes the user by name and presents the trial or active
+  subscription in a large status card.
 
-NEW APPLICATION FLOW
-1. Public landing page
-2. Sign in or create account
-3. Member Dashboard
-4. Saved Drafts page
-5. Existing visual Builder with its preview preserved
-6. Billing & Ownership page with visible website-buyout options
-7. Domain center
+PRESERVED WITHOUT CHANGING SETTINGS
+- Supabase URL and anon key are still loaded from /api/config.
+- Supabase authentication remains the existing implementation.
+- Stripe Checkout remains /api/create-checkout-session.
+- Stripe Customer Portal remains /api/create-portal-session.
+- Account information remains /api/account.
+- Cloud projects remain /api/project.
+- Website buyout still uses purchaseType: "buyout".
+- No Supabase or Stripe secret/environment settings are embedded or replaced.
 
-PRESERVED
-- Supabase configuration is still fetched from /api/config.
-- Supabase authentication remains unchanged.
-- Stripe Checkout still uses /api/create-checkout-session.
-- Stripe Customer Portal still uses /api/create-portal-session.
-- Cloud projects still use /api/project.
-- Account status still uses /api/account.
-- Existing builder state, visual preview, plan limits, media, maps, themes, domains,
-  local saving, cloud save/load, and publishing state remain in app.js.
+GENERATED WEBSITE URLS
+The builder already generates a proposed address such as:
+  https://my-business.bluvixa.com
 
-SAVED DRAFTS
-- “Save to Drafts” creates named snapshots in the Saved Drafts page.
-- Users can search, load, and delete snapshots.
-- Up to 30 browser snapshots are retained.
-- Media-heavy projects should also be saved to the cloud because browser storage
-  limits vary by device.
+The dashboard now shows that generated address. Making it publicly accessible still
+requires the publishing backend, wildcard DNS for *.bluvixa.com, and deployment/routing
+that serves the correct saved website by slug. The frontend does not falsely claim
+that an undeployed address is live.
 
-WEBSITE BUYOUT
-- The Billing & Ownership page visibly shows the buyout option.
-- Starter: $499
-- Professional: $599
-- Advanced: $699
-- The buyout button uses the existing Stripe checkout route.
-- Website ownership remains permanent in the account data when the backend webhook
-  records websiteBoughtOut.
-- ZIP download calls /api/export-website after ownership is confirmed.
+INSTALLATION
+Replace:
+- index.html
+- style.css
+- app.js
+- auth-payments.js
+- dashboard.js
 
-INSTALL
-Replace index.html, style.css, app.js, auth-payments.js, and add dashboard.js.
-Keep your current assets folder, favicon files, Vercel API routes, Supabase variables,
-and Stripe variables.
+Keep:
+- your assets folder
+- hero-bluvixa-webicon.webp
+- all Vercel API routes
+- all Supabase environment variables
+- all Stripe environment variables and webhook settings

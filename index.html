@@ -27,12 +27,45 @@
 <a href="#billing" data-route-link="billing">Billing & Ownership</a>
 </nav>
 <div class="header-actions">
+<button class="mobile-menu-button" id="mobileMenuButton" type="button" aria-expanded="false" aria-controls="mobileMenu" aria-label="Open navigation">
+<span></span><span></span><span></span>
+</button>
 <button class="btn btn-ghost hidden" id="signInBtn" type="button">Sign In</button>
 <button class="btn btn-primary hidden" id="startTrialBtn" type="button">Start Free Trial</button>
 <button class="avatar-button hidden backend-only" id="accountNavLink" type="button" aria-label="Open dashboard">B</button>
 <button class="btn btn-ghost hidden backend-only" id="signOutBtn" type="button">Sign Out</button>
 </div>
 </header>
+<div class="mobile-menu hidden" id="mobileMenu">
+<div class="mobile-menu-public" id="mobileMenuPublic">
+<a href="#home">Home</a>
+<a href="#pricing">Pricing</a>
+<a href="#builder">Preview Builder</a>
+<button class="btn btn-secondary" id="mobileSignInBtn" type="button">Sign In</button>
+<button class="btn btn-primary" id="mobileStartTrialBtn" type="button">Start 7-Day Free Trial</button>
+</div>
+<div class="mobile-menu-member hidden" id="mobileMenuMember">
+<div class="mobile-member-status">
+<small>BLUVIXA MEMBER</small>
+<strong id="mobileMemberPlan">Account loading…</strong>
+<span id="mobileMemberStatus">Checking subscription</span>
+</div>
+<a href="#account">Dashboard</a>
+<a href="#drafts">Saved Drafts</a>
+<a href="#builder">Website Builder</a>
+<a href="#billing">Billing &amp; Ownership</a>
+<a href="#domains">Domains &amp; Publishing</a>
+<button class="btn btn-secondary backend-only" id="mobileSignOutBtn" type="button">Sign Out</button>
+</div>
+</div>
+
+<div class="session-loading-screen" id="sessionLoadingScreen">
+<div class="session-loading-card">
+<div class="session-loading-logo">B</div>
+<strong>Opening Bluvixa</strong>
+<span>Checking your membership…</span>
+</div>
+</div>
 
 <main>
 <section class="app-page landing-page" id="home" data-page="home">
@@ -43,7 +76,7 @@
 <p>Bluvixa combines a visual website builder, member dashboard, saved-draft library, subscription management, publishing controls, and one-time website buyouts.</p>
 <div class="landing-actions">
 <button class="btn btn-primary btn-large" id="landingStartBtn" type="button">Start 7-Day Free Trial</button>
-<a class="btn btn-secondary btn-large" href="#builder">Preview the Builder</a>
+<a class="btn btn-secondary btn-large" id="landingSecondaryBtn" href="#builder">Preview the Builder</a>
 </div>
 <div class="landing-proof">
 <div><strong>Visual Builder</strong><span>Design without code</span></div>
@@ -99,6 +132,19 @@
 <div><small>ACCOUNT STATUS</small><strong id="memberConfirmationTitle">You are signed in</strong></div>
 <div class="membership-plan"><small>PLAN</small><strong id="accountPlan">No active plan</strong></div>
 <div class="membership-plan"><small>SUBSCRIPTION</small><strong id="accountBillingStatus">Not subscribed</strong></div>
+</div>
+
+<div class="trial-home-card" id="trialHomeCard">
+<div class="trial-home-icon">7</div>
+<div class="trial-home-copy">
+<small id="trialHomeEyebrow">YOUR MEMBERSHIP</small>
+<h2 id="trialHomeTitle">Checking your trial…</h2>
+<p id="trialHomeMessage">Bluvixa is loading your subscription details.</p>
+</div>
+<div class="trial-home-actions">
+<a class="btn btn-primary" href="#builder">Continue Building</a>
+<a class="btn btn-secondary" href="#billing">View Billing</a>
+</div>
 </div>
 
 <div class="metric-grid">
