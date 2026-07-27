@@ -1495,7 +1495,23 @@
       });
 
       byId("publishBtn").addEventListener("click",async function(){
-        await updateWebsitePublication(!state.backend.published);
+        var button = byId("publishBtn");
+        var buttonText = String(
+          button && button.textContent
+            ? button.textContent
+            : ""
+        ).trim().toLowerCase();
+
+        /*
+          Use the action shown on the button as the source of truth.
+          The cloud/dashboard script can correctly display
+          "Unpublish Website" before this local builder state has
+          finished syncing. Relying only on state.backend.published
+          caused an Unpublish click to send publish:true.
+        */
+        var shouldPublish = buttonText.indexOf("unpublish") === -1;
+
+        await updateWebsitePublication(shouldPublish);
       });
 
       byId("loadDraftBtn").addEventListener("click",loadDraft);
