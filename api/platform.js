@@ -2,7 +2,7 @@
 "use strict";
 
 /* =========================================================
-   BLUVIXA 10.0 ONE-CLICK PUBLISHING CONTROLLER
+   BLUVIXA 11.0 PUBLISHING CENTER CONTROLLER
    One router, one authentication controller, one project library.
    Supabase and Stripe API routes remain unchanged.
    ========================================================= */
@@ -33,6 +33,9 @@ var autosaveEnabled=true;
 var suppressAutosaveUntil=0;
 var lastAutosaveSignature="";
 var lastOpenedProjectKey="bluvixa_last_opened_project_v9";
+var publishingCenterProjectId="";
+var publishingProgressTimer=null;
+var publishingProgressValue=0;
 var MEDIA_BUCKET="website-assets";
 var MEDIA_SIGNED_URL_SECONDS=315360000;
 var mediaUploadInFlight=0;
@@ -354,6 +357,7 @@ function rowToProject(row){
     plan:row.plan,
     state:state,
     published:row.status==="published",
+    publishedAt:(state.backend&&state.backend.publishedAt)||row.updated_at||null,
     customDomain:row.custom_domain||"",
     domainStatus:row.domain_status||"not_connected",
     websiteBoughtOut:!!row.website_bought_out,
@@ -1127,12 +1131,158 @@ async function connectCustomDomain(){
   }
 }
 
+function publishingSelectedProject(){
+  var select=id("publishingCenterProjectSelect");
+  var projectId=(select&&select.value)||publishingCenterProjectId||activeProjectId();
+  return getProjects().find(function(item){return item.id===projectId;})||getProjects()[0]||null;
+}
+function formatPublishedDate(value){
+  if(!value)return "Never";
+  var date=new Date(value);
+  if(Number.isNaN(date.getTime()))return "Never";
+  return date.toLocaleString(undefined,{month:"short",day:"numeric",year:"numeric",hour:"numeric",minute:"2-digit"});
+}
+function setPublishingProgress(value,activeStep,message){
+  publishingProgressValue=Math.max(0,Math.min(100,Number(value)||0));
+  text("publishingProgressPercent",Math.round(publishingProgressValue)+"%");
+  var bar=id("publishingProgressBar");
+  if(bar)bar.style.width=publishingProgressValue+"%";
+  document.querySelectorAll("[data-publish-step]").forEach(function(step){
+    var key=step.getAttribute("data-publish-step");
+    var order={save:1,media:2,build:3,deploy:4};
+    var current=order[activeStep]||0;
+    var own=order[key]||0;
+    step.classList.remove("is-error");
+    step.classList.toggle("is-active",own===current);
+    step.classList.toggle("is-complete",own<current||(publishingProgressValue===100&&own<=4));
+    var small=step.querySelector("small");
+    if(small){
+      if(own<current||(publishingProgressValue===100&&own<=4))small.textContent="Complete";
+      else if(own===current)small.textContent=message||"Working…";
+      else small.textContent="Waiting";
+    }
+  });
+}
+function beginPublishingProgress(){
+  clearInterval(publishingProgressTimer);
+  setPublishingProgress(8,"save","Saving…");
+  publishingProgressTimer=setInterval(function(){
+    if(publishingProgressValue<24)setPublishingProgress(publishingProgressValue+3,"save","Saving…");
+    else if(publishingProgressValue<48)setPublishingProgress(publishingProgressValue+3,"media","Checking uploads…");
+    else if(publishingProgressValue<72)setPublishingProgress(publishingProgressValue+2,"build","Preparing website…");
+    else if(publishingProgressValue<88)setPublishingProgress(publishingProgressValue+1,"deploy","Deploying…");
+  },180);
+}
+function finishPublishingProgress(success){
+  clearInterval(publishingProgressTimer);
+  publishingProgressTimer=null;
+  if(success)setPublishingProgress(100,"deploy","Live");
+  else{
+    setPublishingProgress(Math.max(10,publishingProgressValue),"deploy","Needs attention");
+    var deploy=document.querySelector('[data-publish-step="deploy"]');
+    if(deploy)deploy.classList.add("is-error");
+  }
+}
+async function copyPublishedLink(){
+  var project=publishingSelectedProject();
+  if(!project||!project.published){text("publishingShareMessage","Publish this website before copying its link.");return;}
+  var url=projectUrl(project);
+  try{
+    await navigator.clipboard.writeText(url);
+    text("publishingShareMessage","Live link copied.");
+    toast("Website link copied.");
+  }catch(_error){
+    var input=id("publishingShareUrl");
+    if(input){input.focus();input.select();}
+    text("publishingShareMessage","Select and copy the highlighted link.");
+  }
+}
+async function sharePublishedSite(){
+  var project=publishingSelectedProject();
+  if(!project||!project.published){text("publishingShareMessage","Publish this website before sharing it.");return;}
+  var url=projectUrl(project);
+  if(navigator.share){
+    try{await navigator.share({title:project.name,text:"Visit "+project.name,url:url});}
+    catch(error){if(error&&error.name!=="AbortError")text("publishingShareMessage","Sharing was not completed.");}
+  }else{
+    await copyPublishedLink();
+  }
+}
+function renderPublishingVersions(project){
+  var box=id("publishingVersionHistory");if(!box)return;
+  if(!project){box.innerHTML='<div class="empty-state">No website selected.</div>';return;}
+  var versions=getSnapshots()
+    .filter(function(snapshot){return snapshot.projectId===project.id;})
+    .sort(function(a,b){return new Date(b.savedAt)-new Date(a.savedAt);})
+    .slice(0,6);
+  var current='<article class="publishing-version-row current"><div><strong>Current cloud version</strong><small>'+escapeHtml(formatPublishedDate(project.updatedAt))+'</small></div><span>Current</span></article>';
+  box.innerHTML=current+(versions.length?versions.map(function(snapshot,index){
+    return '<article class="publishing-version-row"><div><strong>'+escapeHtml(snapshot.name||("Saved version "+(index+1)))+'</strong><small>'+escapeHtml(formatPublishedDate(snapshot.savedAt))+'</small></div><button class="btn btn-secondary" data-project-action="load-snapshot" data-snapshot-id="'+snapshot.id+'">Open</button></article>';
+  }).join(""):'<div class="publishing-version-empty">No saved snapshots yet. Use Save Snapshot in the builder to create restore points.</div>');
+}
+function renderPublishingCenter(){
+  var select=id("publishingCenterProjectSelect");
+  var workspace=id("publishingCenterWorkspace");
+  var empty=id("publishingCenterEmpty");
+  if(!select||!workspace||!empty)return;
+  var projects=getProjects();
+  if(!projects.length){
+    select.innerHTML="";
+    workspace.classList.add("hidden");
+    empty.classList.remove("hidden");
+    return;
+  }
+  workspace.classList.remove("hidden");
+  empty.classList.add("hidden");
+  var preferred=publishingCenterProjectId||select.value||activeProjectId()||projects[0].id;
+  if(!projects.some(function(project){return project.id===preferred;}))preferred=projects[0].id;
+  publishingCenterProjectId=preferred;
+  select.innerHTML=projects.map(function(project){
+    return '<option value="'+project.id+'"'+(project.id===preferred?" selected":"")+'>'+escapeHtml(project.name)+'</option>';
+  }).join("");
+  var project=projects.find(function(item){return item.id===preferred;});
+  var published=!!project.published;
+  var url=projectUrl(project);
+  var customConnected=project.customDomain&&project.domainStatus==="connected";
+  text("publishingCenterProjectName",project.name);
+  text("publishingStatusText",published?"Live":"Draft");
+  text("publishingCenterMessage",published?"Your latest saved website is publicly available.":"This website is private until you publish it.");
+  text("publishingMetricStatus",published?"Live":"Draft");
+  text("publishingMetricStatusDetail",published?"Publicly visible":"Not publicly visible");
+  text("publishingMetricDate",published?formatPublishedDate(project.publishedAt||project.updatedAt):"Never");
+  text("publishingMetricDomain",customConnected?project.customDomain:"Bluvixa address");
+  text("publishingMetricDomainDetail",customConnected?"Custom domain connected":"No custom domain connected");
+  text("publishingMetricSsl",published?"Active":"Ready");
+  var dot=id("publishingStatusDot");if(dot)dot.classList.toggle("is-live",published);
+  var primary=id("publishingPrimaryBtn");
+  if(primary){
+    primary.textContent=published?"Unpublish Website":"Publish Now";
+    primary.dataset.projectId=project.id;
+    primary.classList.toggle("btn-danger",published);
+  }
+  var liveLink=id("publishingLiveUrl");
+  if(liveLink){
+    liveLink.textContent=published?url:"Not published";
+    liveLink.href=published?url:"#";
+    liveLink.classList.toggle("is-disabled",!published);
+  }
+  var share=id("publishingShareUrl");
+  if(share)share.value=published?url:"Publish the website to create a public link";
+  var view=id("publishingViewLiveBtn");
+  if(view){
+    view.href=published?url:"#";
+    view.classList.toggle("hidden",!published);
+  }
+  renderPublishingVersions(project);
+  if(!publishingProgressTimer)setPublishingProgress(published?100:0,published?"deploy":"",published?"Live":"Waiting");
+}
 async function togglePublish(projectId){
   var projects=getProjects();
   var project=projects.find(function(item){return item.id===projectId;});
   if(!project)return;
 
   try{
+    beginPublishingProgress();
     if(activeProjectId()===projectId&&typeof window.bluvixaExportState==="function"){
       var saved=await saveActiveProject(false);
       if(!saved)throw new Error(lastCloudError||"Save the website before publishing.");
@@ -1151,14 +1301,19 @@ async function togglePublish(projectId){
     project.published=!!result.published;
     project.slug=result.slug||project.slug||"";
     project.updatedAt=new Date().toISOString();
-    if(project.state&&project.state.backend)project.state.backend.published=project.published;
+    if(project.published)project.publishedAt=project.updatedAt;
+    if(project.state&&project.state.backend){
+      project.state.backend.published=project.published;
+      project.state.backend.publishedAt=project.publishedAt||null;
+    }
     if(project.state&&project.state.project){
       project.state.project.slug=project.slug;
       project.state.project.domainStatus=project.domainStatus;
     }
     setProjects(projects);
     await saveProjectToCloud(project);
-    renderProjects();renderDrafts();renderPublishing();
+    renderProjects();renderDrafts();renderPublishing();renderPublishingCenter();
+    finishPublishingProgress(true);
 
     if(project.published){
       toast("Website published successfully.");
@@ -1167,25 +1322,12 @@ async function togglePublish(projectId){
       toast("Website unpublished.");
     }
   }catch(error){
+    finishPublishingProgress(false);
     console.error("Bluvixa publishing failed:",error);
     toast("Publishing failed: "+(error.message||"Unknown error"));
   }
 }
-function renderPublishing(){
-  var grid=id("publishingProjectGrid");if(!grid)return;
-  var projects=getProjects();
-  grid.innerHTML=projects.length?projects.map(function(project){
-    var liveUrl=projectUrl(project);
-    return '<article class="publishing-card"><strong>'+escapeHtml(project.name)+'</strong>'+
-      '<small>'+escapeHtml(liveUrl)+'</small>'+
-      '<small>Status: '+(project.published?"Live":"Draft")+' · Domain: '+escapeHtml(project.domainStatus||"not connected")+'</small>'+
-      '<div class="publishing-card-actions">'+
-      '<button class="btn btn-primary" data-project-action="load" data-project-id="'+project.id+'">Edit</button>'+
-      '<button class="btn btn-secondary" data-project-action="publish" data-project-id="'+project.id+'">'+(project.published?"Unpublish":"Publish Now")+'</button>'+
-      (project.published?'<a class="btn btn-secondary" href="'+escapeHtml(liveUrl)+'" target="_blank" rel="noopener">View Live</a>':"")+
-      '</div></article>';
-  }).join(""):'<div class="empty-state">Create a website before configuring publishing.</div>';
-}
+function renderPublishing(){renderPublishingCenter();}
 
 /* ---------- BUILDER ---------- */
 function updateBuilderTitle(){
@@ -1251,6 +1393,19 @@ function handleClick(event){
     if(projectAction==="drafts")location.hash="#drafts";
     if(projectAction==="delete")deleteProject(projectId);
     if(projectAction==="publish")void togglePublish(projectId);
+    if(projectAction==="load-snapshot"){
+      var snapshotId=button.getAttribute("data-snapshot-id");
+      var snapshot=getSnapshots().find(function(item){return item.id===snapshotId;});
+      if(snapshot&&typeof window.bluvixaImportState==="function"){
+        var parent=getProjects().find(function(item){return item.id===snapshot.projectId;});
+        if(parent)setActiveProjectId(parent.id);
+        suppressAutosaveUntil=Date.now()+2200;
+        window.bluvixaImportState(clone(snapshot.state));
+        location.hash="#builder";
+        updateBuilderTitle();
+        toast("Saved version opened in the builder.");
+      }
+    }
     return;
   }
 
@@ -1318,6 +1473,27 @@ function bind(){
     if(currentUser&&routeName()==="builder"){
       var state=currentBuilderState();
       if(state)saveJson("bluvixa_emergency_builder_state_v8",state);
+    }
+  });
+
+  if(id("publishingCenterProjectSelect"))id("publishingCenterProjectSelect").addEventListener("change",function(event){
+    publishingCenterProjectId=event.target.value;
+    renderPublishingCenter();
+  });
+  if(id("publishingPrimaryBtn"))id("publishingPrimaryBtn").addEventListener("click",function(){
+    var project=publishingSelectedProject();
+    if(project)void togglePublish(project.id);
+  });
+  if(id("copyPublishedLinkBtn"))id("copyPublishedLinkBtn").addEventListener("click",function(){void copyPublishedLink();});
+  if(id("sharePublishedSiteBtn"))id("sharePublishedSiteBtn").addEventListener("click",function(){void sharePublishedSite();});
+  if(id("openDomainForPublishingBtn"))id("openDomainForPublishingBtn").addEventListener("click",function(){
+    var project=publishingSelectedProject();
+    if(project){
+      var select=id("customDomainProjectSelect");
+      if(select)select.value=project.id;
+      var input=id("customDomainWorkspaceInput");
+      if(input)input.focus();
+      window.scrollTo({top:Math.max(0,(input?input.getBoundingClientRect().top:0)+window.scrollY-120),behavior:"smooth"});
     }
   });
 
