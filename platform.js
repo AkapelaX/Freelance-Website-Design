@@ -2,7 +2,7 @@
 "use strict";
 
 /* =========================================================
-   BLUVIXA 11.2.1 PUBLISH FIX CONTROLLER
+   BLUVIXA 11.2.2 LOGGED-IN LOADING FIX CONTROLLER
    One router, one authentication controller, one project library.
    Supabase and Stripe API routes remain unchanged.
    ========================================================= */
@@ -39,6 +39,7 @@ var publishingProgressValue=0;
 var publishingInFlight=false;
 var publishingStage="idle";
 var PUBLISH_VERSIONS_KEY="bluvixa_publish_versions_v112";
+var sessionApplySequence=0;
 var MEDIA_BUCKET="website-assets";
 var MEDIA_SIGNED_URL_SECONDS=315360000;
 var mediaUploadInFlight=0;
@@ -634,10 +635,21 @@ async function signOut(){
   toast("Signed out.");
 }
 function closeLoading(){
+  if(typeof window.releaseBluvixaLoading==="function"){
+    window.releaseBluvixaLoading();
+    return;
+  }
   var loading=id("sessionLoadingScreen");
-  if(loading)loading.classList.add("ready");
+  if(loading){
+    loading.classList.add("ready");
+    loading.setAttribute("aria-hidden","true");
+    setTimeout(function(){
+      if(loading&&loading.parentNode)loading.parentNode.removeChild(loading);
+    },350);
+  }
 }
 async function applySession(session){
+  var applyId=++sessionApplySequence;
   currentUser=session?session.user:null;
   var signedIn=!!currentUser;
 
@@ -669,42 +681,51 @@ async function applySession(session){
   }
 
   closeLoading();
+
+  if(!signedIn){
+    cloudWorkspaceLoaded=false;
+    projectsCache=[];
+    snapshotsCache=[];
+    showRoute();
+    return;
+  }
+
+  if(["home","top",""].indexOf(routeName())>=0){
+    location.hash="#projects";
+  }
   showRoute();
 
-  if(signedIn){
+  void (async function(){
     try{
-      await withTimeout(loadAccount(),12000,"Account check");
+      await withTimeout(loadAccount(),10000,"Account check");
     }catch(error){
       console.warn("Bluvixa account check did not finish:",error);
     }
+    if(applyId!==sessionApplySequence)return;
+
     try{
       await withTimeout(loadCloudWorkspace(),15000,"Cloud workspace");
     }catch(error){
       console.warn("Bluvixa cloud workspace did not finish:",error);
+      if(applyId!==sessionApplySequence)return;
       cloudWorkspaceLoaded=false;
       projectsCache=readJson(PROJECTS_KEY,[]).map(normalizeProject);
       snapshotsCache=readJson(SNAPSHOTS_KEY,[]).map(normalizeSnapshot);
       renderProjects();renderDrafts();renderDomainSelectors();renderPublishing();
       toast("Signed in. Cloud data is taking longer than expected.");
     }
+    if(applyId!==sessionApplySequence)return;
 
-    var requestedRoute=routeName();
     var lastProjectId=localStorage.getItem(lastOpenedProjectKey)||activeProjectId();
     var recoverProject=getProjects().find(function(item){return item.id===lastProjectId;});
-    if(requestedRoute==="builder"&&recoverProject){
+    if(routeName()==="builder"&&recoverProject){
       loadProject(recoverProject.id,{silent:true});
-    }else if(["home","top",""].indexOf(requestedRoute)>=0){
-      location.hash="#projects";
     }
-  }else{
-    cloudWorkspaceLoaded=false;
-    projectsCache=[];
-    snapshotsCache=[];
-  }
-
-  showRoute();
+    showRoute();
+  })();
 }
 async function initAuth(){
+  setTimeout(closeLoading,4200);
   try{
     var config=await withTimeout(api("/api/config"),10000,"Configuration");
     if(!config.supabaseUrl||!config.supabaseAnonKey){
@@ -714,7 +735,7 @@ async function initAuth(){
     if(!window.supabase)throw new Error("Supabase client did not load.");
     supabaseClient=window.supabase.createClient(config.supabaseUrl,config.supabaseAnonKey);
     var sessionResult=await withTimeout(supabaseClient.auth.getSession(),10000,"Session check");
-    await applySession(sessionResult.data.session);
+    void applySession(sessionResult.data.session);
     supabaseClient.auth.onAuthStateChange(function(_event,session){
       setTimeout(function(){void applySession(session);},0);
     });

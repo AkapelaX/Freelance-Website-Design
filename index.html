@@ -76,6 +76,23 @@
 <span>Checking your membership…</span>
 </div>
 </div>
+<script>
+(function(){
+  function releaseBluvixaLoading(){
+    var screen=document.getElementById("sessionLoadingScreen");
+    if(!screen)return;
+    screen.classList.add("ready");
+    screen.setAttribute("aria-hidden","true");
+    window.setTimeout(function(){
+      if(screen&&screen.parentNode)screen.parentNode.removeChild(screen);
+    },350);
+  }
+  window.releaseBluvixaLoading=releaseBluvixaLoading;
+  window.setTimeout(releaseBluvixaLoading,4500);
+  window.addEventListener("error",function(){window.setTimeout(releaseBluvixaLoading,50);});
+  window.addEventListener("unhandledrejection",function(){window.setTimeout(releaseBluvixaLoading,50);});
+})();
+</script>
 
 <main>
 <section class="app-page landing-page" id="home" data-page="home">
@@ -970,6 +987,6 @@
 <div class="toast" id="toast"></div>
 <script defer src="app.js?v=20260727-v110"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script defer src="platform.js?v=20260727-v1121-publish-fix"></script>
+<script defer src="platform.js?v=20260727-v1122-auth-loading-fix"></script>
 </body>
 </html>
