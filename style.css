@@ -3018,3 +3018,73 @@ body.member-authenticated .landing-page{display:none!important}
   .trial-home-actions{grid-column:1/-1;display:grid;grid-template-columns:1fr}
   .trial-home-actions .btn{width:100%}
 }
+
+
+/* =========================================================
+   BLUVIXA 5.0 — MULTI-WEBSITE LIBRARY, DRAFT BUYOUTS, DOMAINS
+   ========================================================= */
+.website-library-toolbar{
+  display:flex;align-items:center;justify-content:space-between;gap:18px;
+  margin-bottom:18px;padding:16px;background:#0d192b;border:1px solid #243853;border-radius:16px
+}
+.website-library-stats{display:flex;gap:22px}.website-library-stats div{min-width:90px}
+.website-library-stats strong,.website-library-stats span{display:block}
+.website-library-stats strong{font-size:24px}.website-library-stats span{color:#8297ae;font-size:10px;margin-top:3px}
+.website-library-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px}
+.website-project-card{
+  background:#0d192b;border:1px solid #263c59;border-radius:18px;overflow:hidden;min-width:0
+}
+.website-project-preview{
+  height:170px;padding:14px;display:flex;align-items:flex-end;
+  background:linear-gradient(135deg,var(--project-accent,#245f9e),#08111e 72%)
+}
+.website-project-preview div{padding:12px;width:100%;background:rgba(5,13,24,.72);border-radius:11px;backdrop-filter:blur(8px)}
+.website-project-preview strong,.website-project-preview small{display:block}
+.website-project-preview strong{font-size:20px}.website-project-preview small{color:#9ab1ca;margin-top:5px}
+.website-project-body{padding:17px}.project-meta-row{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.project-status{padding:5px 8px;border-radius:999px;font-size:9px;font-weight:1000;border:1px solid #35516f;color:#a9bdd2}
+.project-status.published{color:#79e9c5;border-color:rgba(51,214,166,.45);background:rgba(51,214,166,.08)}
+.project-status.owned{color:#ffe59a;border-color:rgba(242,200,107,.45);background:rgba(242,200,107,.08)}
+.project-meta{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:14px 0}
+.project-meta div{padding:10px;background:#091424;border-radius:9px}.project-meta span,.project-meta strong{display:block}.project-meta span{font-size:8px;color:#6ebff5;letter-spacing:.12em}.project-meta strong{font-size:11px;margin-top:4px;overflow-wrap:anywhere}
+.project-actions{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}.project-actions .btn{width:100%;padding:10px;font-size:11px}
+.page-head-actions{display:flex;gap:8px;flex-wrap:wrap}
+.draft-filter-buttons{display:flex;gap:5px;flex-wrap:wrap}.draft-filter-buttons button{padding:9px 11px;border:1px solid #2a4261;border-radius:9px;background:#0c1b2f;color:#8fa4bc;font-weight:800}.draft-filter-buttons button.active{background:#1d5fae;color:#fff;border-color:#4b9df5}
+.draft-ownership-explainer{
+  display:flex;align-items:center;justify-content:space-between;gap:20px;padding:20px;margin-bottom:18px;
+  background:linear-gradient(120deg,#112640,#0d192b);border:1px solid #3d6b9f;border-radius:16px
+}
+.draft-ownership-explainer small{color:#71c6ff;letter-spacing:.14em}.draft-ownership-explainer h2{margin:5px 0}.draft-ownership-explainer p{margin:0;color:#94a8be;max-width:900px;line-height:1.6}
+.draft-card.project-draft{border-color:#386ca5}.draft-card.snapshot-draft{border-color:#33465f}
+.draft-type-label{display:inline-block;padding:4px 7px;border-radius:999px;background:#142943;color:#69c4ff;font-size:8px;font-weight:1000;letter-spacing:.12em;margin-bottom:8px}
+.draft-ownership-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid #263a54}.draft-ownership-row small{margin:0}.draft-card-actions{display:grid;grid-template-columns:repeat(2,1fr)}
+.billing-explanation-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.billing-explainer-card,.billing-rule-card{background:#0d192b;border:1px solid #263c59;border-radius:18px;padding:24px}
+.billing-explainer-card.subscription{border-top:3px solid #3b91ff}.billing-explainer-card.buyout{border-top:3px solid #f2c86b}
+.billing-step{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:#1c5ca8;font-weight:1000;margin-bottom:14px}
+.billing-explainer-card>small{color:#71c6ff;letter-spacing:.13em}.billing-explainer-card h2{font-size:29px;margin:7px 0}.billing-explainer-card p,.billing-explainer-card li{color:#91a5bd;line-height:1.65}.billing-explainer-card ul{padding-left:20px}
+.current-plan-box{display:grid;gap:4px;margin-top:18px;padding:15px;background:#091424;border-radius:12px}.current-plan-box span{color:#6dbff7;font-size:9px;letter-spacing:.12em}.current-plan-box strong{font-size:22px}
+.billing-rule-card{margin-top:17px}.billing-rule-card h2{margin-top:0}.billing-rule-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.billing-rule-grid div{padding:15px;background:#091424;border-radius:11px}.billing-rule-grid p{color:#8499b1;font-size:12px;line-height:1.55}
+.billing-plan-options{margin-top:17px}
+.domain-search-card,.domain-action-card,.publishing-library{background:#0d192b;border:1px solid #263c59;border-radius:18px;padding:24px}
+.domain-search-card>div>small,.domain-action-card>small{color:#71c6ff;letter-spacing:.13em}.domain-search-card h2,.domain-action-card h2{margin:6px 0}.domain-search-card p,.domain-action-card p{color:#91a5bd}
+.domain-search-form{display:grid;grid-template-columns:minmax(0,1fr) 110px auto;gap:8px;margin:18px 0}.domain-search-form input,.domain-search-form select,.domain-action-card input,.domain-action-card select{width:100%;padding:13px;border:1px solid #2d486a;border-radius:10px;background:#091424;color:#fff}
+.domain-provider-note{font-size:11px;color:#7f94ad}.domain-provider-note code{color:#86d5ff}
+.domain-results-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:16px}.domain-result-card{padding:14px;background:#091424;border:1px solid #29415f;border-radius:11px}.domain-result-card strong,.domain-result-card small{display:block}.domain-result-card small{color:#7f95ad;margin-top:5px}.domain-result-card .btn{width:100%;margin-top:10px}
+.domain-workspace-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:16px}.domain-action-card label{display:block;color:#9ab0c8;font-size:11px;margin:14px 0 6px}.inline-domain-field{display:flex;align-items:center;border:1px solid #2d486a;border-radius:10px;background:#091424;overflow:hidden}.inline-domain-field input{border:0}.inline-domain-field span{padding:0 12px;color:#74c6ff;white-space:nowrap}
+.domain-action-card>.btn{width:100%;margin-top:12px}.domain-result-message{min-height:22px;color:#82dabb;font-size:12px;margin-top:10px}
+.dns-workspace{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:13px}.dns-workspace div{padding:11px;background:#091424;border-radius:9px}.dns-workspace span,.dns-workspace strong{display:block}.dns-workspace span{color:#6fc4ff;font-size:8px}.dns-workspace strong{font-size:11px;margin-top:4px;overflow-wrap:anywhere}
+.publishing-library{margin-top:16px}.publishing-project-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.publishing-card{padding:16px;background:#091424;border:1px solid #2a405d;border-radius:12px}.publishing-card strong,.publishing-card small{display:block}.publishing-card small{color:#8398af;margin-top:5px}.publishing-card-actions{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin-top:13px}
+
+@media(max-width:1100px){
+ .website-library-grid,.domain-results-grid,.publishing-project-grid{grid-template-columns:repeat(2,1fr)}
+ .billing-rule-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:760px){
+ .website-library-toolbar,.draft-ownership-explainer{align-items:stretch;flex-direction:column}
+ .website-library-stats{display:grid;grid-template-columns:repeat(3,1fr)}
+ .website-library-grid,.billing-explanation-grid,.domain-workspace-grid,.domain-results-grid,.publishing-project-grid{grid-template-columns:1fr}
+ .billing-rule-grid{grid-template-columns:1fr}
+ .domain-search-form{grid-template-columns:1fr}
+ .page-head-actions{display:grid}.page-head-actions .btn{width:100%}
+}

@@ -21,10 +21,11 @@
 <a href="#builder">Try Builder</a>
 </nav>
 <nav class="member-nav hidden" id="memberNav">
-<a href="#account" data-route-link="account">Dashboard</a>
+<a href="#projects" data-route-link="projects">My Websites</a>
 <a href="#drafts" data-route-link="drafts">Saved Drafts</a>
 <a href="#builder" data-route-link="builder">Builder</a>
 <a href="#billing" data-route-link="billing">Billing & Ownership</a>
+<a href="#domains" data-route-link="domains">Domains & Publishing</a>
 </nav>
 <div class="header-actions">
 <button class="mobile-menu-button" id="mobileMenuButton" type="button" aria-expanded="false" aria-controls="mobileMenu" aria-label="Open navigation">
@@ -50,7 +51,7 @@
 <strong id="mobileMemberPlan">Account loading…</strong>
 <span id="mobileMemberStatus">Checking subscription</span>
 </div>
-<a href="#account">Dashboard</a>
+<a href="#projects">My Websites</a>
 <a href="#drafts">Saved Drafts</a>
 <a href="#builder">Website Builder</a>
 <a href="#billing">Billing &amp; Ownership</a>
@@ -104,7 +105,8 @@
 </div>
 </section>
 
-<section class="app-page dashboard-page hidden backend-only" id="account" data-page="account">
+
+<section class="app-page projects-page hidden backend-only" id="projects" data-page="projects">
 <div class="member-shell">
 <aside class="member-sidebar">
 <div class="sidebar-user">
@@ -112,26 +114,30 @@
 <div><small>BLUVIXA MEMBER</small><strong id="sidebarMemberEmail">Loading…</strong></div>
 </div>
 <nav>
-<a class="active" href="#account"><span>⌂</span> Overview</a>
+<a class="active" href="#projects"><span>▦</span> My Websites</a>
 <a href="#drafts"><span>▤</span> Saved Drafts</a>
 <a href="#builder"><span>✎</span> Website Builder</a>
 <a href="#billing"><span>$</span> Billing & Ownership</a>
-<a href="#domains"><span>◎</span> Domains</a>
+<a href="#domains"><span>◎</span> Domains & Publishing</a>
 </nav>
-<div class="sidebar-bottom">
-<button class="btn btn-ghost backend-only" id="accountSignOutBtn" type="button">Sign Out</button>
-</div>
+<div class="sidebar-bottom"><button class="btn btn-ghost backend-only" id="accountSignOutBtn" type="button">Sign Out</button></div>
 </aside>
+
 <div class="member-content">
 <div class="member-page-head">
-<div><span class="workspace-kicker">MEMBER DASHBOARD</span><h1 id="dashboardGreeting">Welcome to Bluvixa</h1><p id="memberConfirmationDetails">Your account details are loading.</p></div>
-<a class="btn btn-primary" href="#builder">Continue Building</a>
+<div>
+<span class="workspace-kicker">MY WEBSITES</span>
+<h1 id="projectsGreeting">Welcome home</h1>
+<p>Create as many websites as you need. Every new website begins as a draft and remains available until you publish or delete it.</p>
 </div>
+<button class="btn btn-primary" id="createWebsiteBtn" type="button">Create New Website</button>
+</div>
+
 <div class="membership-strip" id="memberConfirmation">
 <div class="membership-check">✓</div>
-<div><small>ACCOUNT STATUS</small><strong id="memberConfirmationTitle">You are signed in</strong></div>
+<div><small>MEMBER ACCOUNT</small><strong id="memberConfirmationTitle">You are signed in</strong></div>
 <div class="membership-plan"><small>PLAN</small><strong id="accountPlan">No active plan</strong></div>
-<div class="membership-plan"><small>SUBSCRIPTION</small><strong id="accountBillingStatus">Not subscribed</strong></div>
+<div class="membership-plan"><small>STATUS</small><strong id="accountBillingStatus">Not subscribed</strong></div>
 </div>
 
 <div class="trial-home-card" id="trialHomeCard">
@@ -142,71 +148,72 @@
 <p id="trialHomeMessage">Bluvixa is loading your subscription details.</p>
 </div>
 <div class="trial-home-actions">
-<a class="btn btn-primary" href="#builder">Continue Building</a>
-<a class="btn btn-secondary" href="#billing">View Billing</a>
+<a class="btn btn-primary" href="#builder">Open Builder</a>
+<a class="btn btn-secondary" href="#billing">Billing & Ownership</a>
 </div>
 </div>
 
-<div class="metric-grid">
-<article><small>WEBSITE</small><strong id="accountProjectName">No cloud project saved</strong><span id="dashboardPublishStatus">Draft</span></article>
-<article><small>OWNERSHIP</small><strong id="accountOwnershipStatus">Not purchased</strong><span id="dashboardOwnershipText">Export locked</span></article>
-<article><small>WEBSITE ADDRESS</small><strong id="dashboardDomainStatus">Not published</strong><span id="dashboardPublishedUrl">Configure an address</span></article>
-<article><small>ACCOUNT</small><strong id="accountAuthStatus">Signed in</strong><span id="accountEmail">—</span></article>
+<div class="website-library-toolbar">
+<div class="draft-search"><span>⌕</span><input id="projectSearchInput" placeholder="Search websites"/></div>
+<div class="website-library-stats">
+<div><strong id="projectCount">0</strong><span>Total websites</span></div>
+<div><strong id="publishedProjectCount">0</strong><span>Published</span></div>
+<div><strong id="draftProjectCount">0</strong><span>Drafts</span></div>
+</div>
 </div>
 
-<div class="dashboard-main-grid">
-<article class="dashboard-website-card">
-<div class="website-card-preview">
-<div class="mini-browser"><span></span><span></span><span></span></div>
-<div class="mini-site"><strong id="dashboardSiteName">Your Website</strong><small>Live builder preview</small></div>
-</div>
-<div class="website-card-body">
-<div><small>PRIMARY WEBSITE</small><h2 id="dashboardWebsiteTitle">Continue your website</h2><p>Open the same visual preview and editor you already use.</p></div>
-<div class="website-card-actions">
-<a class="btn btn-primary" href="#builder">Continue Building</a>
-<button class="btn btn-secondary backend-only" id="cloudSaveBtn" type="button">Save to Cloud</button>
-<button class="btn btn-secondary backend-only" id="cloudLoadBtn" type="button">Load Cloud Project</button>
-</div>
-</div>
-</article>
-<aside class="quick-actions-card">
-<h3>Quick Actions</h3>
-<a href="#drafts"><span>▤</span><div><strong>Saved Drafts</strong><small>View, load, and delete versions</small></div><b>›</b></a>
-<a href="#billing"><span>$</span><div><strong>Buy Out Website</strong><small>Own and export the code</small></div><b>›</b></a>
-<a href="#domains"><span>◎</span><div><strong>Connect Domain</strong><small>Choose your public address</small></div><b>›</b></a>
-<a href="#builder" data-open-builder-tab="project"><span>↗</span><div><strong>Publish</strong><small>Review launch settings</small></div><b>›</b></a>
-</aside>
-</div>
-
-<div class="recent-drafts-block">
-<div class="block-head"><div><small>RECENT WORK</small><h2>Saved drafts</h2></div><a href="#drafts">View all drafts</a></div>
-<div class="draft-preview-grid" id="dashboardDraftPreview"><div class="empty-state">No saved drafts yet. Open the builder and select “Save to Drafts.”</div></div>
-</div>
+<div class="website-library-grid" id="websiteLibraryGrid"></div>
 </div>
 </div>
 </section>
+
 
 <section class="app-page drafts-page hidden backend-only" id="drafts" data-page="drafts">
 <div class="member-shell">
 <aside class="member-sidebar">
 <div class="sidebar-user"><div class="sidebar-avatar">B</div><div><small>BLUVIXA MEMBER</small><strong id="draftsMemberEmail">Your account</strong></div></div>
 <nav>
-<a href="#account"><span>⌂</span> Overview</a>
+<a href="#projects"><span>▦</span> My Websites</a>
 <a class="active" href="#drafts"><span>▤</span> Saved Drafts</a>
 <a href="#builder"><span>✎</span> Website Builder</a>
 <a href="#billing"><span>$</span> Billing & Ownership</a>
-<a href="#domains"><span>◎</span> Domains</a>
+<a href="#domains"><span>◎</span> Domains & Publishing</a>
 </nav>
 </aside>
+
 <div class="member-content">
 <div class="member-page-head">
-<div><span class="workspace-kicker">SAVED DRAFTS</span><h1>Your website versions</h1><p>Save snapshots before major changes, return to an earlier design, or delete versions you no longer need.</p></div>
-<button class="btn btn-primary" id="saveCurrentDraftBtn" type="button">Save Current Website</button>
+<div>
+<span class="workspace-kicker">SAVED DRAFTS</span>
+<h1>Drafts and incomplete websites</h1>
+<p>Every incomplete website and every manual snapshot appears here. Load a draft, duplicate it into a new website, buy it out, or export it after ownership is confirmed.</p>
 </div>
+<div class="page-head-actions">
+<button class="btn btn-secondary" id="saveCurrentDraftBtn" type="button">Save Current Snapshot</button>
+<button class="btn btn-primary" id="createWebsiteFromDraftsBtn" type="button">Create New Website</button>
+</div>
+</div>
+
 <div class="draft-toolbar">
-<div class="draft-search"><span>⌕</span><input id="draftSearchInput" placeholder="Search saved drafts"/></div>
-<div class="draft-count"><strong id="savedDraftCount">0</strong><span>saved drafts</span></div>
+<div class="draft-search"><span>⌕</span><input id="draftSearchInput" placeholder="Search drafts and websites"/></div>
+<div class="draft-filter-buttons">
+<button class="active" type="button" data-draft-filter="all">All</button>
+<button type="button" data-draft-filter="project">Websites</button>
+<button type="button" data-draft-filter="snapshot">Snapshots</button>
+<button type="button" data-draft-filter="incomplete">Incomplete</button>
 </div>
+<div class="draft-count"><strong id="savedDraftCount">0</strong><span>items</span></div>
+</div>
+
+<div class="draft-ownership-explainer">
+<div>
+<small>HOW BUYOUTS WORK</small>
+<h2>Buy out any finished website when you are ready.</h2>
+<p>Your subscription lets you build and manage websites. A buyout is a separate one-time purchase for a specific website. After Stripe confirms that website’s buyout, its ZIP export unlocks permanently.</p>
+</div>
+<a class="btn btn-secondary" href="#billing">Read Billing & Ownership</a>
+</div>
+
 <div class="saved-drafts-grid" id="savedDraftsGrid"></div>
 </div>
 </div>
@@ -217,12 +224,14 @@
 <div class="workspace-page-head">
 <div>
 <span class="workspace-kicker">VISUAL WEBSITE BUILDER</span>
-<h1>Build your website</h1>
-<p>The live website preview and all existing design controls remain intact.</p>
+<h1 id="builderProjectTitle">Build your website</h1>
+<p id="builderProjectSubtitle">The live website preview and all existing design controls remain intact.</p>
 </div>
 <div class="workspace-head-actions">
-<button class="btn btn-secondary" id="saveSnapshotTopBtn" type="button">Save to Drafts</button>
-<a class="btn btn-secondary" href="#drafts">View Saved Drafts</a>
+<button class="btn btn-secondary" id="saveWebsiteProjectBtn" type="button">Save Website</button>
+<button class="btn btn-secondary" id="saveSnapshotTopBtn" type="button">Save Snapshot</button>
+<a class="btn btn-secondary" href="#drafts">Saved Drafts</a>
+<a class="btn btn-primary" href="#projects">My Websites</a>
 </div>
 </div>
 <div class="builder-shell">
@@ -637,67 +646,157 @@
 </div>
 </section>
 
+
 <section class="app-page billing-page hidden backend-only" id="billing" data-page="billing">
 <div class="member-shell">
 <aside class="member-sidebar">
 <div class="sidebar-user"><div class="sidebar-avatar">B</div><div><small>BLUVIXA MEMBER</small><strong>Billing center</strong></div></div>
 <nav>
-<a href="#account"><span>⌂</span> Overview</a>
+<a href="#projects"><span>▦</span> My Websites</a>
 <a href="#drafts"><span>▤</span> Saved Drafts</a>
 <a href="#builder"><span>✎</span> Website Builder</a>
 <a class="active" href="#billing"><span>$</span> Billing & Ownership</a>
-<a href="#domains"><span>◎</span> Domains</a>
+<a href="#domains"><span>◎</span> Domains & Publishing</a>
 </nav>
 </aside>
+
 <div class="member-content">
-<div class="member-page-head"><div><span class="workspace-kicker">BILLING & OWNERSHIP</span><h1>Subscription and website ownership</h1><p>Your subscription provides access to Bluvixa. A one-time buyout unlocks ownership of the exported website package.</p></div></div>
-<div class="billing-overview-grid">
-<article class="billing-status-card">
-<small>CURRENT PLAN</small><h2 id="dashboardSubscriptionPlan">No active plan</h2><p>Status: <strong id="dashboardSubscriptionStatus">Not subscribed</strong></p><p>Trial or renewal: <strong id="dashboardSubscriptionDate">Available after checkout</strong></p>
+<div class="member-page-head">
+<div>
+<span class="workspace-kicker">BILLING & OWNERSHIP</span>
+<h1>Simple subscription access. Permanent website ownership.</h1>
+<p>Your Bluvixa subscription and website buyouts are separate so customers always know exactly what they are paying for.</p>
+</div>
 <button class="btn btn-primary backend-only" id="manageBillingBtn" type="button">Manage Subscription</button>
+</div>
+
+<div class="billing-explanation-grid">
+<article class="billing-explainer-card subscription">
+<span class="billing-step">1</span>
+<small>BLUVIXA SUBSCRIPTION</small>
+<h2>Build and manage websites</h2>
+<p>Your subscription gives you access to the builder, saved projects, drafts, cloud tools, publishing controls, and account features.</p>
+<ul>
+<li>Build as many draft websites as you need.</li>
+<li>Your selected plan controls the features available inside each website.</li>
+<li>Canceling the subscription ends platform access after the paid period.</li>
+<li>A subscription does not automatically transfer raw-code ownership.</li>
+</ul>
+<div class="current-plan-box"><span>Current plan</span><strong id="dashboardSubscriptionPlan">No active plan</strong><small id="dashboardSubscriptionStatus">Not subscribed</small><small id="dashboardSubscriptionDate">Renewal information unavailable</small></div>
 </article>
-<article class="buyout-focus-card">
-<div class="buyout-focus-top"><span>ONE-TIME PURCHASE</span><b>OWN YOUR WEBSITE</b></div>
-<h2 id="buyoutPriceHeading">Buy out this website</h2>
-<p>Receive the finished HTML, CSS, JavaScript, eligible images, and setup instructions. Your website ownership remains permanent even if the subscription ends.</p>
-<div class="buyout-price" id="dashboardBuyoutPrice">$599</div>
-<div class="buyout-state" id="ownershipDashboardState"><span class="status-pill offline">Not purchased</span><strong>Raw-code export is locked.</strong></div>
-<div class="buyout-actions">
-<button class="btn btn-primary" id="dashboardBuyoutBtn" type="button">Buy Out Website</button>
-<button class="btn btn-secondary backend-only" disabled id="exportWebsiteBtn" type="button">Download Website ZIP</button>
-</div>
-<p class="fine-print" id="accountExportHelp">Purchase the website buyout to unlock a complete raw-code ZIP export.</p>
+
+<article class="billing-explainer-card buyout">
+<span class="billing-step">2</span>
+<small>WEBSITE BUYOUT</small>
+<h2>Own a specific finished website forever</h2>
+<p>A buyout is a one-time Stripe purchase attached to one website project. It unlocks that website’s downloadable code package permanently.</p>
+<ul>
+<li>Starter website buyout: <strong>$499</strong></li>
+<li>Professional website buyout: <strong>$599</strong></li>
+<li>Advanced website buyout: <strong>$699</strong></li>
+<li>Buying one website does not buy every website in the account.</li>
+</ul>
+<a class="btn btn-primary" href="#drafts">Choose a Website to Buy Out</a>
 </article>
 </div>
-<div class="plan-comparison-member">
-<div class="block-head"><div><small>AVAILABLE PLANS</small><h2>Subscription options</h2></div><a href="#pricing">See full plan details</a></div>
-<div class="member-plan-grid">
-<article><small>STARTER</small><h3>$180/year</h3><span>$499 website buyout</span><button class="btn btn-secondary memberPlanCheckout" data-plan="starter">Choose Starter</button></article>
-<article class="featured"><small>PROFESSIONAL</small><h3>$348/year</h3><span>$599 website buyout</span><button class="btn btn-primary memberPlanCheckout" data-plan="professional">Choose Professional</button></article>
-<article><small>ADVANCED</small><h3>$588/year</h3><span>$699 website buyout</span><button class="btn btn-secondary memberPlanCheckout" data-plan="advanced">Choose Advanced</button></article>
+
+<div class="billing-rule-card">
+<h2>What happens after a buyout?</h2>
+<div class="billing-rule-grid">
+<div><strong>Ownership saved permanently</strong><p>The website record stays marked as owned even if the subscription later ends.</p></div>
+<div><strong>Export unlocked</strong><p>The Saved Drafts page displays Download ZIP for that purchased website.</p></div>
+<div><strong>Continue editing</strong><p>While subscribed, you can continue editing and create later snapshots of the purchased site.</p></div>
+<div><strong>Hosting is separate</strong><p>Code ownership does not automatically include permanent hosting, domain registration, or future platform service.</p></div>
 </div>
+</div>
+
+<div class="member-plan-grid billing-plan-options">
+<article><small>STARTER</small><h3>$180/year</h3><span>$499 per website buyout</span><button class="btn btn-secondary memberPlanCheckout" data-plan="starter">Choose Starter</button></article>
+<article class="featured"><small>PROFESSIONAL</small><h3>$348/year</h3><span>$599 per website buyout</span><button class="btn btn-primary memberPlanCheckout" data-plan="professional">Choose Professional</button></article>
+<article><small>ADVANCED</small><h3>$588/year</h3><span>$699 per website buyout</span><button class="btn btn-secondary memberPlanCheckout" data-plan="advanced">Choose Advanced</button></article>
 </div>
 </div>
 </div>
 </section>
+
 
 <section class="app-page domains-page hidden backend-only" id="domains" data-page="domains">
 <div class="member-shell">
 <aside class="member-sidebar">
 <div class="sidebar-user"><div class="sidebar-avatar">B</div><div><small>BLUVIXA MEMBER</small><strong>Domain center</strong></div></div>
 <nav>
-<a href="#account"><span>⌂</span> Overview</a>
+<a href="#projects"><span>▦</span> My Websites</a>
 <a href="#drafts"><span>▤</span> Saved Drafts</a>
 <a href="#builder"><span>✎</span> Website Builder</a>
 <a href="#billing"><span>$</span> Billing & Ownership</a>
-<a class="active" href="#domains"><span>◎</span> Domains</a>
+<a class="active" href="#domains"><span>◎</span> Domains & Publishing</a>
 </nav>
 </aside>
+
 <div class="member-content">
-<div class="member-page-head"><div><span class="workspace-kicker">DOMAIN CENTER</span><h1>Website address and publishing</h1><p>Use a Bluvixa address or connect a custom domain through the existing builder controls.</p></div><a class="btn btn-primary" href="#builder" data-open-builder-tab="project">Open Domain Controls</a></div>
-<div class="domain-center-card">
-<small>CURRENT WEBSITE ADDRESS</small><h2 id="dashboardDomainUrl">Not configured</h2><p id="dashboardPublishingDescription">Configure your address in the Builder’s Domain tab.</p>
-<div class="domain-center-actions"><a class="btn btn-primary" href="#builder" data-open-builder-tab="project">Manage Domain</a><button class="btn btn-secondary" id="copyPublishedUrlBtn" type="button">Copy Address</button></div>
+<div class="member-page-head">
+<div>
+<span class="workspace-kicker">DOMAINS & PUBLISHING</span>
+<h1>Find an address and launch your website.</h1>
+<p>Search for domain ideas, reserve a Bluvixa subdomain, connect a domain you already own, and manage the publishing status of each website.</p>
+</div>
+</div>
+
+<div class="domain-search-card">
+<div>
+<small>DOMAIN SEARCH</small>
+<h2>Search domain ideas</h2>
+<p>Enter a business or website name. Bluvixa will generate domain suggestions and can use a connected domain-provider API for live availability.</p>
+</div>
+<div class="domain-search-form">
+<input id="domainSearchInput" placeholder="example: Andy's Mobile Auto Repair"/>
+<select id="domainExtensionSelect">
+<option value=".com">.com</option>
+<option value=".net">.net</option>
+<option value=".co">.co</option>
+<option value=".org">.org</option>
+<option value=".site">.site</option>
+</select>
+<button class="btn btn-primary" id="searchDomainsBtn" type="button">Search Domains</button>
+</div>
+<div class="domain-provider-note" id="domainProviderNote">Suggestions work immediately. Live registrar availability requires the optional <code>/api/domain-search</code> backend connection.</div>
+<div class="domain-results-grid" id="domainResultsGrid"></div>
+</div>
+
+<div class="domain-workspace-grid">
+<article class="domain-action-card">
+<small>FREE BLUVIXA ADDRESS</small>
+<h2>Reserve a Bluvixa subdomain</h2>
+<p>Each website can have a generated address such as <strong>your-business.bluvixa.com</strong>.</p>
+<label>Website</label>
+<select id="subdomainProjectSelect"></select>
+<label>Requested address</label>
+<div class="inline-domain-field"><input id="subdomainSlugInput" placeholder="your-business"/><span>.bluvixa.com</span></div>
+<button class="btn btn-primary" id="reserveSubdomainBtn" type="button">Reserve Address</button>
+<div class="domain-result-message" id="subdomainResultMessage"></div>
+</article>
+
+<article class="domain-action-card">
+<small>CUSTOM DOMAIN</small>
+<h2>Connect a domain you own</h2>
+<p>Select a website and enter the domain. Bluvixa will store the connection request and show the DNS records required by the publishing backend.</p>
+<label>Website</label>
+<select id="customDomainProjectSelect"></select>
+<label>Custom domain</label>
+<input id="customDomainWorkspaceInput" placeholder="example.com"/>
+<button class="btn btn-primary" id="connectCustomDomainWorkspaceBtn" type="button">Prepare Connection</button>
+<div class="dns-workspace hidden" id="dnsWorkspace">
+<div><span>Type</span><strong>CNAME</strong></div>
+<div><span>Name</span><strong>www</strong></div>
+<div><span>Value</span><strong>domains.bluvixa.com</strong></div>
+</div>
+<div class="domain-result-message" id="customDomainResultMessage"></div>
+</article>
+</div>
+
+<div class="publishing-library">
+<div class="block-head"><div><small>WEBSITE PUBLISHING</small><h2>Publishing status</h2></div></div>
+<div class="publishing-project-grid" id="publishingProjectGrid"></div>
 </div>
 </div>
 </div>

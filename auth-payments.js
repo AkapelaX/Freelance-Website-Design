@@ -75,11 +75,11 @@
         var fullName=el("authFullName").value.trim();
         var result=await supabaseClient.auth.signUp({email:email,password:password,options:{data:{full_name:fullName}}});
         if(result.error) throw result.error;
-        setMessage(result.data.session?"Account created and signed in.":"Account created. Check your email to verify it.",false); if(result.data.session){closeAuth();location.hash="#account";}
+        setMessage(result.data.session?"Account created and signed in.":"Account created. Check your email to verify it.",false); if(result.data.session){closeAuth();location.hash="#projects";}
       }else{
         var login=await supabaseClient.auth.signInWithPassword({email:email,password:password});
         if(login.error) throw login.error;
-        closeAuth(); location.hash="#account"; toast("Welcome back to Bluvixa.");
+        closeAuth(); location.hash="#projects"; toast("Welcome back to Bluvixa.");
       }
     }catch(error){setMessage(error.message||"Authentication failed.",true);}finally{button.disabled=false;}
   }
@@ -104,8 +104,8 @@
       ? "Welcome home. Signed in as "+currentUser.email+"."
       : "Sign in to access your dashboard, cloud projects, billing, and ownership.");
 
-    var accountSection=el("account"); if(accountSection) accountSection.classList.toggle("hidden",!signedIn);
-    ["drafts","billing","domains"].forEach(function(id){var page=el(id);if(page)page.classList.toggle("hidden",!signedIn);});
+    var accountSection=el("projects"); if(accountSection) accountSection.classList.toggle("hidden",!signedIn);
+    ["projects","drafts","billing","domains"].forEach(function(id){var page=el(id);if(page)page.classList.toggle("hidden",!signedIn);});
     var publicNav=el("publicNav"); if(publicNav) publicNav.classList.toggle("hidden",signedIn);
     var memberNav=el("memberNav"); if(memberNav) memberNav.classList.toggle("hidden",!signedIn);
     safeText("sidebarMemberEmail",signedIn?currentUser.email:"—");
@@ -115,7 +115,7 @@
     var landingSecondary=el("landingSecondaryBtn");
     if(landingStart){
       landingStart.textContent=signedIn?"Open My Dashboard":"Start 7-Day Free Trial";
-      landingStart.onclick=signedIn?function(){location.hash="#account";}:null;
+      landingStart.onclick=signedIn?function(){location.hash="#projects";}:null;
     }
     if(landingSecondary){
       landingSecondary.textContent=signedIn?"Continue Building":"Preview the Builder";
@@ -126,10 +126,10 @@
       await loadAccount();
       var current=(location.hash||"#home").slice(1);
       if(!current || current==="home" || current==="top"){
-        location.hash="#account";
+        location.hash="#projects";
       }
     }else{
-      if(["account","drafts","billing","domains"].indexOf((location.hash||"").slice(1))>=0){
+      if(["projects","drafts","billing","domains"].indexOf((location.hash||"").slice(1))>=0){
         location.hash="#home";
       }
     }
@@ -146,10 +146,10 @@
     if(result.error){setMessage(result.error.message,true);return;}
     setMessage("Password reset email sent.",false); toast("Password reset email sent.");
   }
-  async function checkout(plan,purchaseType){
+  async function checkout(plan,purchaseType,websiteId){
     if(!currentUser){openAuth("signup");setMessage("Create an account or sign in before checkout.",false);return;}
     try{
-      var data=await api("/api/create-checkout-session",{method:"POST",body:JSON.stringify({plan:plan,purchaseType:purchaseType||"annual",successUrl:location.origin+"/#account",cancelUrl:location.href})});
+      var data=await api("/api/create-checkout-session",{method:"POST",body:JSON.stringify({plan:plan,purchaseType:purchaseType||"annual",websiteId:websiteId||null,successUrl:location.origin+"/#account",cancelUrl:location.href})});
       location.href=data.url;
     }catch(error){toast(error.message);}
   }
@@ -223,7 +223,7 @@
       safeText("memberConfirmationDetails",
         "Welcome home, "+((currentUser&&currentUser.user_metadata&&currentUser.user_metadata.full_name)||"member")+
         ". You are signed in as "+(currentUser?currentUser.email:"member")+".");
-      safeText("dashboardGreeting",
+      safeText("projectsGreeting",
         "Welcome home, "+((currentUser&&currentUser.user_metadata&&currentUser.user_metadata.full_name)||"member"));
       var exportHelp=owned?"Your raw-code export is unlocked. Export generation requires the connected export API.":"Purchase the website buyout to unlock a complete raw-code ZIP export.";
       safeText("accountExportHelp",exportHelp);
@@ -318,6 +318,30 @@
     button.classList.toggle("open",opening);
     button.setAttribute("aria-expanded",String(opening));
   }
+
+  async function exportWebsite(websiteId){
+    if(!currentUser){openAuth("signin");return;}
+    try{
+      var session=(await supabaseClient.auth.getSession()).data.session;
+      var response=await fetch("/api/export-website?websiteId="+encodeURIComponent(websiteId||""),{
+        headers:{Authorization:"Bearer "+session.access_token}
+      });
+      if(!response.ok){
+        var data=await response.json().catch(function(){return {};});
+        throw new Error(data.error||"Export generation is not connected yet.");
+      }
+      var blob=await response.blob();
+      var disposition=response.headers.get("Content-Disposition")||"";
+      var match=disposition.match(/filename="?([^"]+)"?/i);
+      var filename=match?match[1]:"bluvixa-website.zip";
+      var url=URL.createObjectURL(blob);
+      var anchor=document.createElement("a");
+      anchor.href=url;anchor.download=filename;document.body.appendChild(anchor);anchor.click();anchor.remove();
+      setTimeout(function(){URL.revokeObjectURL(url);},1000);
+      toast("Website export downloaded.");
+    }catch(error){toast(error.message);}
+  }
+
   function bind(){
     if(el("mobileMenuButton")) el("mobileMenuButton").addEventListener("click",toggleMobileMenu);
     each("#mobileMenu a",function(link){link.addEventListener("click",closeMobileMenu);});
@@ -337,25 +361,9 @@
     if(el("manageBillingBtn")) el("manageBillingBtn").addEventListener("click",portal);
     if(el("cloudSaveBtn")) el("cloudSaveBtn").addEventListener("click",saveCloud);
     if(el("cloudLoadBtn")) el("cloudLoadBtn").addEventListener("click",loadCloud);
-    if(el("exportWebsiteBtn")) el("exportWebsiteBtn").addEventListener("click",async function(){
-      if(!currentUser){openAuth("signin");return;}
-      if(!accountData || !accountData.websiteBoughtOut){toast("A website buyout is required before raw-code export.");return;}
-      try{
-        var response=await fetch("/api/export-website",{headers:{Authorization:"Bearer "+(await supabaseClient.auth.getSession()).data.session.access_token}});
-        if(response.ok){
-          var blob=await response.blob();
-          var disposition=response.headers.get("Content-Disposition")||"";
-          var match=disposition.match(/filename="?([^"]+)"?/i);
-          var filename=match?match[1]:"bluvixa-website.zip";
-          var url=URL.createObjectURL(blob);
-          var anchor=document.createElement("a"); anchor.href=url; anchor.download=filename; document.body.appendChild(anchor); anchor.click(); anchor.remove();
-          setTimeout(function(){URL.revokeObjectURL(url);},1000);
-          toast("Website export downloaded.");
-          return;
-        }
-        var data=await response.json().catch(function(){return {};});
-        throw new Error(data.error||"Export generation is not connected yet.");
-      }catch(error){toast(error.message);}
+    if(el("exportWebsiteBtn")) el("exportWebsiteBtn").addEventListener("click",function(){
+      var websiteId=window.BluvixaWorkspace&&window.BluvixaWorkspace.getActiveProjectId?window.BluvixaWorkspace.getActiveProjectId():"";
+      exportWebsite(websiteId);
     });
     each(".pricingTrial",function(button){
       button.addEventListener("click",function(e){e.stopImmediatePropagation();checkout(button.getAttribute("data-plan"),"annual");},true);
@@ -363,6 +371,6 @@
     var annual=el("annualCheckoutBtn"); if(annual) annual.addEventListener("click",function(e){e.stopImmediatePropagation();checkout(el("planSelect").value,"annual");},true);
     var buyout=el("buyoutBtn"); if(buyout) buyout.addEventListener("click",function(e){e.stopImmediatePropagation();checkout(el("planSelect").value,"buyout");},true);
   }
-  window.BluvixaMVP={openAuth:openAuth,checkout:checkout,refreshAccount:loadAccount,syncDashboard:syncBuilderDashboard,isSignedIn:function(){return !!currentUser;},saveCloud:saveCloud};
+  window.BluvixaMVP={openAuth:openAuth,checkout:checkout,refreshAccount:loadAccount,syncDashboard:syncBuilderDashboard,isSignedIn:function(){return !!currentUser;},saveCloud:saveCloud,exportWebsite:exportWebsite};
   document.addEventListener("DOMContentLoaded",init);
 })();
