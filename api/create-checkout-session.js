@@ -27,19 +27,83 @@ function getOrigin(req) {
 
   const protocol =
     req.headers["x-forwarded-proto"] ||
-    (process.env.NODE_ENV === "production" ? "https" : "http");
+    (process.env.NODE_ENV === "production"
+      ? "https"
+      : "http");
 
   const host =
     req.headers["x-forwarded-host"] ||
     req.headers.host;
 
   if (!host) {
-    const error = new Error("Unable to determine the application URL.");
+    const error = new Error(
+      "Unable to determine the application URL."
+    );
+
     error.status = 500;
     throw error;
   }
 
   return `${protocol}://${host}`;
+}
+
+async function getValidStripeCustomer(customerId) {
+  if (!customerId) {
+    return null;
+  }
+
+  try {
+    const customer =
+      await stripe.customers.retrieve(customerId);
+
+    if (customer.deleted) {
+      return null;
+    }
+
+    return customer;
+  } catch (error) {
+    if (
+      error?.code === "resource_missing" ||
+      error?.statusCode === 404
+    ) {
+      return null;
+    }
+
+    throw error;
+  }
+}
+
+async function createStripeCustomer(user) {
+  return stripe.customers.create({
+    email: user.email,
+    metadata: {
+      supabase_user_id: user.id
+    }
+  });
+}
+
+async function saveStripeCustomerId(
+  user,
+  customerId
+) {
+  const {
+    error
+  } = await admin
+    .from("profiles")
+    .upsert(
+      {
+        id: user.id,
+        email: user.email,
+        stripe_customer_id: customerId
+      },
+      {
+        onConflict: "id"
+      }
+    );
+
+  if (error) {
+    throw error;
+  }
 }
 
 export default async function handler(req, res) {
@@ -73,23 +137,35 @@ export default async function handler(req, res) {
     ];
 
     if (!validPlans.includes(plan)) {
-      const error = new Error("Invalid Bluvixa plan.");
+      const error = new Error(
+        "Invalid Bluvixa plan."
+      );
+
       error.status = 400;
       throw error;
     }
 
-    if (!validPurchaseTypes.includes(purchaseType)) {
-      const error = new Error("Invalid purchase type.");
+    if (
+      !validPurchaseTypes.includes(
+        purchaseType
+      )
+    ) {
+      const error = new Error(
+        "Invalid purchase type."
+      );
+
       error.status = 400;
       throw error;
     }
 
-    const price = PRICES[plan]?.[purchaseType]?.trim();
+    const price =
+      PRICES[plan]?.[purchaseType]?.trim();
 
     if (!price) {
       const error = new Error(
         "Stripe price is not configured for this selection."
       );
+
       error.status = 400;
       throw error;
     }
@@ -98,6 +174,7 @@ export default async function handler(req, res) {
       const error = new Error(
         "The configured Stripe value must be a Price ID beginning with price_."
       );
+
       error.status = 500;
       throw error;
     }
@@ -115,37 +192,22 @@ export default async function handler(req, res) {
       throw profileError;
     }
 
-    let customerId = profile?.stripe_customer_id || null;
+    let customer =
+      await getValidStripeCustomer(
+        profile?.stripe_customer_id || null
+      );
 
-    if (!customerId) {
-      const customer = await stripe.customers.create({
-        email: user.email,
-        metadata: {
-          supabase_user_id: user.id
-        }
-      });
+    if (!customer) {
+      customer =
+        await createStripeCustomer(user);
 
-      customerId = customer.id;
-
-      const {
-        error: profileUpdateError
-      } = await admin
-        .from("profiles")
-        .upsert(
-          {
-            id: user.id,
-            email: user.email,
-            stripe_customer_id: customerId
-          },
-          {
-            onConflict: "id"
-          }
-        );
-
-      if (profileUpdateError) {
-        throw profileUpdateError;
-      }
+      await saveStripeCustomerId(
+        user,
+        customer.id
+      );
     }
+
+    const customerId = customer.id;
 
     const isAnnualSubscription =
       purchaseType === "annual";
@@ -167,15 +229,16 @@ export default async function handler(req, res) {
           }
         ],
 
-        subscription_data: isAnnualSubscription
-          ? {
-              trial_period_days: 7,
-              metadata: {
-                plan,
-                user_id: user.id
+        subscription_data:
+          isAnnualSubscription
+            ? {
+                trial_period_days: 7,
+                metadata: {
+                  plan,
+                  user_id: user.id
+                }
               }
-            }
-          : undefined,
+            : undefined,
 
         metadata: {
           plan,
@@ -200,6 +263,7 @@ export default async function handler(req, res) {
       const error = new Error(
         "Stripe did not return a checkout URL."
       );
+
       error.status = 500;
       throw error;
     }
