@@ -2,7 +2,7 @@
 "use strict";
 
 /* =========================================================
-   BLUVIXA 9.0 SUPABASE MEDIA CLOUD WORKSPACE CONTROLLER
+   BLUVIXA 10.0 ONE-CLICK PUBLISHING CONTROLLER
    One router, one authentication controller, one project library.
    Supabase and Stripe API routes remain unchanged.
    ========================================================= */
@@ -147,8 +147,9 @@ function lockBuilderPlan(){
   }
 }
 function projectUrl(project){
-  if(project&&project.customDomain)return "https://"+project.customDomain;
-  return "https://"+sanitizeSlug(project&&project.slug||project&&project.name||"website")+".bluvixa.com";
+  if(project&&project.customDomain&&project.domainStatus==="connected")return "https://"+project.customDomain;
+  var slug=sanitizeSlug(project&&project.slug||project&&project.name||"website");
+  return window.location.origin+"/site/"+encodeURIComponent(slug);
 }
 function isUuid(value){
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(value||""));
@@ -1085,47 +1086,104 @@ function reserveSubdomain(){
     project.state.project.domainMode="subdomain";
   }
   setProjects(projects);
-  text("subdomainResultMessage","Reserved: https://"+slug+".bluvixa.com. It becomes publicly reachable when the publishing backend deploys it.");
+  text("subdomainResultMessage","Reserved. Publish the website to make it live at "+window.location.origin+"/site/"+slug+".");
   renderProjects();renderDrafts();renderPublishing();
 }
-function connectCustomDomain(){
+async function connectCustomDomain(){
   var projectId=id("customDomainProjectSelect").value;
   var domain=String(id("customDomainWorkspaceInput").value||"").toLowerCase().trim().replace(/^https?:\/\//,"").replace(/^www\./,"").replace(/\/.*$/,"");
   if(!projectId||!/^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}$/i.test(domain)){
     toast("Choose a website and enter a valid domain.");
     return;
   }
-  var projects=getProjects();
-  var project=projects.find(function(item){return item.id===projectId;});
-  project.customDomain=domain;project.domainStatus="waiting";project.updatedAt=new Date().toISOString();
-  if(project.state&&project.state.project){
-    project.state.project.customDomain=domain;
-    project.state.project.domainMode="custom";
-    project.state.project.domainStatus="waiting";
+
+  text("customDomainResultMessage","Connecting "+domain+"…");
+  try{
+    var result=await authenticatedApi("/api/connect-domain",{projectId:projectId,domain:domain});
+    var projects=getProjects();
+    var project=projects.find(function(item){return item.id===projectId;});
+    if(project){
+      project.customDomain=domain;
+      project.domainStatus=result.verified?"connected":"waiting";
+      project.updatedAt=new Date().toISOString();
+      if(project.state&&project.state.project){
+        project.state.project.customDomain=domain;
+        project.state.project.domainMode="custom";
+        project.state.project.domainStatus=project.domainStatus;
+        project.state.project.dnsVerified=!!result.verified;
+      }
+      setProjects(projects);
+      await saveProjectToCloud(project);
+    }
+    if(id("dnsWorkspace"))id("dnsWorkspace").classList.remove("hidden");
+    text("customDomainResultMessage",result.verified
+      ? domain+" is connected and ready."
+      : domain+" was added. Complete the DNS records shown by your domain provider, then try again.");
+    renderProjects();renderDrafts();renderPublishing();
+  }catch(error){
+    console.error("Bluvixa custom-domain connection failed:",error);
+    text("customDomainResultMessage","Domain connection failed: "+(error.message||"Unknown error"));
+    toast("Domain connection failed.");
   }
-  setProjects(projects);
-  if(id("dnsWorkspace"))id("dnsWorkspace").classList.remove("hidden");
-  text("customDomainResultMessage",domain+" is waiting for DNS verification.");
-  renderProjects();renderDrafts();renderPublishing();
 }
-function togglePublish(projectId){
+
+async function togglePublish(projectId){
   var projects=getProjects();
   var project=projects.find(function(item){return item.id===projectId;});
   if(!project)return;
-  project.published=!project.published;
-  project.updatedAt=new Date().toISOString();
-  if(project.published&&!project.slug)project.slug=uniquePublishedSlug(project);
-  if(project.state&&project.state.backend)project.state.backend.published=project.published;
-  if(project.state&&project.state.project&&project.published)project.state.project.slug=project.slug;
-  setProjects(projects);
-  renderProjects();renderDrafts();renderPublishing();
-  toast(project.published?"Website marked ready for publishing.":"Website returned to draft.");
+
+  try{
+    if(activeProjectId()===projectId&&typeof window.bluvixaExportState==="function"){
+      var saved=await saveActiveProject(false);
+      if(!saved)throw new Error(lastCloudError||"Save the website before publishing.");
+      projects=getProjects();
+      project=projects.find(function(item){return item.id===projectId;});
+    }
+
+    var shouldPublish=!project.published;
+    toast(shouldPublish?"Publishing website…":"Unpublishing website…");
+    var result=await authenticatedApi("/api/publish-site",{
+      projectId:projectId,
+      publish:shouldPublish,
+      requestedSlug:project.slug||sanitizeSlug(project.name)
+    });
+
+    project.published=!!result.published;
+    project.slug=result.slug||project.slug||"";
+    project.updatedAt=new Date().toISOString();
+    if(project.state&&project.state.backend)project.state.backend.published=project.published;
+    if(project.state&&project.state.project){
+      project.state.project.slug=project.slug;
+      project.state.project.domainStatus=project.domainStatus;
+    }
+    setProjects(projects);
+    await saveProjectToCloud(project);
+    renderProjects();renderDrafts();renderPublishing();
+
+    if(project.published){
+      toast("Website published successfully.");
+      window.open(result.url||projectUrl(project),"_blank","noopener");
+    }else{
+      toast("Website unpublished.");
+    }
+  }catch(error){
+    console.error("Bluvixa publishing failed:",error);
+    toast("Publishing failed: "+(error.message||"Unknown error"));
+  }
 }
 function renderPublishing(){
   var grid=id("publishingProjectGrid");if(!grid)return;
   var projects=getProjects();
   grid.innerHTML=projects.length?projects.map(function(project){
-    return '<article class="publishing-card"><strong>'+escapeHtml(project.name)+'</strong><small>'+escapeHtml(projectUrl(project))+'</small><small>Status: '+(project.published?"Published in project state":"Draft")+' · Domain: '+escapeHtml(project.domainStatus||"not connected")+'</small><div class="publishing-card-actions"><button class="btn btn-primary" data-project-action="load" data-project-id="'+project.id+'">Open</button><button class="btn btn-secondary" data-project-action="publish" data-project-id="'+project.id+'">'+(project.published?"Unpublish":"Publish")+'</button></div></article>';
+    var liveUrl=projectUrl(project);
+    return '<article class="publishing-card"><strong>'+escapeHtml(project.name)+'</strong>'+
+      '<small>'+escapeHtml(liveUrl)+'</small>'+
+      '<small>Status: '+(project.published?"Live":"Draft")+' · Domain: '+escapeHtml(project.domainStatus||"not connected")+'</small>'+
+      '<div class="publishing-card-actions">'+
+      '<button class="btn btn-primary" data-project-action="load" data-project-id="'+project.id+'">Edit</button>'+
+      '<button class="btn btn-secondary" data-project-action="publish" data-project-id="'+project.id+'">'+(project.published?"Unpublish":"Publish Now")+'</button>'+
+      (project.published?'<a class="btn btn-secondary" href="'+escapeHtml(liveUrl)+'" target="_blank" rel="noopener">View Live</a>':"")+
+      '</div></article>';
   }).join(""):'<div class="empty-state">Create a website before configuring publishing.</div>';
 }
 
@@ -1176,7 +1234,7 @@ function handleClick(event){
   if(button.id==="saveCurrentDraftBtn"||button.id==="saveSnapshotTopBtn"){event.preventDefault();void saveSnapshot();return;}
   if(button.id==="searchDomainsBtn"){event.preventDefault();searchDomains();return;}
   if(button.id==="reserveSubdomainBtn"){event.preventDefault();reserveSubdomain();return;}
-  if(button.id==="connectCustomDomainWorkspaceBtn"){event.preventDefault();connectCustomDomain();return;}
+  if(button.id==="connectCustomDomainWorkspaceBtn"){event.preventDefault();void connectCustomDomain();return;}
 
   if(button.matches(".pricingTrial,.memberPlanCheckout")){
     event.preventDefault();
@@ -1192,7 +1250,7 @@ function handleClick(event){
     if(projectAction==="duplicate")duplicateProject(projectId);
     if(projectAction==="drafts")location.hash="#drafts";
     if(projectAction==="delete")deleteProject(projectId);
-    if(projectAction==="publish")togglePublish(projectId);
+    if(projectAction==="publish")void togglePublish(projectId);
     return;
   }
 
@@ -1297,4 +1355,23 @@ window.BluvixaPlatform={
 };
 
 document.addEventListener("DOMContentLoaded",bind);
-})();
+})()
+async function authenticatedApi(path,payload){
+  if(!supabaseClient)throw new Error("Supabase is not initialized.");
+  var sessionResult=await supabaseClient.auth.getSession();
+  var accessToken=sessionResult&&sessionResult.data&&sessionResult.data.session&&sessionResult.data.session.access_token;
+  if(!accessToken)throw new Error("Please sign in again.");
+  var response=await fetch(path,{
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json",
+      "Authorization":"Bearer "+accessToken
+    },
+    body:JSON.stringify(payload||{})
+  });
+  var data=await response.json().catch(function(){return {};});
+  if(!response.ok)throw new Error(data.error||data.message||"Request failed.");
+  return data;
+}
+
+;

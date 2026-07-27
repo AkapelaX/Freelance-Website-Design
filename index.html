@@ -8,6 +8,15 @@
 <link href="hero-bluvixa-webicon.webp?v=5" rel="icon" type="image/webp"/>
 <link href="assets/bluvixa-favicon.png?v=5" rel="apple-touch-icon"/>
 <link href="style.css?v=20260727-v4" rel="stylesheet"/>
+<script>
+(function(){
+  var host=location.hostname.toLowerCase();
+  var mainHosts=["bluvixa.com","www.bluvixa.com","localhost","127.0.0.1"];
+  if(mainHosts.indexOf(host)===-1&&!location.pathname.startsWith("/public-site.html")){
+    location.replace("/public-site.html?host="+encodeURIComponent(host));
+  }
+})();
+</script>
 </head>
 <body class="route-home">
 <header class="app-header">
@@ -766,11 +775,11 @@
 <article class="domain-action-card">
 <small>FREE BLUVIXA ADDRESS</small>
 <h2>Reserve a Bluvixa subdomain</h2>
-<p>Each website can have a generated address such as <strong>your-business.bluvixa.com</strong>.</p>
+<p>Each website receives a working Bluvixa address such as <strong>bluvixa.com/site/your-business</strong>.</p>
 <label>Website</label>
 <select id="subdomainProjectSelect"></select>
 <label>Requested address</label>
-<div class="inline-domain-field"><input id="subdomainSlugInput" placeholder="your-business"/><span>.bluvixa.com</span></div>
+<div class="inline-domain-field"><span>bluvixa.com/site/</span><input id="subdomainSlugInput" placeholder="your-business"/></div>
 <button class="btn btn-primary" id="reserveSubdomainBtn" type="button">Reserve Address</button>
 <div class="domain-result-message" id="subdomainResultMessage"></div>
 </article>
@@ -778,7 +787,7 @@
 <article class="domain-action-card">
 <small>CUSTOM DOMAIN</small>
 <h2>Connect a domain you own</h2>
-<p>Select a website and enter the domain. Bluvixa will store the connection request and show the DNS records required by the publishing backend.</p>
+<p>Select a website and enter a domain you own. Bluvixa will add it to the Vercel project and store the connection status.</p>
 <label>Website</label>
 <select id="customDomainProjectSelect"></select>
 <label>Custom domain</label>
@@ -787,7 +796,7 @@
 <div class="dns-workspace hidden" id="dnsWorkspace">
 <div><span>Type</span><strong>CNAME</strong></div>
 <div><span>Name</span><strong>www</strong></div>
-<div><span>Value</span><strong>domains.bluvixa.com</strong></div>
+<div><span>Value</span><strong>cname.vercel-dns.com</strong></div>
 </div>
 <div class="domain-result-message" id="customDomainResultMessage"></div>
 </article>
@@ -881,8 +890,8 @@
 </div>
 <div class="modal hidden backend-only" id="backendModal"><div class="modal-card"><div class="modal-head"><div><h3>Backend Controls</h3><div class="tiny">Development-only preview.</div></div><button class="btn btn-secondary btn-small" id="closeBackendBtn" type="button">Close</button></div><div class="backend-grid"><div class="backend-card"><strong>Authentication</strong><small>Supabase Auth</small></div><div class="backend-card"><strong>Database</strong><small>Supabase Postgres</small></div><div class="backend-card"><strong>Storage</strong><small>Supabase Storage</small></div><div class="backend-card"><strong>Billing</strong><small>Stripe</small></div></div><button class="btn btn-primary" id="refreshJsonBtn" style="width:100%;margin-bottom:12px" type="button">Refresh Backend JSON</button><pre id="backendJson"></pre></div></div>
 <div class="toast" id="toast"></div>
-<script defer src="app.js?v=20260727-v90"></script>
+<script defer src="app.js?v=20260727-v100"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script defer src="platform.js?v=20260727-v90"></script>
+<script defer src="platform.js?v=20260727-v100"></script>
 </body>
 </html>
