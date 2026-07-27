@@ -90,6 +90,10 @@
     safeText("accountEmail",signedIn?currentUser.email:"—");
     safeText("dashboardSettingsEmail",signedIn?currentUser.email:"—");
     safeText("accountAuthStatus",signedIn?"Signed in":"Signed out");
+    safeText("memberConfirmationTitle",signedIn?"You are a Bluvixa member":"Sign in required");
+    safeText("memberConfirmationDetails",signedIn
+      ? "Signed in as "+currentUser.email+". Your plan and billing status appear below."
+      : "Sign in to access your dashboard, cloud projects, billing, and ownership.");
     var accountSection=el("account"); if(accountSection) accountSection.classList.toggle("hidden",!signedIn);
     if(signedIn){ await loadAccount(); }
   }
@@ -150,6 +154,13 @@
       safeText("dashboardRenewalText",accountDate(data));
       safeText("dashboardOwnershipText",owned?"Raw-code export is unlocked.":"Raw-code export remains locked.");
       safeText("dashboardSettingsEmail",currentUser?currentUser.email:"—");
+      safeText("memberConfirmationTitle",owned
+        ? "Member account active — website owned"
+        : (data.plan ? plan+" member account active" : "Bluvixa member account active"));
+      safeText("memberConfirmationDetails",
+        "Signed in as "+(currentUser?currentUser.email:"member")+
+        ". Subscription status: "+billing+
+        (owned?". Website ownership is complete.":"."));
       var exportHelp=owned?"Your raw-code export is unlocked. Export generation requires the connected export API.":"Purchase the website buyout to unlock a complete raw-code ZIP export.";
       safeText("accountExportHelp",exportHelp);
       var exportButton=el("exportWebsiteBtn");
@@ -270,6 +281,6 @@
     var annual=el("annualCheckoutBtn"); if(annual) annual.addEventListener("click",function(e){e.stopImmediatePropagation();checkout(el("planSelect").value,"annual");},true);
     var buyout=el("buyoutBtn"); if(buyout) buyout.addEventListener("click",function(e){e.stopImmediatePropagation();checkout(el("planSelect").value,"buyout");},true);
   }
-  window.BluvixaMVP={openAuth:openAuth,checkout:checkout,refreshAccount:loadAccount,syncDashboard:syncBuilderDashboard};
+  window.BluvixaMVP={openAuth:openAuth,checkout:checkout,refreshAccount:loadAccount,syncDashboard:syncBuilderDashboard,isSignedIn:function(){return !!currentUser;},saveCloud:saveCloud};
   document.addEventListener("DOMContentLoaded",init);
 })();

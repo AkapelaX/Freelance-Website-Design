@@ -1,39 +1,40 @@
-BLUVIXA RESTRUCTURED FRONTEND
-================================
+BLUVIXA 3.0 — COMPLETE FRONTEND PACKAGE
+=========================================
 
-CONTENTS
+FILES
 - index.html
 - style.css
 - app.js
 - auth-payments.js
 
-WHAT CHANGED
-- Replaced the basic account area with a responsive SaaS dashboard.
-- Added Overview, My Website, Subscription, Publishing, Ownership & Export,
-  Domains, and Settings dashboard views.
-- Preserved the builder's existing element IDs and app.js behavior.
-- Preserved Supabase sign-in, Stripe Checkout, Customer Portal, cloud save/load,
-  annual subscriptions, 7-day trial, and buyout checkout behavior.
-- Added live dashboard synchronization with the current builder state.
-- Added an export API request at /api/export-website for buyout customers.
+WHAT THIS VERSION IMPROVES
+- Adds an unmistakable green “Bluvixa Member” confirmation at the top of the signed-in dashboard.
+- Shows the signed-in email, plan, subscription status, and ownership status clearly.
+- Keeps the full SaaS dashboard: Overview, My Website, Subscription, Publishing,
+  Ownership & Export, Domains, and Settings.
+- Keeps all existing builder controls, website preview rendering, themes, media,
+  plan limits, maps, domains, local drafts, Supabase authentication, Stripe Checkout,
+  Stripe Customer Portal, cloud save/load, and website-buyout logic.
+- Fixes the confusing mobile “browser blocked local saving” experience.
+- Uses IndexedDB as expanded device storage when large photos/videos exceed localStorage.
+- Gives clear save states: Saving, Saved on this device, Use Cloud Save, or Sign in for Cloud Save.
 
 INSTALLATION
-1. Back up your current frontend files.
+1. Back up your current frontend.
 2. Replace index.html, style.css, app.js, and auth-payments.js with these files.
-3. Keep your existing assets folder and hero-bluvixa-webicon.webp beside index.html.
-4. Keep your existing /api endpoints and Vercel environment variables.
-5. Redeploy the project.
+3. Keep your current assets folder and hero-bluvixa-webicon.webp.
+4. Keep your existing Vercel API routes and environment variables.
+5. Redeploy.
 
-IMPORTANT BACKEND NOTES
-- Publishing controls in app.js still mark the builder state as published; a public
-  deployment requires your publishing backend.
-- Export now calls GET /api/export-website. Until that API exists, an owned account
-  receives an honest error message instead of a fake download.
-- The dashboard reads optional /api/account fields such as trialEnd,
-  currentPeriodEnd, renewalDate, projectName, and websiteBoughtOut. It safely falls
-  back when those fields are not present.
-- Do not place Stripe secret keys or the Supabase service-role key in frontend files.
+BACKEND TRUTH
+- Membership means the user is authenticated through Supabase.
+- Subscription status and plan come from /api/account and Stripe webhook data.
+- Cloud Save uses /api/project.
+- Billing uses /api/create-portal-session.
+- Buyout uses /api/create-checkout-session with purchaseType “buyout”.
+- Raw-code export calls GET /api/export-website and needs that server endpoint.
+- The builder’s Publish button records publishing state; real public deployment still
+  requires the publishing backend.
 
-ASSETS
-This ZIP intentionally does not replace your existing uploaded images, favicon files,
-or assets directory. Keep those files in the project when replacing the frontend.
+SECURITY
+Never place Stripe secret keys or the Supabase service-role key in these frontend files.

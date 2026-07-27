@@ -457,7 +457,9 @@
 <button class="device" data-device="tablet" type="button">▯</button>
 <button class="device" data-device="mobile" type="button">▯</button>
 </div>
-<div class="status"><b>●</b> <span id="saveStatus">Ready</span></div>
+<div class="status builder-save-status" title="Your work is stored on this device and can also be saved to your account.">
+<b>●</b> <span id="saveStatus">Ready to build</span>
+</div>
 </div>
 <div class="preview-wrap">
 <article class="preview" id="preview">
@@ -742,6 +744,16 @@
 
 <section class="section hidden backend-only account-dashboard-section" id="account">
 <div class="container">
+<div class="member-confirmation glass" id="memberConfirmation">
+<div class="member-confirmation-icon">✓</div>
+<div>
+<span class="member-confirmation-label">BLUVIXA MEMBER</span>
+<strong id="memberConfirmationTitle">You are signed in</strong>
+<small id="memberConfirmationDetails">Your membership and billing status are loading.</small>
+</div>
+<a class="btn btn-secondary" href="#builder">Open Builder</a>
+</div>
+
 <div class="dashboard-hero glass">
 <div>
 <span class="section-kicker">BLUVIXA CONTROL CENTER</span>

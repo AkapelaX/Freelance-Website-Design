@@ -7,6 +7,44 @@
     };
 
     var STORAGE_KEY = "bluvixa_v25_backend_ready_final";
+    var DRAFT_DB_NAME = "bluvixa_builder_storage";
+    var DRAFT_DB_STORE = "drafts";
+    var DRAFT_DB_KEY = "current_project";
+
+    function openDraftDatabase(){
+      return new Promise(function(resolve,reject){
+        if(!window.indexedDB){reject(new Error("IndexedDB is unavailable."));return;}
+        var request=indexedDB.open(DRAFT_DB_NAME,1);
+        request.onupgradeneeded=function(){
+          var database=request.result;
+          if(!database.objectStoreNames.contains(DRAFT_DB_STORE)){
+            database.createObjectStore(DRAFT_DB_STORE);
+          }
+        };
+        request.onsuccess=function(){resolve(request.result);};
+        request.onerror=function(){reject(request.error||new Error("Device storage could not be opened."));};
+      });
+    }
+
+    async function saveDraftToDevice(projectState){
+      var database=await openDraftDatabase();
+      return new Promise(function(resolve,reject){
+        var transaction=database.transaction(DRAFT_DB_STORE,"readwrite");
+        transaction.objectStore(DRAFT_DB_STORE).put(projectState,DRAFT_DB_KEY);
+        transaction.oncomplete=function(){database.close();resolve();};
+        transaction.onerror=function(){database.close();reject(transaction.error||new Error("Device save failed."));};
+      });
+    }
+
+    async function loadDraftFromDevice(){
+      var database=await openDraftDatabase();
+      return new Promise(function(resolve,reject){
+        var transaction=database.transaction(DRAFT_DB_STORE,"readonly");
+        var request=transaction.objectStore(DRAFT_DB_STORE).get(DRAFT_DB_KEY);
+        request.onsuccess=function(){database.close();resolve(request.result||null);};
+        request.onerror=function(){database.close();reject(request.error||new Error("Device draft could not be loaded."));};
+      });
+    }
     var pendingPhotoMedia = {src:"",type:""};
     var pendingGalleryMedia = {src:"",type:""};
 
@@ -817,32 +855,53 @@
       saveDraft(false);
     }
 
+    function updateSaveIndicator(text,stateName){
+      var status=byId("saveStatus");
+      if(status){status.textContent=text;}
+      var wrapper=status&&status.closest(".builder-save-status");
+      if(wrapper){
+        wrapper.classList.toggle("is-saving",stateName==="saving");
+        wrapper.classList.toggle("is-error",stateName==="error");
+      }
+    }
+
     function saveDraft(showMessage){
       syncFromInputs();
       state.backend.updatedAt = new Date().toISOString();
+      updateSaveIndicator("Saving…","saving");
 
       try{
         localStorage.setItem(STORAGE_KEY,JSON.stringify(state));
-        byId("saveStatus").textContent = "Saved";
-        if(showMessage){showToast("Draft saved in this browser.");}
+        updateSaveIndicator("Saved on this device","saved");
+        if(showMessage){showToast("Draft saved on this device.");}
       }catch(error){
-        byId("saveStatus").textContent = "Memory only";
-        if(showMessage){showToast("The builder works, but this browser blocked local saving.");}
+        saveDraftToDevice(cloneState(state)).then(function(){
+          updateSaveIndicator("Saved on this device","saved");
+          if(showMessage){showToast("Draft saved using expanded device storage.");}
+        }).catch(function(){
+          var signedIn=window.BluvixaMVP&&typeof window.BluvixaMVP.isSignedIn==="function"&&window.BluvixaMVP.isSignedIn();
+          updateSaveIndicator(signedIn?"Use Cloud Save":"Sign in for Cloud Save","error");
+          if(showMessage){
+            showToast(signedIn
+              ? "This device is full. Use Cloud Save in your Dashboard."
+              : "This device is full. Sign in to save the project to your account.");
+          }
+        });
       }
 
       renderBackendJson();
     }
 
-    function loadDraft(){
+    async function loadDraft(){
       try{
-        var saved = localStorage.getItem(STORAGE_KEY);
+        var saved = null;
+        try{ saved = localStorage.getItem(STORAGE_KEY); }catch(_storageError){}
+        var parsed = saved ? JSON.parse(saved) : await loadDraftFromDevice();
 
-        if(!saved){
-          showToast("No saved draft was found.");
+        if(!parsed){
+          showToast("No saved draft was found on this device.");
           return;
         }
-
-        var parsed = JSON.parse(saved);
 
         if(!parsed || !PLAN_CONFIG[parsed.plan]){
           showToast("The saved draft was not valid.");
@@ -944,6 +1003,11 @@
       pendingGalleryMedia = {src:"",type:""};
 
       try{localStorage.removeItem(STORAGE_KEY);}catch(error){}
+       openDraftDatabase().then(function(database){
+         var transaction=database.transaction(DRAFT_DB_STORE,"readwrite");
+         transaction.objectStore(DRAFT_DB_STORE).delete(DRAFT_DB_KEY);
+         transaction.oncomplete=function(){database.close();};
+       }).catch(function(){});
 
       applyToInputs();
       render();
@@ -1306,7 +1370,7 @@
     render();
     switchTab("business");
     setDevice("desktop");
-    byId("saveStatus").textContent = "Ready";
+    byId("saveStatus").textContent = "Ready to build";
 
 
 /* BLUVIXA FINAL WORKSPACE CONTROLS */
