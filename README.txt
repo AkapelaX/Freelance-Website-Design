@@ -1,14 +1,24 @@
-BLUVIXA 6.2 — STARTER PLAN + CLOUD NOTICE FIX
+BLUVIXA 7.0 — CLOUD-FIRST WORKSPACE
 
-CHANGES
-- The builder reads the signed-in member plan from /api/account.
-- Starter members see only Starter in the builder.
-- Professional and Advanced are no longer selectable inside the editor.
-- Plan changes are managed from Billing.
-- New websites, saves, duplicates, and snapshots inherit the account plan.
-- The disruptive cloud-project warning popup was removed.
-- Temporary cloud-load failures use the local cache and retry silently.
+This package makes Supabase website_projects the primary signed-in workspace.
 
-DEPLOY
-Replace index.html, style.css, app.js, and platform.js.
-Keep the existing api folder and environment variables.
+FIXES
+- Empty website_projects is treated as a valid empty workspace, not an error.
+- The large “Cloud projects could not be loaded” notification is removed.
+- Project saves attempt a Supabase upsert even if the first cloud read was unavailable.
+- Cloud synchronization no longer deletes remote rows by comparing them with a local cache.
+- Project and snapshot deletes remove only the selected owner-owned record.
+- Existing browser-only projects migrate automatically when the cloud table is empty.
+- A browser cache remains only as an emergency backup.
+- The builder plan is locked to the signed-in account plan from /api/account.
+- Starter members see Starter only; Professional and Advanced are not selectable in the builder.
+
+DEPLOYMENT
+Replace index.html, style.css, app.js, and platform.js. Keep the existing api folder, Vercel environment variables, Stripe configuration, and Supabase SQL/RLS policies.
+
+TEST
+1. Deploy to Vercel.
+2. Sign in on bluvixa.com.
+3. Create a test website and select Save Website.
+4. Refresh public.website_projects in Supabase.
+5. Confirm a row appears with owner_id matching the signed-in user.

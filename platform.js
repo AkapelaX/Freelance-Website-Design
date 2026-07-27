@@ -2,7 +2,7 @@
 "use strict";
 
 /* =========================================================
-   BLUVIXA 6.2 STARTER PLAN + SILENT CLOUD RETRY CONTROLLER
+   BLUVIXA 7.0 CLOUD-FIRST WORKSPACE CONTROLLER
    One router, one authentication controller, one project library.
    Supabase and Stripe API routes remain unchanged.
    ========================================================= */
@@ -119,12 +119,12 @@ function normalizeSnapshot(snapshot){
   return copy;
 }
 function getProjects(){
-  if(currentUser&&cloudWorkspaceLoaded)return projectsCache;
+  if(currentUser)return projectsCache;
   var value=safeJson(PROJECTS_KEY,[]);
   return Array.isArray(value)?value.map(normalizeProject):[];
 }
 function getSnapshots(){
-  if(currentUser&&cloudWorkspaceLoaded)return snapshotsCache;
+  if(currentUser)return snapshotsCache;
   var value=safeJson(SNAPSHOTS_KEY,[]);
   return Array.isArray(value)?value.map(normalizeSnapshot):[];
 }
@@ -221,98 +221,87 @@ function rowToSnapshot(row){
   });
 }
 async function syncCloudWorkspace(){
-  if(!currentUser||!supabaseClient||!cloudWorkspaceLoaded)return;
+  if(!currentUser||!supabaseClient)return false;
   var rows=projectsCache.map(projectToRow).concat(snapshotsCache.map(snapshotToRow));
+  if(!rows.length)return true;
   try{
-    if(rows.length){
-      var upsertResult=await supabaseClient
-        .from("website_projects")
-        .upsert(rows,{onConflict:"id"});
-      if(upsertResult.error)throw upsertResult.error;
-    }
-
-    var keepIds=rows.map(function(row){return row.id;});
-    var existingResult=await supabaseClient
+    var result=await supabaseClient
       .from("website_projects")
-      .select("id");
-    if(existingResult.error)throw existingResult.error;
-
-    var removeIds=(existingResult.data||[])
-      .map(function(row){return row.id;})
-      .filter(function(rowId){return keepIds.indexOf(rowId)<0;});
-
-    if(removeIds.length){
-      var deleteResult=await supabaseClient
-        .from("website_projects")
-        .delete()
-        .in("id",removeIds);
-      if(deleteResult.error)throw deleteResult.error;
-    }
+      .upsert(rows,{onConflict:"id"});
+    if(result.error)throw result.error;
+    cloudWorkspaceLoaded=true;
+    return true;
   }catch(error){
-    console.error("Bluvixa cloud synchronization failed:",error);
-    toast("Cloud save failed: "+(error.message||"Unknown error"));
+    console.error("Bluvixa cloud save failed:",error);
+    return false;
   }
 }
 function scheduleCloudSync(){
-  if(!currentUser||!supabaseClient||!cloudWorkspaceLoaded)return;
+  if(!currentUser||!supabaseClient)return;
   clearTimeout(cloudSyncTimer);
-  cloudSyncTimer=setTimeout(syncCloudWorkspace,250);
+  cloudSyncTimer=setTimeout(async function(){
+    var saved=await syncCloudWorkspace();
+    if(!saved)console.warn("The local emergency cache was kept because cloud saving was unavailable.");
+  },350);
+}
+async function deleteCloudRecord(recordId){
+  if(!currentUser||!supabaseClient||!recordId)return;
+  try{
+    var result=await supabaseClient
+      .from("website_projects")
+      .delete()
+      .eq("id",recordId)
+      .eq("owner_id",currentUser.id);
+    if(result.error)throw result.error;
+  }catch(error){
+    console.error("Bluvixa cloud delete failed:",error);
+    toast("This item was removed locally, but the cloud delete needs to be retried.");
+  }
 }
 async function loadCloudWorkspace(){
   if(!currentUser||!supabaseClient)return;
-  cloudWorkspaceLoaded=false;
 
   var localProjects=safeJson(PROJECTS_KEY,[]);
   var localSnapshots=safeJson(SNAPSHOTS_KEY,[]);
-
-  var result=await supabaseClient
-    .from("website_projects")
-    .select("*")
-    .order("updated_at",{ascending:false});
-
-  if(result.error)throw result.error;
-
-  var rows=result.data||[];
   projectsCache=[];
   snapshotsCache=[];
 
+  var result=await supabaseClient
+    .from("website_projects")
+    .select("id,owner_id,name,slug,plan,project_data,status,custom_domain,domain_status,website_bought_out,buyout_plan,buyout_completed_at,created_at,updated_at")
+    .eq("owner_id",currentUser.id);
+
+  if(result.error){
+    console.error("Bluvixa cloud load failed:",result.error);
+    projectsCache=(Array.isArray(localProjects)?localProjects:[]).map(normalizeProject);
+    snapshotsCache=(Array.isArray(localSnapshots)?localSnapshots:[]).map(normalizeSnapshot);
+    cloudWorkspaceLoaded=false;
+    renderProjects();renderDrafts();renderDomainSelectors();renderPublishing();
+    return;
+  }
+
+  var rows=result.data||[];
   rows.forEach(function(row){
     var recordType=row.project_data&&row.project_data.__bluvixa_record_type;
     if(recordType==="snapshot")snapshotsCache.push(rowToSnapshot(row));
     else projectsCache.push(rowToProject(row));
   });
 
-  /* One-time migration of projects previously stored only in this browser. */
+  projectsCache.sort(function(a,b){return new Date(b.updatedAt)-new Date(a.updatedAt);});
+  snapshotsCache.sort(function(a,b){return new Date(b.savedAt)-new Date(a.savedAt);});
+  cloudWorkspaceLoaded=true;
+
+  /* One-time migration from the old browser-only workspace. */
   if(!rows.length&&(localProjects.length||localSnapshots.length)){
-    projectsCache=localProjects.map(normalizeProject);
-    snapshotsCache=localSnapshots.map(normalizeSnapshot);
+    projectsCache=(Array.isArray(localProjects)?localProjects:[]).map(normalizeProject);
+    snapshotsCache=(Array.isArray(localSnapshots)?localSnapshots:[]).map(normalizeSnapshot);
+    await syncCloudWorkspace();
   }
 
   saveJson(PROJECTS_KEY,projectsCache);
   saveJson(SNAPSHOTS_KEY,snapshotsCache);
-  cloudWorkspaceLoaded=true;
-
-  if(!rows.length&&(projectsCache.length||snapshotsCache.length)){
-    await syncCloudWorkspace();
-  }
-
-  renderProjects();
-  renderDrafts();
-  renderDomainSelectors();
-  renderPublishing();
+  renderProjects();renderDrafts();renderDomainSelectors();renderPublishing();
 }
-function scheduleCloudWorkspaceRetry(){
-  clearTimeout(scheduleCloudWorkspaceRetry.timer);
-  scheduleCloudWorkspaceRetry.timer=setTimeout(async function(){
-    if(!currentUser||cloudWorkspaceLoaded)return;
-    try{
-      await loadCloudWorkspace();
-    }catch(error){
-      console.warn("Bluvixa cloud workspace retry failed; local cache remains active:",error);
-    }
-  },5000);
-}
-
 function currentBuilderState(){
   try{return typeof window.bluvixaExportState==="function"?window.bluvixaExportState():null;}
   catch(_error){return null;}
@@ -479,13 +468,7 @@ async function applySession(session){
 
   if(signedIn){
     await loadAccount();
-    try{
-      await loadCloudWorkspace();
-    }catch(error){
-      console.warn("Bluvixa cloud workspace was temporarily unavailable; using the local cache and retrying silently:",error);
-      cloudWorkspaceLoaded=false;
-      scheduleCloudWorkspaceRetry();
-    }
+    await loadCloudWorkspace();
     if(["home","top",""].indexOf(routeName())>=0)location.hash="#projects";
   }else{
     cloudWorkspaceLoaded=false;
@@ -668,7 +651,7 @@ function saveActiveProject(showMessage){
     project.domainStatus=(state.project&&state.project.domainStatus)||project.domainStatus;
     setProjects(projects);
   }
-  if(showMessage)toast("Website saved.");
+  if(showMessage)toast("Website saved. Cloud sync is running.");
   renderProjects();renderDrafts();renderPublishing();
 }
 function loadProject(projectId){
@@ -692,6 +675,7 @@ function duplicateProject(projectId){
   toast("Website duplicated.");
 }
 function deleteProject(projectId){
+  deleteCloudRecord(projectId);
   setProjects(getProjects().filter(function(item){return item.id!==projectId;}));
   if(activeProjectId()===projectId)setActiveProjectId("");
   renderProjects();renderDrafts();renderDomainSelectors();renderPublishing();
@@ -756,6 +740,7 @@ function loadSnapshot(snapshotId){
   }
 }
 function deleteSnapshot(snapshotId){
+  deleteCloudRecord(snapshotId);
   setSnapshots(getSnapshots().filter(function(item){return item.id!==snapshotId;}));
   renderDrafts();toast("Snapshot deleted.");
 }
