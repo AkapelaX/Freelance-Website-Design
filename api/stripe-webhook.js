@@ -5,7 +5,7 @@ import {
   admin,
   assertServerConfig,
   planFromPriceId
-} from "../lib/server.js";
+} from "./_lib.js";
 
 export const config = {
   api: {
@@ -337,15 +337,7 @@ async function completeWebsiteBuyout(
     {
       stripe_customer_id:
         customerId ||
-        null,
-      website_bought_out: true,
-      buyout_plan:
-        plan ||
-        project.plan ||
-        null,
-      buyout_completed_at:
-        project.buyout_completed_at ||
-        completedAt
+        null
     }
   );
 }
