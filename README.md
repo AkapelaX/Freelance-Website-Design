@@ -12,7 +12,7 @@ This package supports both:
 - `domain-manager.js`
 - One Hobby-plan-safe serverless function: `api/domain.js`
 - Shared server helper: `lib/domain-utils.js`
-- Corrected SQL migration using `owner_id`
+- Corrected SQL migration using your real `projects.user_id` schema
 - Installation documentation
 
 ## Before replacing files
@@ -54,3 +54,8 @@ Do not remove those existing files.
 ## Important
 
 Test with a spare domain before customer use. Never delete MX records used for business email.
+
+
+## Schema correction
+
+This corrected build uses `public.projects` and `user_id`. It does not use `website_projects` or `owner_id`.

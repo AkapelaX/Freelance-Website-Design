@@ -13,3 +13,6 @@
 11. Select a website.
 12. Test reserving a Bluvixa address.
 13. Test a spare custom domain.
+
+
+The included migration also removes the original UNIQUE restriction from `projects.user_id` so one account can own more than one website.
