@@ -1305,6 +1305,16 @@ async function togglePublish(projectId){
   var project=projects.find(function(item){return item.id===projectId;});
   if(!project)return;
 
+  /*
+    Capture the requested action before saveActiveProject() runs.
+    Saving re-renders the Publishing Center. On mobile, stale builder state
+    could change the red Unpublish button back to Publish Now before the
+    request was created, causing Unpublish to publish the site again.
+  */
+  var primaryButton=id("publishingPrimaryBtn");
+  var publishAction=String(primaryButton&&primaryButton.dataset.publishAction||"").toLowerCase();
+  var shouldPublish=publishAction?publishAction==="publish":!project.published;
+
   try{
     beginPublishingProgress();
 
@@ -1315,14 +1325,6 @@ async function togglePublish(projectId){
       project=projects.find(function(item){return item.id===projectId;});
       if(!project)throw new Error("Website project could not be reloaded.");
     }
-
-    /*
-      Use the explicit action assigned when the Publishing Center renders.
-      Reading visible button text is unreliable across mobile browsers.
-    */
-    var primaryButton=id("publishingPrimaryBtn");
-    var publishAction=String(primaryButton&&primaryButton.dataset.publishAction||"").toLowerCase();
-    var shouldPublish=publishAction?publishAction==="publish":!project.published;
 
     toast(shouldPublish?"Publishing website…":"Unpublishing website…");
 
