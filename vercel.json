@@ -1,0 +1,32 @@
+{
+  "version": 2,
+  "functions": {
+    "api/api.js": {
+      "includeFiles": "public-site.html"
+    },
+    "api/stripe-webhook.js": {
+      "maxDuration": 10
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/site/:slug",
+      "destination": "/public-site.html?slug=:slug"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        }
+      ]
+    }
+  ]
+}

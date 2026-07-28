@@ -1,167 +1,75 @@
-# Bluvixa Domain Management — Full Combined Package
+# Bluvixa Master Corrected Package
 
-This package enables both publishing methods supported by Bluvixa:
+This package consolidates the Bluvixa frontend and backend around the canonical Supabase schema.
 
-* **Bluvixa Hosted URL**
+## Structure
 
-  * `https://bluvixa.com/site/your-business`
-* **Customer-Owned Custom Domain**
+- `index.html` — Bluvixa landing page, member dashboard, domains, billing, and builder shell.
+- `app.js` — one master frontend script containing platform/auth, dashboard, domain manager, publishing, and builder behavior.
+- `public-site.html` — one self-contained renderer for published and exported websites.
+- `style.css` — complete Bluvixa application styling.
+- `api/api.js` — one master API function using action-based routing.
+- `api/stripe-webhook.js` — separate Stripe webhook function with raw-body parsing.
+- `lib/server.js` — server-only Supabase, Stripe, authentication, and response helpers.
+- `supabase-schema.sql` — canonical Supabase schema with per-project website buyout fields.
 
-  * `https://yourbusiness.com`
+Vercel sees only **two serverless functions**:
 
-Both publishing methods use the same project and publishing system.
+1. `/api/api.js`
+2. `/api/stripe-webhook.js`
 
----
+## Master API endpoints
 
-# Package Contents
+The frontend uses `/api/api?action=...`:
 
-* Full replacement `index.html`
-* Full replacement `style.css`
-* `domain-manager.js`
-* `api/domain.js` (single domain API)
-* `lib/domain-utils.js` (shared helper)
-* SQL migration for the existing `projects` table
-* Installation guide
+- `config`
+- `account`
+- `projects`
+- `delete-project`
+- `publish`
+- `public-site`
+- `domain` with `domain_action=status|check-slug|reserve-slug|connect|check|remove`
+- `domain-search`
+- `checkout`
+- `portal`
+- `export`
 
----
+## Setup
 
-# Before Installing
+1. Run `supabase-schema.sql` in Supabase SQL Editor.
+2. Copy every variable from `.env.example` into Vercel Project Settings → Environment Variables.
+3. Deploy the whole folder to Vercel.
+4. In Stripe, set the webhook endpoint to:
 
-Back up the current production repository.
+   `https://YOUR-DOMAIN/api/stripe-webhook`
 
-Remove any legacy domain-management endpoints that are still present:
+5. Subscribe the Stripe webhook to:
 
-```
-api/connect-domain.js
-api/check-domain.js
-api/remove-domain.js
-api/domain-status.js
-api/domain-search.js
-api/domain-utils.js
-api/_lib/domain-utils.js
-```
+   - `checkout.session.completed`
+   - `checkout.session.async_payment_succeeded`
+   - `customer.subscription.created`
+   - `customer.subscription.updated`
+   - `customer.subscription.deleted`
+   - `invoice.payment_failed`
+   - `invoice.payment_succeeded`
 
-The new system replaces these with a single endpoint:
+## Database contract
 
-```
-api/domain.js
-```
+All website projects use:
 
----
+- table: `public.projects`
+- owner: `user_id`
+- website data: `project_data`
+- publish state: `published`
+- public link: `published_url`
 
-# Existing Files That Must Remain
+Do not recreate `website_projects`, `owner_id`, or text-based project `status` fields.
 
-This package is designed to work with the existing Bluvixa platform.
+## Local syntax check
 
-Do **not** remove:
-
-* `app.js`
-* `platform.js`
-* Supabase browser library
-* Existing assets
-* Favicon files
-* Existing authentication system
-* Existing publishing system
-* Existing `/api/publish-site`
-* Existing `/api/public-site`
-
-The domain manager extends the current platform rather than replacing it.
-
----
-
-# Required Environment Variables
-
-```
-SUPABASE_URL
-SUPABASE_ANON_KEY
-SUPABASE_SERVICE_ROLE_KEY
-
-VERCEL_TOKEN
-VERCEL_PROJECT_ID
-VERCEL_TEAM_ID    (only if using a Team-owned Vercel project)
+```bash
+npm install
+npm run check
 ```
 
----
-
-# Database
-
-This package uses the existing Bluvixa schema.
-
-Table:
-
-```
-public.projects
-```
-
-Primary ownership column:
-
-```
-user_id
-```
-
-It does **not** create or require:
-
-* `website_projects`
-* `owner_id`
-
----
-
-# Supported Publishing
-
-After installation, every project can be published in one of two ways:
-
-### Bluvixa URL
-
-```
-https://bluvixa.com/site/your-business
-```
-
-### Custom Domain
-
-```
-https://yourbusiness.com
-```
-
-The publishing system automatically serves the same website regardless of which address the visitor uses.
-
----
-
-# Compatibility
-
-This package is intended to work alongside:
-
-* Existing authentication
-* Existing Stripe subscriptions
-* Existing project storage
-* Existing autosave
-* Existing publish/unpublish workflow
-* Existing `/api/public-site` renderer
-
-No customer websites should require rebuilding after installation.
-
----
-
-# Installation Notes
-
-1. Back up the repository.
-2. Remove the obsolete domain API files listed above.
-3. Add the new package files.
-4. Run the SQL migration.
-5. Configure the required environment variables.
-6. Redeploy the project.
-7. Test using a spare domain before connecting customer domains.
-
----
-
-# Important
-
-* Never remove customer MX records used for email.
-* Verify DNS propagation before marking a custom domain as connected.
-* Test both Bluvixa-hosted URLs and custom domains after deployment.
-* Confirm that publishing, unpublishing, and SSL provisioning function correctly before customer use.
-
----
-
-# Architecture
-
-This package is designed to integrate with the current Bluvixa platform and does **not** replace the existing publishing or website-rendering system. It provides a unified domain-management layer while preserving compatibility with the current frontend, backend, and database architecture.
+The Stripe and Vercel integrations require real environment variables and cannot be fully tested by syntax checking alone.
