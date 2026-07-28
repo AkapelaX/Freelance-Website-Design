@@ -1,0 +1,17 @@
+{
+  "rewrites": [
+    { "source": "/api/config", "destination": "/api/api?action=config" },
+    { "source": "/api/account", "destination": "/api/api?action=account" },
+    { "source": "/api/account-status", "destination": "/api/api?action=account-status" },
+    { "source": "/api/projects", "destination": "/api/api?action=projects" },
+    { "source": "/api/projects/save", "destination": "/api/api?action=projects&operation=save" },
+    { "source": "/api/projects/delete", "destination": "/api/api?action=projects&operation=delete" },
+    { "source": "/api/public-site", "destination": "/api/api?action=public-site" },
+    { "source": "/api/publish-site", "destination": "/api/api?action=publish-site" },
+    { "source": "/api/create-checkout-session", "destination": "/api/api?action=create-checkout-session" },
+    { "source": "/api/create-portal-session", "destination": "/api/api?action=create-portal-session" },
+    { "source": "/api/export-website", "destination": "/api/api?action=export-website" },
+    { "source": "/api/domain", "destination": "/api/api?action=domain" },
+    { "source": "/site/:slug", "destination": "/public-site.html?slug=:slug" }
+  ]
+}

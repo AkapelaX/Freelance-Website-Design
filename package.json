@@ -1,0 +1,8 @@
+{
+  "name": "bluvixa-platform",
+  "version": "13.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": { "check": "node scripts/check-syntax.js" },
+  "dependencies": { "@supabase/supabase-js": "^2.49.1", "stripe": "^17.7.0" }
+}

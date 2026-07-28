@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bluvixa 4.0 — Website Builder</title>
+<meta name="description" content="Build, save, publish, manage, and own professional websites with Bluvixa."/>
+<link href="hero-bluvixa-webicon.webp?v=5" rel="icon" type="image/webp"/>
+<link href="assets/bluvixa-favicon.png?v=5" rel="apple-touch-icon"/>
+<link href="style.css?v=20260727-domains-both" rel="stylesheet"/>
+<script>
+(function(){
+  var host=location.hostname.toLowerCase();
+  var mainHosts=["bluvixa.com","www.bluvixa.com","localhost","127.0.0.1"];
+  if(mainHosts.indexOf(host)===-1&&!location.pathname.startsWith("/public-site.html")){
+    location.replace("/public-site.html?host="+encodeURIComponent(host));
+  }
+})();
+</script>
+</head>
+<body class="route-home">
+<header class="app-header">
+<a class="app-brand" href="#home">
+<div class="app-brand-mark"><img src="hero-bluvixa-webicon.webp" alt="Bluvixa"/></div>
+<div><strong>BLUVIXA</strong><small>WEBSITE PLATFORM</small></div>
+</a>
+<nav class="public-nav" id="publicNav">
+<a href="#home">Home</a>
+<a href="#pricing">Pricing</a>
+<a href="#builder">Try Builder</a>
+</nav>
+<nav class="member-nav hidden" id="memberNav">
+<a href="#projects" data-route-link="projects">My Websites</a>
+<a href="#drafts" data-route-link="drafts">Saved Drafts</a>
+<a href="#builder" data-route-link="builder">Builder</a>
+<a href="#billing" data-route-link="billing">Billing & Ownership</a>
+<a href="#domains" data-route-link="domains">Domains & Publishing</a>
+</nav>
+<div class="header-actions">
+<button class="mobile-menu-button" id="mobileMenuButton" type="button" aria-expanded="false" aria-controls="mobileMenu" aria-label="Open navigation">
+<span></span><span></span><span></span>
+</button>
+<button class="btn btn-ghost hidden" id="signInBtn" type="button">Sign In</button>
+<button class="btn btn-primary hidden" id="startTrialBtn" type="button">Start Free Trial</button>
+<button class="avatar-button hidden backend-only" id="accountNavLink" type="button" aria-label="Open dashboard">B</button>
+<button class="btn btn-ghost hidden backend-only" id="signOutBtn" type="button">Sign Out</button>
+</div>
+</header>
+<div class="mobile-menu hidden" id="mobileMenu">
+<div class="mobile-menu-public" id="mobileMenuPublic">
+<a href="#home">Home</a>
+<a href="#pricing">Pricing</a>
+<a href="#builder">Preview Builder</a>
+<button class="btn btn-secondary" id="mobileSignInBtn" type="button">Sign In</button>
+<button class="btn btn-primary" id="mobileStartTrialBtn" type="button">Start 7-Day Free Trial</button>
+</div>
+<div class="mobile-menu-member hidden" id="mobileMenuMember">
+<div class="mobile-member-status">
+<small>BLUVIXA MEMBER</small>
+<strong id="mobileMemberPlan">Account loading…</strong>
+<span id="mobileMemberStatus">Checking subscription</span>
+</div>
+<a href="#projects">My Websites</a>
+<a href="#drafts">Saved Drafts</a>
+<a href="#builder">Website Builder</a>
+<a href="#billing">Billing &amp; Ownership</a>
+<a href="#domains">Domains &amp; Publishing</a>
+<button class="btn btn-secondary backend-only" id="mobileSignOutBtn" type="button">Sign Out</button>
+</div>
+</div>
+
+<div class="session-loading-screen" id="sessionLoadingScreen">
+<div class="session-loading-card">
+<div class="session-loading-logo">B</div>
+<strong>Opening Bluvixa</strong>
+<span>Checking your membership…</span>
+</div>
+</div>
+
+<main>
+<section class="app-page landing-page" id="home" data-page="home">
+<div class="landing-grid">
+<div class="landing-copy">
+<span class="landing-badge">A COMPLETE WEBSITE WORKSPACE</span>
+<h1>Build beautiful websites. Save every draft. Own the code when you are ready.</h1>
+<p>Bluvixa combines a visual website builder, member dashboard, saved-draft library, subscription management, publishing controls, and one-time website buyouts.</p>
+<div class="landing-actions">
+<button class="btn btn-primary btn-large" id="landingStartBtn" type="button">Start 7-Day Free Trial</button>
+<a class="btn btn-secondary btn-large" id="landingSecondaryBtn" href="#builder">Preview the Builder</a>
+</div>
+<div class="landing-proof">
+<div><strong>Visual Builder</strong><span>Design without code</span></div>
+<div><strong>Saved Drafts</strong><span>Return to earlier versions</span></div>
+<div><strong>Website Buyout</strong><span>Own the exported source code</span></div>
+</div>
+</div>
+<div class="landing-product-card">
+<div class="product-window-bar"><span></span><span></span><span></span><b>Bluvixa Dashboard</b></div>
+<div class="product-window-body">
+<aside>
+<div class="fake-logo">B</div>
+<div class="fake-nav active">Overview</div>
+<div class="fake-nav">My Websites</div>
+<div class="fake-nav">Saved Drafts</div>
+<div class="fake-nav">Billing</div>
+</aside>
+<div class="fake-dashboard">
+<div class="fake-welcome"><small>WELCOME BACK</small><strong>Your website workspace</strong></div>
+<div class="fake-stats"><span>Professional Plan</span><span>1 Website</span><span>3 Drafts</span></div>
+<div class="fake-site-card"><div class="fake-preview"></div><div><strong>My Business Website</strong><small>Draft saved today</small></div></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+
+<section class="app-page projects-page backend-only" id="projects" data-page="projects">
+<div class="member-shell">
+<aside class="member-sidebar">
+<div class="sidebar-user">
+<div class="sidebar-avatar">B</div>
+<div><small>BLUVIXA MEMBER</small><strong id="sidebarMemberEmail">Loading…</strong></div>
+</div>
+<nav>
+<a class="active" href="#projects"><span>▦</span> My Websites</a>
+<a href="#drafts"><span>▤</span> Saved Drafts</a>
+<a href="#builder"><span>✎</span> Website Builder</a>
+<a href="#billing"><span>$</span> Billing & Ownership</a>
+<a href="#domains"><span>◎</span> Domains & Publishing</a>
+</nav>
+<div class="sidebar-bottom"><button class="btn btn-ghost backend-only" id="accountSignOutBtn" type="button">Sign Out</button></div>
+</aside>
+
+<div class="member-content">
+<div class="member-page-head">
+<div>
+<span class="workspace-kicker">MY WEBSITES</span>
+<h1 id="projectsGreeting">Welcome home</h1>
+<p>Create as many websites as you need. Every new website begins as a draft and remains available until you publish or delete it.</p>
+</div>
+<button class="btn btn-primary" id="createWebsiteBtn" type="button">Create New Website</button>
+</div>
+
+<div class="membership-strip" id="memberConfirmation">
+<div class="membership-check">✓</div>
+<div><small>MEMBER ACCOUNT</small><strong id="memberConfirmationTitle">You are signed in</strong></div>
+<div class="membership-plan"><small>PLAN</small><strong id="accountPlan">No active plan</strong></div>
+<div class="membership-plan"><small>STATUS</small><strong id="accountBillingStatus">Not subscribed</strong></div>
+</div>
+
+<div class="trial-home-card" id="trialHomeCard">
+<div class="trial-home-icon">7</div>
+<div class="trial-home-copy">
+<small id="trialHomeEyebrow">YOUR MEMBERSHIP</small>
+<h2 id="trialHomeTitle">Checking your trial…</h2>
+<p id="trialHomeMessage">Bluvixa is loading your subscription details.</p>
+</div>
+<div class="trial-home-actions">
+<a class="btn btn-primary" href="#builder">Open Builder</a>
+<a class="btn btn-secondary" href="#billing">Billing & Ownership</a>
+</div>
+</div>
+
+<div class="website-library-toolbar">
+<div class="draft-search"><span>⌕</span><input id="projectSearchInput" placeholder="Search websites"/></div>
+<div class="website-library-stats">
+<div><strong id="projectCount">0</strong><span>Total websites</span></div>
+<div><strong id="publishedProjectCount">0</strong><span>Published</span></div>
+<div><strong id="draftProjectCount">0</strong><span>Drafts</span></div>
+</div>
+</div>
+
+<div class="website-library-grid" id="websiteLibraryGrid"></div>
+</div>
+</div>
+</section>
+
+
+<section class="app-page drafts-page backend-only" id="drafts" data-page="drafts">
+<div class="member-shell">
+<aside class="member-sidebar">
+<div class="sidebar-user"><div class="sidebar-avatar">B</div><div><small>BLUVIXA MEMBER</small><strong id="draftsMemberEmail">Your account</strong></div></div>
+<nav>
+<a href="#projects"><span>▦</span> My Websites</a>
+<a class="active" href="#drafts"><span>▤</span> Saved Drafts</a>
+<a href="#builder"><span>✎</span> Website Builder</a>
+<a href="#billing"><span>$</span> Billing & Ownership</a>
+<a href="#domains"><span>◎</span> Domains & Publishing</a>
+</nav>
+</aside>
+
+<div class="member-content">
+<div class="member-page-head">
+<div>
+<span class="workspace-kicker">SAVED DRAFTS</span>
+<h1>Drafts and incomplete websites</h1>
+<p>Every incomplete website and every manual snapshot appears here. Load a draft, duplicate it into a new website, buy it out, or export it after ownership is confirmed.</p>
+</div>
+<div class="page-head-actions">
+<button class="btn btn-secondary" id="saveCurrentDraftBtn" type="button">Save Current Snapshot</button>
+<button class="btn btn-primary" id="createWebsiteFromDraftsBtn" type="button">Create New Website</button>
+</div>
+</div>
+
+<div class="draft-toolbar">
+<div class="draft-search"><span>⌕</span><input id="draftSearchInput" placeholder="Search drafts and websites"/></div>
+<div class="draft-filter-buttons">
+<button class="active" type="button" data-draft-filter="all">All</button>
+<button type="button" data-draft-filter="project">Websites</button>
+<button type="button" data-draft-filter="snapshot">Snapshots</button>
+<button type="button" data-draft-filter="incomplete">Incomplete</button>
+</div>
+<div class="draft-count"><strong id="savedDraftCount">0</strong><span>items</span></div>
+</div>
+
+<div class="draft-ownership-explainer">
+<div>
+<small>HOW BUYOUTS WORK</small>
+<h2>Buy out any finished website when you are ready.</h2>
+<p>Your subscription lets you build and manage websites. A buyout is a separate one-time purchase for a specific website. After Stripe confirms that website’s buyout, its ZIP export unlocks permanently.</p>
+</div>
+<a class="btn btn-secondary" href="#billing">Read Billing & Ownership</a>
+</div>
+
+<div class="saved-drafts-grid" id="savedDraftsGrid"></div>
+</div>
+</div>
+</section>
+
+<section class="app-page builder-page" id="builder" data-page="builder">
+<div class="container">
+<div class="workspace-page-head">
+<div>
+<span class="workspace-kicker">VISUAL WEBSITE BUILDER</span>
+<h1 id="builderProjectTitle">Build your website</h1>
+<p id="builderProjectSubtitle">The live website preview and all existing design controls remain intact.</p>
+</div>
+<div class="workspace-head-actions">
+<button class="btn btn-secondary" id="saveWebsiteProjectBtn" type="button">Save Website</button>
+<button class="btn btn-secondary" id="saveSnapshotTopBtn" type="button">Save Snapshot</button>
+<a class="btn btn-secondary" href="#drafts">Saved Drafts</a>
+<a class="btn btn-primary" href="#projects">My Websites</a>
+</div>
+</div>
+<div class="builder-shell">
+<aside class="sidebar" id="builderSidebar">
+<div class="sidebar-head">
+<div class="sidebar-title">Website Editor</div>
+<div class="sidebar-sub">Choose a plan to preview its available design limits.</div>
+</div>
+<div class="tabs" id="tabs">
+<button class="tab active" data-tab="business" type="button">Business</button>
+<button class="tab" data-tab="header" type="button">Header</button>
+<button class="tab" data-tab="logo" type="button">Logo</button>
+<button class="tab" data-tab="about" type="button">About</button>
+<button class="tab" data-tab="photos" type="button">Photos</button>
+<button class="tab" data-tab="gallery" type="button">Gallery</button>
+<button class="tab" data-tab="design" type="button">Design</button>
+<button class="tab" data-tab="map" type="button">Map</button>
+
+<button class="tab domain-tab" data-tab="project" type="button">Domain</button>
+</div>
+<section class="panel active" data-panel="business">
+<div class="group">
+<label for="planSelect">Your plan</label>
+<select class="select" id="planSelect" disabled aria-readonly="true">
+<option selected value="starter">Starter</option>
+</select>
+<small class="plan-lock-note">Plan changes are managed from Billing.</small>
+</div>
+<div class="group">
+<label for="businessName">Business name</label>
+<input class="input" id="businessName" value=""/>
+</div>
+<div class="group">
+<label for="businessBio">Business information</label>
+<textarea class="textarea" id="businessBio"></textarea>
+</div>
+<div class="group">
+<label for="phoneNumber">Phone number</label>
+<input class="input" id="phoneNumber" value=""/>
+</div>
+<div class="group">
+<label for="emailAddress">Email</label>
+<input class="input" id="emailAddress" value=""/>
+</div>
+<div class="group">
+<label for="businessHours">Business hours</label>
+<input class="input" id="businessHours" value=""/>
+</div>
+<div class="group">
+<label for="callButtonText">Call button text</label>
+<input class="input" id="callButtonText" value=""/>
+</div>
+</section>
+<section class="panel" data-panel="header">
+<div class="notice" id="headerNotice"></div>
+<div class="group">
+<label for="headerTagline">Header tagline</label>
+<input class="input" id="headerTagline" placeholder="Example: Modern website. Local impact."/>
+</div>
+<div class="group">
+<label for="headerHeadline">Main headline</label>
+<textarea class="textarea" id="headerHeadline"></textarea>
+</div>
+<div class="group">
+<label for="headerImage">Header image</label>
+<div class="upload">
+                  Upload one hero image.
+                  <input accept="image/*" id="headerImage" type="file"/>
+</div>
+</div>
+<div class="group">
+<label for="headerBio">Header bio</label>
+<textarea class="textarea" id="headerBio" placeholder="Write one short introduction shown below the main headline."></textarea>
+</div>
+</section>
+<section class="panel" data-panel="logo">
+<div class="notice">Upload one business logo for the website header. The logo appears instantly in the live preview and remains part of the saved website project.</div>
+<div class="group">
+<label for="businessLogo">Business logo</label>
+<div class="upload">
+                  Upload PNG, JPG, or WebP. A transparent PNG is recommended.
+                  <input accept="image/png,image/jpeg,image/webp" id="businessLogo" type="file"/>
+</div>
+<button class="btn btn-secondary btn-small" id="removeLogoBtn" style="width:100%;margin-top:8px" type="button">Remove Uploaded Logo</button>
+</div>
+<div class="tiny">The uploaded logo is separate from the header image. The logo is displayed in the website navigation while the header image is used as the main hero image.</div>
+</section>
+<section class="panel" data-panel="about">
+<div class="notice">Make the About section completely your own with a custom heading and a full-width background cover photo.</div>
+<div class="group">
+<label for="aboutHeading">About section heading</label>
+<input class="input" id="aboutHeading" placeholder="Example: About Our Business"/>
+</div>
+<div class="group">
+<label for="aboutCoverFile">About background cover photo</label>
+<div class="upload">
+                  Upload one image that fills the About section background like the main header.
+                  <input accept="image/png,image/jpeg,image/webp" id="aboutCoverFile" type="file"/>
+</div>
+<button class="btn btn-secondary btn-small" id="removeAboutCoverBtn" style="width:100%;margin-top:8px" type="button">Remove About Cover</button>
+</div>
+</section>
+<section class="panel" data-panel="photos">
+<div class="notice" id="photoNotice"></div>
+<div class="group">
+<label for="featuredHeading">Section header</label>
+<input class="input" id="featuredHeading" placeholder="Type the section header"/>
+</div>
+<div class="group">
+<label for="featuredDescription">Section bio</label>
+<textarea class="textarea" id="featuredDescription" placeholder="Type the bio displayed below this section header."></textarea>
+</div>
+<div class="group">
+<label for="featuredCoverFile">Section cover photo</label>
+<div class="upload">
+                  Upload one wide cover photo for this entire section.
+                  <input accept="image/png,image/jpeg,image/webp" id="featuredCoverFile" type="file"/>
+</div>
+<button class="btn btn-secondary btn-small" id="removeFeaturedCoverBtn" style="width:100%;margin-top:8px" type="button">Remove Section Cover</button>
+</div>
+<div class="group">
+<label for="photoDescription">Upload description</label>
+<textarea class="textarea" id="photoDescription" placeholder="Describe this photo, service, product, employee, or project."></textarea>
+</div>
+<div class="group">
+<label for="photoFile">Photo or video</label>
+<div class="upload">
+                  Each upload includes one photo or video and one description.
+                  <input accept="image/*,video/*" id="photoFile" type="file"/>
+</div>
+</div>
+<button class="btn btn-primary" id="addPhotoBtn" style="width:100%" type="button">Add Upload</button>
+<div class="editor-list" id="photoEditorList"></div>
+</section>
+<section class="panel" data-panel="gallery">
+<div class="notice" id="galleryNotice"></div>
+<div id="galleryControls">
+<div class="group">
+<label for="galleryHeading">Section header</label>
+<input class="input" id="galleryHeading" placeholder="Type the section header"/>
+</div>
+<div class="group">
+<label for="galleryDescription">Section bio</label>
+<textarea class="textarea" id="galleryDescription" placeholder="Type the bio displayed below this section header."></textarea>
+</div>
+<div class="group">
+<label for="galleryCoverFile">Section cover photo</label>
+<div class="upload">
+                    Upload one wide cover photo for this entire section.
+                    <input accept="image/png,image/jpeg,image/webp" id="galleryCoverFile" type="file"/>
+</div>
+<button class="btn btn-secondary btn-small" id="removeGalleryCoverBtn" style="width:100%;margin-top:8px" type="button">Remove Section Cover</button>
+</div>
+<div class="group">
+<label for="galleryUploadDescription">Upload description</label>
+<textarea class="textarea" id="galleryUploadDescription" placeholder="Describe this upload."></textarea>
+</div>
+<div class="group">
+<label for="galleryFile">Photo or video</label>
+<div class="upload">
+                    Each upload includes one photo or video and one description.
+                    <input accept="image/*,video/*" id="galleryFile" type="file"/>
+</div>
+</div>
+<button class="btn btn-primary" id="addGalleryBtn" style="width:100%" type="button">Add Upload</button>
+<div class="editor-list" id="galleryEditorList"></div>
+</div>
+</section>
+<section class="panel" data-panel="design">
+<div class="notice">Customize every major part of the website theme. Logo upload is available in the dedicated Logo tab. Changes appear in the preview immediately.</div>
+<div class="group">
+<label>Quick theme presets</label>
+<div class="theme-presets" id="themePresets">
+<button class="theme-preset active" data-theme="blue" type="button"><span style="background:#1769ff"></span>Blue</button>
+<button class="theme-preset" data-theme="purple" type="button"><span style="background:#7c3aed"></span>Purple</button>
+<button class="theme-preset" data-theme="red" type="button"><span style="background:#dc2626"></span>Red</button>
+<button class="theme-preset" data-theme="green" type="button"><span style="background:#059669"></span>Green</button>
+<button class="theme-preset" data-theme="orange" type="button"><span style="background:#ea580c"></span>Orange</button>
+</div>
+</div>
+<div class="color-grid">
+<div class="color-control"><label for="themeColor">Overall page theme</label><input id="themeColor" type="color" value="#1769ff"/><span id="themeColorValue">#1769ff</span></div>
+<div class="color-control"><label for="headerColor">Header and footer</label><input id="headerColor" type="color" value="#082b5e"/><span id="headerColorValue">#082b5e</span></div>
+<div class="color-control"><label for="buttonColor">Buttons</label><input id="buttonColor" type="color" value="#1769ff"/><span id="buttonColorValue">#1769ff</span></div>
+<div class="color-control"><label for="cardColor">Information cards</label><input id="cardColor" type="color" value="#ffffff"/><span id="cardColorValue">#ffffff</span></div>
+<div class="color-control"><label for="logoOutlineColor">Logo outline</label><input id="logoOutlineColor" type="color" value="#61c7ff"/><span id="logoOutlineColorValue">#61c7ff</span></div>
+</div>
+<div class="group">
+<label for="scrollItems">Scroll bar items</label>
+<textarea class="textarea" id="scrollItems">Home, Services, Gallery, Reviews, Contact</textarea>
+</div>
+</section>
+<section class="panel" data-panel="map">
+<div class="notice">Customize the location section heading and place your own cover image behind the map content.</div>
+<div class="group">
+<label for="mapHeading">Map section heading</label>
+<input class="input" id="mapHeading" placeholder="Example: Find Us"/>
+</div>
+<div class="group">
+<label for="mapCoverFile">Map background cover photo</label>
+<div class="upload">
+                  Upload one image that fills the Map section background like the main header.
+                  <input accept="image/png,image/jpeg,image/webp" id="mapCoverFile" type="file"/>
+</div>
+<button class="btn btn-secondary btn-small" id="removeMapCoverBtn" style="width:100%;margin-top:8px" type="button">Remove Map Cover</button>
+</div>
+<div class="group">
+<label for="businessAddress">Business address</label>
+<textarea class="textarea" id="businessAddress"></textarea>
+</div>
+<div class="group">
+<label for="mapEmbedUrl">Map search location</label>
+<textarea class="textarea" id="mapEmbedUrl" placeholder="Type Your Address"></textarea>
+</div>
+<div class="tiny">Enter a street address, business name, city, or landmark. Bluvixa creates the embedded map automatically. Leave this blank to use the business address above.</div>
+</section>
+<section class="panel backend-only hidden" data-panel="billing">
+<div class="notice" id="billingNotice"></div>
+<div class="group">
+<label for="subscriptionStatus">Subscription status</label>
+<select class="select" id="subscriptionStatus">
+<option value="trialing">Trialing</option>
+<option value="active">Active</option>
+<option value="past_due">Past due</option>
+<option value="canceled">Canceled</option>
+<option value="bought_out">Bought out</option>
+</select>
+</div>
+<button class="btn btn-primary backend-only" id="annualCheckoutBtn" style="width:100%;margin-bottom:9px" type="button">Start Annual Subscription</button>
+<button class="btn btn-secondary backend-only" id="buyoutBtn" style="width:100%" type="button">Buy Out Website</button>
+</section>
+<section class="panel domain-panel" data-panel="project">
+<div class="notice">
+                Choose a free Bluvixa address or connect a domain you already own. User IDs and website IDs are created automatically by the backend and are hidden from customers.
+              </div>
+<div class="group">
+<label>Website domain</label>
+<label class="domain-choice">
+<input checked="" id="domainModeSubdomain" name="domainMode" type="radio" value="subdomain">
+<span>
+<strong>Use a Bluvixa address</strong>
+<small>Fastest option. No DNS setup required.</small>
+</span>
+</input></label>
+<label class="domain-choice">
+<input id="domainModeCustom" name="domainMode" type="radio" value="custom">
+<span>
+<strong>Connect my own domain</strong>
+<small>Use a domain purchased from any registrar.</small>
+</span>
+</input></label>
+</div>
+<div id="subdomainSettings">
+<div class="group">
+<label for="projectSlug">Bluvixa website address</label>
+<div class="domain-input-row">
+<input class="input" id="projectSlug" value="">
+<span>.bluvixa.com</span>
+</input></div>
+<div class="domain-preview" id="subdomainPreview">https://summit-auto-care.bluvixa.com</div>
+</div>
+<button class="btn btn-secondary" id="checkSubdomainBtn" style="width:100%" type="button">
+                  Check Address
+                </button>
+</div>
+<div class="hidden" id="customDomainSettings">
+<div class="group">
+<label for="customDomain">Domain you own</label>
+<input class="input" id="customDomain" placeholder="example.com" value="">
+</input></div>
+<button class="btn btn-secondary" id="connectDomainBtn" style="width:100%;margin-bottom:10px" type="button">
+                  Connect Domain
+                </button>
+<div class="domain-status-card" id="domainStatusCard">
+<div class="domain-status-line">
+<strong>Connection status</strong>
+<span class="status-pill waiting" id="domainStatusPill">Not connected</span>
+</div>
+<p id="domainStatusMessage">Enter your domain and select Connect Domain.</p>
+</div>
+<div class="dns-panel hidden" id="dnsPanel">
+<h4>DNS records to add</h4>
+<p>Add these records at the company where you purchased your domain.</p>
+<div class="dns-record">
+<div><small>Type</small><strong>A</strong></div>
+<div><small>Host</small><strong>@</strong></div>
+<div><small>Points to</small><strong>76.76.21.21</strong></div>
+</div>
+<div class="dns-record">
+<div><small>Type</small><strong>CNAME</strong></div>
+<div><small>Host</small><strong>www</strong></div>
+<div><small>Points to</small><strong>cname.bluvixa.com</strong></div>
+</div>
+<button class="btn btn-primary" id="verifyDomainBtn" style="width:100%;margin-top:10px" type="button">
+                    Verify DNS Connection
+                  </button>
+</div>
+</div>
+<div class="published-address-card">
+<small>Website will publish to</small>
+<strong id="publishedAddress">https://summit-auto-care.bluvixa.com</strong>
+</div>
+<button class="btn btn-secondary" id="loadDraftBtn" style="width:100%;margin-bottom:9px" type="button">
+                Load Saved Draft
+              </button>
+<button class="btn btn-danger" id="resetBtn" style="width:100%" type="button">
+                Reset Builder
+              </button>
+</section>
+<div class="sidebar-footer">
+<button class="btn btn-secondary" id="saveBtn" type="button">Save Draft</button>
+<button class="btn btn-primary backend-only" id="publishBtn" type="button">Publish</button>
+</div>
+</aside>
+<div class="builder-resizer" id="builderResizer" role="separator" aria-label="Resize website editor" aria-orientation="vertical" tabindex="0"></div>
+<section class="workspace">
+<div class="toolbar">
+<div class="toolbar-left">
+
+<button class="device active" data-device="desktop" type="button">▰</button>
+<button class="device" data-device="tablet" type="button">▯</button>
+<button class="device" data-device="mobile" type="button">▯</button>
+</div>
+<div class="status builder-save-status" title="Bluvixa automatically saves your active website to your cloud account.">
+<b>●</b> <span id="saveStatus">Autosave is on</span>
+</div>
+</div>
+<div class="preview-wrap">
+<article class="preview" id="preview">
+<header class="site-header">
+<div class="site-brand-wrap">
+<div class="site-logo-frame" id="previewLogoFrame">
+<img alt="Business logo" id="previewLogoImage"/>
+<span id="previewLogoPlaceholder">YOUR LOGO</span>
+</div>
+<div class="site-brand" id="previewBusinessName">YOUR BUSINESS</div>
+</div>
+<button class="site-menu-toggle" id="previewMenuToggle" type="button" aria-label="Open website navigation" aria-expanded="false">
+<span></span><span></span><span></span>
+</button>
+<nav class="site-nav" id="previewSiteNav" aria-label="Website sections">
+<button type="button" data-preview-target="previewHero">Home</button>
+<button type="button" data-preview-target="previewAboutSection">About</button>
+<button type="button" data-preview-target="previewFeaturedSection">Services</button>
+<button type="button" data-preview-target="previewGallerySection">Display</button>
+<button type="button" data-preview-target="previewMapSection">Location</button>
+</nav>
+<a class="site-call" href="tel:+15595550199" id="previewCallButton">Call Now</a>
+</header>
+<section class="site-hero" id="previewHero">
+<div class="site-hero-copy">
+<div class="kicker" id="previewTagline"></div>
+<h2 id="previewHeadline">Your headline appears here.</h2>
+<div class="bio-stack" id="previewHeaderBios"></div>
+<a class="hero-cta" href="tel:+15595550199" id="previewHeroCall">Call Now</a>
+</div>
+</section>
+<section class="scroll-wrap">
+<div class="scroll-row" id="previewScroll"></div>
+</section>
+<section class="business cover-background" id="previewAboutSection">
+<div>
+<h3 id="previewAboutHeading">About Our Business</h3>
+<p id="previewBusinessBio"></p>
+</div>
+<div class="info">
+<div><strong>Phone:</strong> <span id="previewPhone"></span></div>
+<div><strong>Email:</strong> <span id="previewEmail"></span></div>
+<div><strong>Hours:</strong> <span id="previewHours"></span></div>
+<div><strong>Location:</strong> <span id="previewAddress"></span></div>
+</div>
+</section>
+<section class="content-section cover-background" id="previewFeaturedSection">
+<div class="section-cover hidden" id="previewFeaturedCover" aria-hidden="true"></div>
+<div class="section-label">
+<div>
+<h3 id="previewFeaturedHeading" hidden></h3>
+<p id="previewFeaturedDescription"></p>
+</div>
+<small id="previewPhotoCount" hidden></small>
+</div>
+<div class="cards" id="previewPhotoGrid"></div>
+</section>
+<section class="gallery-section" id="previewGallerySection">
+<div class="section-cover hidden" id="previewGalleryCover" aria-hidden="true"></div>
+<div class="section-label">
+<div>
+<h3 id="previewGalleryHeading" hidden></h3>
+<p id="previewGalleryDescription"></p>
+</div>
+<small id="previewGalleryCount" hidden></small>
+</div>
+<div class="gallery-grid" id="previewGalleryGrid"></div>
+</section>
+<section class="map-section cover-background" id="previewMapSection">
+<div class="map-copy">
+<h3 id="previewMapHeading"></h3>
+<p id="previewMapAddress"></p>
+<a class="hero-cta" href="tel:+15595550199" id="previewMapCall">Call Now</a>
+</div>
+<iframe class="map-frame" id="previewMapFrame" title="Business location"></iframe>
+</section>
+<footer class="site-footer">
+<span id="previewFooter"></span>
+<span>Website powered by Bluvixa</span>
+</footer>
+</article>
+</div>
+</section>
+</div>
+</div>
+</section>
+
+
+<section class="app-page billing-page backend-only" id="billing" data-page="billing">
+<div class="member-shell">
+<aside class="member-sidebar">
+<div class="sidebar-user"><div class="sidebar-avatar">B</div><div><small>BLUVIXA MEMBER</small><strong>Billing center</strong></div></div>
+<nav>
+<a href="#projects"><span>▦</span> My Websites</a>
+<a href="#drafts"><span>▤</span> Saved Drafts</a>
+<a href="#builder"><span>✎</span> Website Builder</a>
+<a class="active" href="#billing"><span>$</span> Billing & Ownership</a>
+<a href="#domains"><span>◎</span> Domains & Publishing</a>
+</nav>
+</aside>
+
+<div class="member-content">
+<div class="member-page-head">
+<div>
+<span class="workspace-kicker">BILLING & OWNERSHIP</span>
+<h1>Simple subscription access. Permanent website ownership.</h1>
+<p>Your Bluvixa subscription and website buyouts are separate so customers always know exactly what they are paying for.</p>
+</div>
+<button class="btn btn-primary backend-only" id="manageBillingBtn" type="button">Manage Subscription</button>
+</div>
+
+<div class="billing-explanation-grid">
+<article class="billing-explainer-card subscription">
+<span class="billing-step">1</span>
+<small>BLUVIXA SUBSCRIPTION</small>
+<h2>Build and manage websites</h2>
+<p>Your subscription gives you access to the builder, saved projects, drafts, cloud tools, publishing controls, and account features.</p>
+<ul>
+<li>Build as many draft websites as you need.</li>
+<li>Your selected plan controls the features available inside each website.</li>
+<li>Canceling the subscription ends platform access after the paid period.</li>
+<li>A subscription does not automatically transfer raw-code ownership.</li>
+</ul>
+<div class="current-plan-box"><span>Current plan</span><strong id="dashboardSubscriptionPlan">No active plan</strong><small id="dashboardSubscriptionStatus">Not subscribed</small><small id="dashboardSubscriptionDate">Renewal information unavailable</small></div>
+</article>
+
+<article class="billing-explainer-card buyout">
+<span class="billing-step">2</span>
+<small>WEBSITE BUYOUT</small>
+<h2>Own a specific finished website forever</h2>
+<p>A buyout is a one-time Stripe purchase attached to one website project. It unlocks that website’s downloadable code package permanently.</p>
+<ul>
+<li>Starter website buyout: <strong>$499</strong></li>
+<li>Professional website buyout: <strong>$599</strong></li>
+<li>Advanced website buyout: <strong>$699</strong></li>
+<li>Buying one website does not buy every website in the account.</li>
+</ul>
+<a class="btn btn-primary" href="#drafts">Choose a Website to Buy Out</a>
+</article>
+</div>
+
+<div class="billing-rule-card">
+<h2>What happens after a buyout?</h2>
+<div class="billing-rule-grid">
+<div><strong>Ownership saved permanently</strong><p>The website record stays marked as owned even if the subscription later ends.</p></div>
+<div><strong>Export unlocked</strong><p>The Saved Drafts page displays Download ZIP for that purchased website.</p></div>
+<div><strong>Continue editing</strong><p>While subscribed, you can continue editing and create later snapshots of the purchased site.</p></div>
+<div><strong>Hosting is separate</strong><p>Code ownership does not automatically include permanent hosting, domain registration, or future platform service.</p></div>
+</div>
+</div>
+
+<div class="member-plan-grid billing-plan-options">
+<article><small>STARTER</small><h3>$180/year</h3><span>$499 per website buyout</span><button class="btn btn-secondary memberPlanCheckout" data-plan="starter">Choose Starter</button></article>
+<article class="featured"><small>PROFESSIONAL</small><h3>$348/year</h3><span>$599 per website buyout</span><button class="btn btn-primary memberPlanCheckout" data-plan="professional">Choose Professional</button></article>
+<article><small>ADVANCED</small><h3>$588/year</h3><span>$699 per website buyout</span><button class="btn btn-secondary memberPlanCheckout" data-plan="advanced">Choose Advanced</button></article>
+</div>
+</div>
+</div>
+</section>
+
+
+
+<section class="app-page domains-page backend-only" id="domains" data-page="domains">
+  <div class="member-shell">
+    <aside class="member-sidebar">
+      <div class="sidebar-user"><div class="sidebar-avatar">B</div><div><small>BLUVIXA MEMBER</small><strong>Domain center</strong></div></div>
+      <nav>
+        <a href="#projects"><span>▦</span> My Websites</a>
+        <a href="#drafts"><span>▤</span> Saved Drafts</a>
+        <a href="#builder"><span>✎</span> Website Builder</a>
+        <a href="#billing"><span>$</span> Billing &amp; Ownership</a>
+        <a class="active" href="#domains"><span>◎</span> Domains &amp; Publishing</a>
+      </nav>
+    </aside>
+
+    <div class="member-content">
+      <div class="member-page-head">
+        <div>
+          <span class="workspace-kicker">DOMAINS &amp; PUBLISHING</span>
+          <h1>Choose a Bluvixa address or connect your own domain.</h1>
+          <p>Every website can keep a free Bluvixa address and optionally use a verified custom domain with automatic HTTPS.</p>
+        </div>
+        <button class="btn btn-secondary" id="dmRefreshAllBtn" type="button">Refresh Status</button>
+      </div>
+
+      <div class="dm-status-overview" aria-live="polite">
+        <article><span class="dm-overview-icon">B</span><div><small>BLUVIXA ADDRESS</small><strong id="dmOverviewBluvixa">Not reserved</strong><p id="dmOverviewBluvixaDetail">Choose a website below.</p></div></article>
+        <article><span class="dm-overview-icon">◎</span><div><small>CUSTOM DOMAIN</small><strong id="dmOverviewDomain">Not connected</strong><p id="dmOverviewDomainDetail">Optional custom domain.</p></div></article>
+        <article><span class="dm-overview-icon">🔒</span><div><small>SSL</small><strong id="dmOverviewSsl">Waiting</strong><p id="dmOverviewSslDetail">HTTPS activates after verification.</p></div></article>
+      </div>
+
+      <div class="dm-project-picker dm-card">
+        <div class="dm-card-head">
+          <div><small>WEBSITE</small><h2>Select the website to manage</h2><p>Both address types below belong to this selected website.</p></div>
+          <span>1</span>
+        </div>
+        <label for="dmProjectSelect">Website project</label>
+        <select id="dmProjectSelect"></select>
+      </div>
+
+      <div class="dm-dual-grid">
+        <section class="dm-card dm-bluvixa-card">
+          <div class="dm-card-head">
+            <div><small>FREE BLUVIXA ADDRESS</small><h2>Reserve your platform address</h2><p>No DNS setup is required.</p></div>
+            <span>B</span>
+          </div>
+
+          <label for="dmSlugInput">Requested address</label>
+          <div class="dm-slug-row">
+            <span>bluvixa.com/site/</span>
+            <input id="dmSlugInput" placeholder="your-business" autocomplete="off" spellcheck="false"/>
+          </div>
+
+          <div class="dm-actions">
+            <button class="btn btn-secondary" id="dmCheckSlugBtn" type="button">Check Availability</button>
+            <button class="btn btn-primary" id="dmReserveSlugBtn" type="button">Reserve Address</button>
+          </div>
+
+          <div class="dm-inline-message" id="dmSlugMessage"></div>
+
+          <div class="dm-current-address">
+            <span>Reserved Bluvixa address</span>
+            <a id="dmBluvixaAddress" href="#" target="_blank" rel="noopener">Not reserved</a>
+          </div>
+        </section>
+
+        <section class="dm-card">
+          <div class="dm-card-head">
+            <div><small>CUSTOM DOMAIN</small><h2>Connect a domain you own</h2><p>Use a domain purchased from any registrar.</p></div>
+            <span>◎</span>
+          </div>
+
+          <label for="dmDomainInput">Custom domain</label>
+          <div class="dm-domain-input-row">
+            <input id="dmDomainInput" inputmode="url" autocomplete="url" spellcheck="false" placeholder="example.com"/>
+            <button class="btn btn-primary" id="dmConnectBtn" type="button">Connect Domain</button>
+          </div>
+          <div class="dm-inline-message" id="dmConnectMessage"></div>
+        </section>
+      </div>
+
+      <div class="dm-layout">
+        <div class="dm-main">
+          <article class="dm-card">
+            <div class="dm-card-head">
+              <div><small>DNS INSTRUCTIONS</small><h2>Add these records</h2><p>Only required for a custom domain.</p></div>
+              <span>2</span>
+            </div>
+
+            <div class="dm-empty" id="dmDnsEmpty">Connect a custom domain to reveal DNS records.</div>
+
+            <div class="dm-dns-records hidden" id="dmDnsRecords">
+              <div class="dm-dns-record">
+                <div><small>TYPE</small><strong id="dmDnsType1">A</strong></div>
+                <div><small>HOST</small><strong id="dmDnsHost1">@</strong></div>
+                <div><small>VALUE</small><strong id="dmDnsValue1">76.76.21.21</strong></div>
+                <button class="dm-copy-btn" type="button" data-copy-target="dmDnsValue1">Copy</button>
+              </div>
+              <div class="dm-dns-record">
+                <div><small>TYPE</small><strong id="dmDnsType2">CNAME</strong></div>
+                <div><small>HOST</small><strong id="dmDnsHost2">www</strong></div>
+                <div><small>VALUE</small><strong id="dmDnsValue2">cname.vercel-dns.com</strong></div>
+                <button class="dm-copy-btn" type="button" data-copy-target="dmDnsValue2">Copy</button>
+              </div>
+              <div class="dm-dns-record hidden" id="dmVerificationRecord">
+                <div><small>TYPE</small><strong>TXT</strong></div>
+                <div><small>HOST</small><strong id="dmVerificationHost">_vercel</strong></div>
+                <div><small>VALUE</small><strong id="dmVerificationValue"></strong></div>
+                <button class="dm-copy-btn" type="button" data-copy-target="dmVerificationValue">Copy</button>
+              </div>
+              <div class="dm-dns-help">
+                <strong>Important</strong>
+                <p>Do not remove MX records used by email. If Cloudflare proxying prevents verification, temporarily set the relevant record to DNS only.</p>
+              </div>
+            </div>
+          </article>
+
+          <article class="dm-card">
+            <div class="dm-card-head">
+              <div><small>VERIFICATION</small><h2>Verify DNS and HTTPS</h2><p>Retry after DNS records have propagated.</p></div>
+              <span>3</span>
+            </div>
+
+            <div class="dm-live-status">
+              <span class="dm-live-dot waiting" id="dmLiveDot"></span>
+              <div><strong id="dmLiveTitle">Not connected</strong><p id="dmLiveMessage">Enter a custom domain and select Connect Domain.</p></div>
+              <span class="dm-status-pill waiting" id="dmStatusPill">Not Connected</span>
+            </div>
+
+            <div class="dm-actions">
+              <button class="btn btn-primary" id="dmVerifyBtn" type="button">Verify Domain</button>
+              <button class="btn btn-secondary" id="dmRetryBtn" type="button">Retry Verification</button>
+              <button class="btn btn-danger" id="dmRemoveBtn" type="button">Remove Custom Domain</button>
+            </div>
+            <div class="dm-inline-message" id="dmStatusMessage"></div>
+          </article>
+        </div>
+
+        <aside class="dm-side">
+          <article class="dm-card">
+            <small>CONNECTION DETAILS</small>
+            <h3 id="dmSideDomain">No custom domain</h3>
+            <dl class="dm-details-list">
+              <div><dt>Bluvixa address</dt><dd id="dmDetailBluvixa">Not reserved</dd></div>
+              <div><dt>Domain status</dt><dd id="dmDetailDomainStatus">Not connected</dd></div>
+              <div><dt>DNS verified</dt><dd id="dmDetailDnsStatus">No</dd></div>
+              <div><dt>SSL status</dt><dd id="dmDetailSslStatus">Waiting</dd></div>
+              <div><dt>Verified at</dt><dd id="dmDetailVerifiedAt">—</dd></div>
+              <div><dt>Last checked</dt><dd id="dmDetailLastChecked">—</dd></div>
+            </dl>
+          </article>
+
+          <article class="dm-card">
+            <small>AUTOMATIC CHECKS</small>
+            <h3>Connection monitoring</h3>
+            <p>Pending custom domains refresh automatically while this page is open.</p>
+            <label class="dm-toggle-row">
+              <input id="dmAutoRefreshToggle" type="checkbox" checked/>
+              <span><strong>Automatic refresh</strong><small>Check every 30 seconds</small></span>
+            </label>
+          </article>
+        </aside>
+      </div>
+
+      <section class="publishing-center" aria-labelledby="publishingCenterTitle">
+        <div class="publishing-center-head">
+          <div><small>PUBLISHING CENTER</small><h2 id="publishingCenterTitle">Launch and manage your live website.</h2><p>Publish, view, copy, and share the selected website.</p></div>
+          <label class="publishing-site-picker"><span>Website</span><select id="publishingCenterProjectSelect"></select></label>
+        </div>
+
+        <div id="publishingCenterEmpty" class="empty-state hidden">Create a website before using the Publishing Center.</div>
+
+        <div id="publishingCenterWorkspace" class="publishing-center-workspace">
+          <article class="publishing-status-hero">
+            <div class="publishing-status-copy">
+              <div class="publishing-status-line"><span id="publishingStatusDot" class="publishing-status-dot"></span><strong id="publishingStatusText">Draft</strong></div>
+              <h3 id="publishingCenterProjectName">Website</h3>
+              <p id="publishingCenterMessage">This website has not been published yet.</p>
+              <div class="publishing-live-url"><span>Live address</span><a id="publishingLiveUrl" href="#" target="_blank" rel="noopener">Not published</a></div>
+            </div>
+            <div class="publishing-primary-actions">
+              <button class="btn btn-primary" id="publishingPrimaryBtn" type="button">Publish Now</button>
+              <a class="btn btn-secondary hidden" id="publishingViewLiveBtn" href="#" target="_blank" rel="noopener">View Live</a>
+            </div>
+          </article>
+
+          <div class="publishing-metrics-grid">
+            <article><span>STATUS</span><strong id="publishingMetricStatus">Draft</strong><small id="publishingMetricStatusDetail">Not publicly visible</small></article>
+            <article><span>LAST PUBLISHED</span><strong id="publishingMetricDate">Never</strong><small>Latest confirmed deployment</small></article>
+            <article><span>DOMAIN</span><strong id="publishingMetricDomain">Bluvixa address</strong><small id="publishingMetricDomainDetail">No custom domain connected</small><span class="dm-mini-badge waiting" id="dmPublishingDomainBadge">Not Connected</span></article>
+            <article><span>SSL</span><strong id="publishingMetricSsl">Waiting</strong><small id="dmPublishingSslDetail">HTTPS activates after verification</small></article>
+          </div>
+
+          <div class="publishing-action-grid">
+            <article class="publishing-panel">
+              <div class="publishing-panel-head"><div><small>LINK TOOLS</small><h3>Share your website</h3></div></div>
+              <div class="publishing-link-box"><input id="publishingShareUrl" readonly value="Publish the website to create a public link"><button class="btn btn-secondary" id="copyPublishedLinkBtn" type="button">Copy Link</button></div>
+              <div class="publishing-inline-actions"><button class="btn btn-secondary" id="sharePublishedSiteBtn" type="button">Share Website</button><button class="btn btn-secondary" id="openDomainForPublishingBtn" type="button">Manage Domain</button></div>
+              <div class="domain-result-message" id="publishingShareMessage"></div>
+            </article>
+
+            <article class="publishing-panel">
+              <div class="publishing-panel-head"><div><small>DEPLOYMENT</small><h3>Publishing progress</h3></div><span id="publishingProgressPercent">0%</span></div>
+              <div class="publishing-progress-track"><span id="publishingProgressBar"></span></div>
+              <div class="publishing-step-list">
+                <div data-publish-step="save"><span>1</span><strong>Save latest changes</strong><small>Waiting</small></div>
+                <div data-publish-step="media"><span>2</span><strong>Confirm cloud media</strong><small>Waiting</small></div>
+                <div data-publish-step="build"><span>3</span><strong>Prepare live website</strong><small>Waiting</small></div>
+                <div data-publish-step="deploy"><span>4</span><strong>Publish securely</strong><small>Waiting</small></div>
+              </div>
+            </article>
+          </div>
+
+          <article class="publishing-panel publishing-version-panel">
+            <div class="publishing-panel-head"><div><small>VERSION HISTORY</small><h3>Saved website versions</h3></div><a class="btn btn-secondary" href="#drafts">Manage All Drafts</a></div>
+            <div id="publishingVersionHistory" class="publishing-version-history"></div>
+          </article>
+        </div>
+      </section>
+    </div>
+  </div>
+</section>
+
+
+<section class="app-page pricing-page" id="pricing" data-page="pricing">
+<div class="pricing-inner">
+<div class="container">
+<div class="section-head">
+<h2>Choose Your Package</h2>
+<p>Subscriptions include continued access to the Bluvixa service. A separate one-time buyout unlocks ownership and export of the completed raw-code website.</p>
+<p><strong>All prices are listed and charged in U.S. dollars (USD).</strong> Payments are processed securely by Stripe. Major credit and debit cards accepted.</p>
+</div>
+<div class="pricing-grid">
+<article class="pricing-card glass">
+<strong>Starter</strong>
+<div class="price">$15 <small>/ month</small></div>
+<div class="annual">Billed annually at $180</div>
+<div class="buyout">Website buyout: $499</div>
+<div class="features">
+<span>✓ 10 photo or video uploads with descriptions</span>
+<span>✓ 1 header bio</span>
+<span>✓ Call button</span>
+<span>✓ Business information</span>
+<span>✓ Google Maps pin</span>
+<span>— No gallery section</span>
+<span>🔒 Code export requires $499 buyout</span>
+</div>
+<button class="btn btn-secondary pricingTrial" data-plan="starter" type="button">Start Free Trial</button>
+</article>
+<article class="pricing-card glass popular">
+<div class="popular-label">MOST POPULAR</div>
+<strong>Professional</strong>
+<div class="price">$29 <small>/ month</small></div>
+<div class="annual">Billed annually at $348</div>
+<div class="buyout">Website buyout: $599</div>
+<div class="features">
+<span>✓ 15 photo or video uploads with descriptions</span>
+<span>✓ 1 header bio</span>
+<span>✓ 12 gallery photo or video uploads</span>
+<span>✓ Call button</span>
+<span>✓ Business information</span>
+<span>✓ Google Maps pin</span>
+<span>🔒 Code export requires $599 buyout</span>
+</div>
+<button class="btn btn-primary pricingTrial" data-plan="professional" type="button">Start Free Trial</button>
+</article>
+<article class="pricing-card glass">
+<strong>Advanced</strong>
+<div class="price">$49 <small>/ month</small></div>
+<div class="annual">Billed annually at $588</div>
+<div class="buyout">Website buyout: $699</div>
+<div class="features">
+<span>✓ 20 photo or video uploads with descriptions</span>
+<span>✓ 1 header bio</span>
+<span>✓ 12 gallery photo or video uploads</span>
+<span>✓ Full design controls</span>
+<span>✓ Call button</span>
+<span>✓ Business information</span>
+<span>✓ Google Maps pin</span>
+<span>🔒 Code export requires $699 buyout</span>
+</div>
+<button class="btn btn-secondary pricingTrial" data-plan="advanced" type="button">Start Free Trial</button>
+</article>
+</div>
+</div>
+</div>
+</section>
+</main>
+
+<div class="modal hidden" id="authModal">
+<div class="modal-card auth-card">
+<div class="modal-head"><div><h3 id="authTitle">Sign in to Bluvixa</h3><div class="tiny">Access your dashboard, drafts, subscription, and websites.</div></div><button class="btn btn-secondary btn-small" id="closeAuthBtn" type="button">Close</button></div>
+<div class="auth-tabs"><button class="auth-tab active" id="showSignInTab" type="button">Sign In</button><button class="auth-tab" id="showSignUpTab" type="button">Create Account</button></div>
+<form id="authForm">
+<div class="group hidden" id="fullNameGroup"><label for="authFullName">Full name</label><input autocomplete="name" class="input" id="authFullName"/></div>
+<div class="group"><label for="authEmail">Email</label><input autocomplete="email" class="input" id="authEmail" required type="email"/></div>
+<div class="group"><label for="authPassword">Password</label><input autocomplete="current-password" class="input" id="authPassword" minlength="8" required type="password"/></div>
+<button class="btn btn-primary" id="authSubmitBtn" style="width:100%" type="submit">Sign In</button>
+</form>
+<button class="text-button" id="forgotPasswordBtn" type="button">Forgot your password?</button><div class="notice hidden" id="authMessage"></div>
+</div>
+</div>
+<div class="modal hidden backend-only" id="backendModal"><div class="modal-card"><div class="modal-head"><div><h3>Backend Controls</h3><div class="tiny">Development-only preview.</div></div><button class="btn btn-secondary btn-small" id="closeBackendBtn" type="button">Close</button></div><div class="backend-grid"><div class="backend-card"><strong>Authentication</strong><small>Supabase Auth</small></div><div class="backend-card"><strong>Database</strong><small>Supabase Postgres</small></div><div class="backend-card"><strong>Storage</strong><small>Supabase Storage</small></div><div class="backend-card"><strong>Billing</strong><small>Stripe</small></div></div><button class="btn btn-primary" id="refreshJsonBtn" style="width:100%;margin-bottom:12px" type="button">Refresh Backend JSON</button><pre id="backendJson"></pre></div></div>
+<div class="toast" id="toast"></div>
+<!-- Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<!-- Platform -->
+<!-- Domains -->
+<!-- Main App -->
+<script defer src="app.js?v=20260728-consolidated"></script>
+</body>
+</html>
