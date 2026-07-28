@@ -708,8 +708,7 @@ async function initAuth(){
   try{
     var config=await withTimeout(api("/api/config"),10000,"Configuration");
     if(!config.supabaseUrl||!config.supabaseAnonKey){
-      closeLoading();
-      return;
+      throw new Error("Supabase configuration is incomplete. Check /api/config and Vercel environment variables.");
     }
     if(!window.supabase)throw new Error("Supabase client did not load.");
     supabaseClient=window.supabase.createClient(config.supabaseUrl,config.supabaseAnonKey);
