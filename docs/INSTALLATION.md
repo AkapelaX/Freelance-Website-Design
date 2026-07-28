@@ -40,3 +40,8 @@ The project table is named `public.website_projects` and uses:
 - `updated_at`
 
 Change the queries in `api/_lib/domain-utils.js` if the production table or ownership column uses different names.
+
+
+## Hobby plan function limit
+
+This corrected package adds only one Vercel serverless function: `api/domain.js`. The shared helper is stored in `lib/domain-utils.js` and does not create an API endpoint.

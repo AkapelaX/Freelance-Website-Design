@@ -190,7 +190,7 @@
     }
     if (!quiet) message("dmStatusMessage", "Checking domain status…", "info");
     try {
-      const data = await api(`/api/domain-status?project_id=${encodeURIComponent(projectId)}`);
+      const data = await api(`/api/domain?action=status&project_id=${encodeURIComponent(projectId)}`);
       setState(data.domain);
       if (!quiet) message("dmStatusMessage", "Domain status refreshed.", "success");
     } catch (error) {
@@ -201,7 +201,7 @@
   async function loadProjects() {
     setBusy(true);
     try {
-      const data = await api("/api/domain-status");
+      const data = await api("/api/domain?action=status");
       projects = Array.isArray(data.projects) ? data.projects : [];
       populateProjects();
       if (projects.length) await loadStatus({ quiet: true });
@@ -222,7 +222,7 @@
     setBusy(true);
     message("dmConnectMessage", "Adding the domain to Vercel…", "info");
     try {
-      const data = await api("/api/connect-domain", {
+      const data = await api("/api/domain?action=connect", {
         method: "POST",
         body: JSON.stringify({ project_id: projectId, domain })
       });
@@ -243,7 +243,7 @@
     setBusy(true);
     message("dmStatusMessage", "Checking DNS and SSL status…", "info");
     try {
-      const data = await api("/api/check-domain", {
+      const data = await api("/api/domain?action=check", {
         method: "POST",
         body: JSON.stringify({ project_id: projectId })
       });
@@ -266,7 +266,7 @@
     setBusy(true);
     message("dmStatusMessage", "Removing the domain…", "info");
     try {
-      const data = await api("/api/remove-domain", {
+      const data = await api("/api/domain?action=remove", {
         method: "POST",
         body: JSON.stringify({ project_id: projectId })
       });

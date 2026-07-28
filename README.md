@@ -24,13 +24,16 @@ This package adds a self-contained custom-domain workflow to the existing Bluvix
 - Supabase SQL migration
 - Installation documentation
 
-## API routes
+## API route
 
-- `POST /api/connect-domain`
-- `POST /api/check-domain`
-- `POST` or `DELETE /api/remove-domain`
-- `GET /api/domain-status`
-- `GET /api/domain-status?project_id=...`
+This Hobby-plan-safe version uses one serverless function:
+
+- `GET /api/domain?action=status`
+- `POST /api/domain?action=connect`
+- `POST /api/domain?action=check`
+- `POST /api/domain?action=remove`
+
+The shared helper lives in `/lib/domain-utils.js`, outside `/api`, so it is not deployed as another function.
 
 All routes require a valid Supabase bearer token. The service-role key and Vercel token remain server-side.
 
