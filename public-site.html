@@ -555,29 +555,69 @@ footer small{opacity:.55}
     setText("notFoundMessage",message||"This website is not published.");
   }
 
-  function normalizeMapEmbedUrl(mapUrl,address){
-    const raw=value(mapUrl).trim();
+  function normalizeMapEmbedUrl(mapInput,address){
+    let raw=value(mapInput).trim();
+    const cleanAddress=value(address).trim();
+
+    /*
+      Accept a full iframe pasted from Google Maps and extract only its src.
+    */
+    if(/<iframe/i.test(raw)){
+      const srcMatch=raw.match(/\bsrc\s*=\s*["']([^"']+)["']/i);
+      raw=srcMatch?srcMatch[1]:"";
+    }
 
     if(raw){
-      if(/google\.[^/]+\/maps\/embed/i.test(raw)||/[?&]output=embed(?:&|$)/i.test(raw)){
+      /*
+        A real Google Maps embed URL can be used directly.
+      */
+      if(
+        /google\.[^/]+\/maps\/embed/i.test(raw) ||
+        /google\.com\/maps\/embed/i.test(raw) ||
+        /[?&]output=embed(?:&|$)/i.test(raw)
+      ){
         return raw;
       }
 
-      if(/^https?:\/\/(?:www\.)?google\.[^/]+\/maps/i.test(raw)){
-        const placeMatch=raw.match(/\/place\/([^/?#]+)/i);
-        if(placeMatch){
-          return `https://www.google.com/maps?q=${encodeURIComponent(decodeURIComponent(placeMatch[1]).replace(/\+/g," "))}&output=embed`;
+      /*
+        Convert regular Google Maps links into an embeddable search URL.
+      */
+      try{
+        const parsed=new URL(raw,location.origin);
+
+        const queryText=
+          parsed.searchParams.get("query") ||
+          parsed.searchParams.get("q") ||
+          parsed.searchParams.get("destination") ||
+          parsed.searchParams.get("daddr");
+
+        if(queryText){
+          return `https://www.google.com/maps?q=${encodeURIComponent(queryText)}&output=embed`;
         }
+      }catch(_error){}
+
+      const placeMatch=raw.match(/\/place\/([^/?#]+)/i);
+      if(placeMatch){
+        const placeName=decodeURIComponent(placeMatch[1]).replace(/\+/g," ");
+        return `https://www.google.com/maps?q=${encodeURIComponent(placeName)}&output=embed`;
       }
 
-      if(validHttpUrl(raw)&&!address){
-        return raw;
+      const searchMatch=raw.match(/\/maps\/search\/([^/?#]+)/i);
+      if(searchMatch){
+        const searchName=decodeURIComponent(searchMatch[1]).replace(/\+/g," ");
+        return `https://www.google.com/maps?q=${encodeURIComponent(searchName)}&output=embed`;
       }
     }
 
-    return address
-      ?`https://www.google.com/maps?q=${encodeURIComponent(address)}&output=embed`
-      :"";
+    /*
+      The saved business address is the most reliable fallback and works
+      even when the user pasted a mobile Google Maps share link.
+    */
+    if(cleanAddress){
+      return `https://www.google.com/maps?q=${encodeURIComponent(cleanAddress)}&output=embed`;
+    }
+
+    return "";
   }
 
   function renderMedia(items,containerId){
@@ -730,7 +770,22 @@ footer small{opacity:.55}
     renderMedia(photos,"photoGrid");
     renderMedia(gallery,"galleryGrid");
 
-    const mapUrl=normalizeMapEmbedUrl(firstValue(s.mapUrl,design.mapUrl,business.mapUrl),business.address);
+    const mapUrl=normalizeMapEmbedUrl(
+      firstValue(
+        s.mapEmbedUrl,
+        s.mapEmbed,
+        s.mapUrl,
+        s.mapLink,
+        design.mapEmbedUrl,
+        design.mapEmbed,
+        design.mapUrl,
+        design.mapLink,
+        business.mapEmbedUrl,
+        business.mapUrl,
+        business.mapLink
+      ),
+      business.address
+    );
     const hasContact=Boolean(mapUrl||business.address||mapCover||design.mapHeading);
 
     byId("contact").hidden=!hasContact;
