@@ -8,6 +8,7 @@
 <link href="hero-bluvixa-webicon.webp?v=5" rel="icon" type="image/webp"/>
 <link href="assets/bluvixa-favicon.png?v=5" rel="apple-touch-icon"/>
 <link href="style.css?v=20260727-v120" rel="stylesheet"/>
+<link href="domain-manager.css?v=20260727-v1" rel="stylesheet"/>
 <script>
 (function(){
   var host=location.hostname.toLowerCase();
@@ -728,162 +729,248 @@
 </section>
 
 
+
 <section class="app-page domains-page backend-only" id="domains" data-page="domains">
-<div class="member-shell">
-<aside class="member-sidebar">
-<div class="sidebar-user"><div class="sidebar-avatar">B</div><div><small>BLUVIXA MEMBER</small><strong>Domain center</strong></div></div>
-<nav>
-<a href="#projects"><span>▦</span> My Websites</a>
-<a href="#drafts"><span>▤</span> Saved Drafts</a>
-<a href="#builder"><span>✎</span> Website Builder</a>
-<a href="#billing"><span>$</span> Billing & Ownership</a>
-<a class="active" href="#domains"><span>◎</span> Domains & Publishing</a>
-</nav>
-</aside>
+  <div class="member-shell">
+    <aside class="member-sidebar">
+      <div class="sidebar-user">
+        <div class="sidebar-avatar">B</div>
+        <div><small>BLUVIXA MEMBER</small><strong>Domain center</strong></div>
+      </div>
+      <nav>
+        <a href="#projects"><span>▦</span> My Websites</a>
+        <a href="#drafts"><span>▤</span> Saved Drafts</a>
+        <a href="#builder"><span>✎</span> Website Builder</a>
+        <a href="#billing"><span>$</span> Billing &amp; Ownership</a>
+        <a class="active" href="#domains"><span>◎</span> Domains &amp; Publishing</a>
+      </nav>
+    </aside>
 
-<div class="member-content">
-<div class="member-page-head">
-<div>
-<span class="workspace-kicker">DOMAINS & PUBLISHING</span>
-<h1>Find an address and launch your website.</h1>
-<p>Search for domain ideas, reserve a Bluvixa subdomain, connect a domain you already own, and manage the publishing status of each website.</p>
-</div>
-</div>
+    <div class="member-content">
+      <div class="member-page-head">
+        <div>
+          <span class="workspace-kicker">CUSTOM DOMAIN MANAGER</span>
+          <h1>Connect your own domain without leaving Bluvixa.</h1>
+          <p>Choose a website, add a domain, follow the exact DNS instructions, and let Bluvixa verify the connection and HTTPS status.</p>
+        </div>
+        <button class="btn btn-secondary" id="dmRefreshAllBtn" type="button">Refresh Status</button>
+      </div>
 
-<div class="domain-search-card">
-<div>
-<small>DOMAIN SEARCH</small>
-<h2>Search domain ideas</h2>
-<p>Enter a business or website name. Bluvixa will generate domain suggestions and can use a connected domain-provider API for live availability.</p>
-</div>
-<div class="domain-search-form">
-<input id="domainSearchInput" placeholder="example: Andy's Mobile Auto Repair"/>
-<select id="domainExtensionSelect">
-<option value=".com">.com</option>
-<option value=".net">.net</option>
-<option value=".co">.co</option>
-<option value=".org">.org</option>
-<option value=".site">.site</option>
-</select>
-<button class="btn btn-primary" id="searchDomainsBtn" type="button">Search Domains</button>
-</div>
-<div class="domain-provider-note" id="domainProviderNote">Suggestions work immediately. Live registrar availability requires the optional <code>/api/domain-search</code> backend connection.</div>
-<div class="domain-results-grid" id="domainResultsGrid"></div>
-</div>
+      <div class="dm-status-overview" aria-live="polite">
+        <article>
+          <span class="dm-overview-icon">◎</span>
+          <div><small>DOMAIN</small><strong id="dmOverviewDomain">Not connected</strong><p id="dmOverviewDomainDetail">Choose a website below.</p></div>
+        </article>
+        <article>
+          <span class="dm-overview-icon">⌁</span>
+          <div><small>DNS</small><strong id="dmOverviewDns">Waiting</strong><p id="dmOverviewDnsDetail">No DNS check has run.</p></div>
+        </article>
+        <article>
+          <span class="dm-overview-icon">🔒</span>
+          <div><small>SSL</small><strong id="dmOverviewSsl">Waiting</strong><p id="dmOverviewSslDetail">HTTPS activates after verification.</p></div>
+        </article>
+      </div>
 
-<div class="domain-workspace-grid">
-<article class="domain-action-card">
-<small>FREE BLUVIXA ADDRESS</small>
-<h2>Reserve a Bluvixa subdomain</h2>
-<p>Each website receives a working Bluvixa address such as <strong>bluvixa.com/site/your-business</strong>.</p>
-<label>Website</label>
-<select id="subdomainProjectSelect"></select>
-<label>Requested address</label>
-<div class="inline-domain-field"><span>bluvixa.com/site/</span><input id="subdomainSlugInput" placeholder="your-business"/></div>
-<button class="btn btn-primary" id="reserveSubdomainBtn" type="button">Reserve Address</button>
-<div class="domain-result-message" id="subdomainResultMessage"></div>
-</article>
+      <div class="dm-layout">
+        <div class="dm-main">
+          <article class="dm-card">
+            <div class="dm-card-head">
+              <div><small>STEP 1</small><h2>Select a website</h2><p>Each custom domain belongs to one Bluvixa website project.</p></div>
+              <span>1</span>
+            </div>
+            <label for="dmProjectSelect">Website</label>
+            <select id="dmProjectSelect"></select>
+            <div class="dm-current-address">
+              <span>Current Bluvixa address</span>
+              <a id="dmCurrentAddress" href="#" target="_blank" rel="noopener">Not published</a>
+            </div>
+          </article>
 
-<article class="domain-action-card">
-<small>CUSTOM DOMAIN</small>
-<h2>Connect a domain you own</h2>
-<p>Select a website and enter a domain you own. Bluvixa will add it to the Vercel project and store the connection status.</p>
-<label>Website</label>
-<select id="customDomainProjectSelect"></select>
-<label>Custom domain</label>
-<input id="customDomainWorkspaceInput" placeholder="example.com"/>
-<button class="btn btn-primary" id="connectCustomDomainWorkspaceBtn" type="button">Prepare Connection</button>
-<div class="dns-workspace hidden" id="dnsWorkspace">
-<div><span>Type</span><strong>CNAME</strong></div>
-<div><span>Name</span><strong>www</strong></div>
-<div><span>Value</span><strong>cname.vercel-dns.com</strong></div>
-</div>
-<div class="domain-result-message" id="customDomainResultMessage"></div>
-</article>
-</div>
+          <article class="dm-card">
+            <div class="dm-card-head">
+              <div><small>STEP 2</small><h2>Enter the domain you own</h2><p>Do not include <code>https://</code>, a path, or a trailing slash.</p></div>
+              <span>2</span>
+            </div>
+            <label for="dmDomainInput">Custom domain</label>
+            <div class="dm-domain-input-row">
+              <input id="dmDomainInput" inputmode="url" autocomplete="url" spellcheck="false" placeholder="example.com"/>
+              <button class="btn btn-primary" id="dmConnectBtn" type="button">Connect Domain</button>
+            </div>
+            <div class="dm-inline-message" id="dmConnectMessage"></div>
+          </article>
 
-<section class="publishing-center" aria-labelledby="publishingCenterTitle">
-<div class="publishing-center-head">
-<div>
-<small>PUBLISHING CENTER</small>
-<h2 id="publishingCenterTitle">Launch and manage your live website.</h2>
-<p>Publish, view, copy, share, connect a domain, and review saved versions from one place.</p>
-</div>
-<label class="publishing-site-picker">
-<span>Website</span>
-<select id="publishingCenterProjectSelect"></select>
-</label>
-</div>
+          <article class="dm-card" id="dmDnsCard">
+            <div class="dm-card-head">
+              <div><small>STEP 3</small><h2>Add these DNS records</h2><p>Open the DNS settings at the company where the domain was purchased.</p></div>
+              <span>3</span>
+            </div>
 
-<div id="publishingCenterEmpty" class="empty-state hidden">Create a website before using the Publishing Center.</div>
+            <div class="dm-empty" id="dmDnsEmpty">Connect a domain to receive its DNS instructions.</div>
 
-<div id="publishingCenterWorkspace" class="publishing-center-workspace">
-<article class="publishing-status-hero">
-<div class="publishing-status-copy">
-<div class="publishing-status-line">
-<span id="publishingStatusDot" class="publishing-status-dot"></span>
-<strong id="publishingStatusText">Draft</strong>
-</div>
-<h3 id="publishingCenterProjectName">Website</h3>
-<p id="publishingCenterMessage">This website has not been published yet.</p>
-<div class="publishing-live-url">
-<span>Live address</span>
-<a id="publishingLiveUrl" href="#" target="_blank" rel="noopener">Not published</a>
-</div>
-</div>
-<div class="publishing-primary-actions">
-<button class="btn btn-primary" id="publishingPrimaryBtn" type="button">Publish Now</button>
-<a class="btn btn-secondary hidden" id="publishingViewLiveBtn" href="#" target="_blank" rel="noopener">View Live</a>
-</div>
-</article>
+            <div class="dm-dns-records hidden" id="dmDnsRecords">
+              <div class="dm-dns-record">
+                <div><small>TYPE</small><strong id="dmDnsType1">A</strong></div>
+                <div><small>HOST</small><strong id="dmDnsHost1">@</strong></div>
+                <div><small>VALUE</small><strong id="dmDnsValue1">76.76.21.21</strong></div>
+                <button class="dm-copy-btn" type="button" data-copy-target="dmDnsValue1">Copy</button>
+              </div>
+              <div class="dm-dns-record">
+                <div><small>TYPE</small><strong id="dmDnsType2">CNAME</strong></div>
+                <div><small>HOST</small><strong id="dmDnsHost2">www</strong></div>
+                <div><small>VALUE</small><strong id="dmDnsValue2">cname.vercel-dns.com</strong></div>
+                <button class="dm-copy-btn" type="button" data-copy-target="dmDnsValue2">Copy</button>
+              </div>
+              <div class="dm-dns-record hidden" id="dmVerificationRecord">
+                <div><small>TYPE</small><strong>TXT</strong></div>
+                <div><small>HOST</small><strong id="dmVerificationHost">_vercel</strong></div>
+                <div><small>VALUE</small><strong id="dmVerificationValue"></strong></div>
+                <button class="dm-copy-btn" type="button" data-copy-target="dmVerificationValue">Copy</button>
+              </div>
+              <div class="dm-dns-help">
+                <strong>Registrar note</strong>
+                <p>Some registrars call “Host” the “Name.” For the root domain, enter <code>@</code> or leave the host blank if your provider requires it. Remove conflicting A, AAAA, or CNAME records for the same host.</p>
+              </div>
+            </div>
+          </article>
 
-<div class="publishing-metrics-grid">
-<article><span>STATUS</span><strong id="publishingMetricStatus">Draft</strong><small id="publishingMetricStatusDetail">Not publicly visible</small></article>
-<article><span>LAST PUBLISHED</span><strong id="publishingMetricDate">Never</strong><small>Latest confirmed deployment</small></article>
-<article><span>DOMAIN</span><strong id="publishingMetricDomain">Bluvixa address</strong><small id="publishingMetricDomainDetail">No custom domain connected</small></article>
-<article><span>SSL</span><strong id="publishingMetricSsl">Ready</strong><small>HTTPS provided automatically</small></article>
-</div>
+          <article class="dm-card">
+            <div class="dm-card-head">
+              <div><small>STEP 4</small><h2>Verify DNS and HTTPS</h2><p>DNS changes can take time. Retry verification after the records have propagated.</p></div>
+              <span>4</span>
+            </div>
 
-<div class="publishing-action-grid">
-<article class="publishing-panel">
-<div class="publishing-panel-head"><div><small>LINK TOOLS</small><h3>Share your website</h3></div></div>
-<div class="publishing-link-box">
-<input id="publishingShareUrl" readonly value="Publish the website to create a public link">
-<button class="btn btn-secondary" id="copyPublishedLinkBtn" type="button">Copy Link</button>
-</div>
-<div class="publishing-inline-actions">
-<button class="btn btn-secondary" id="sharePublishedSiteBtn" type="button">Share Website</button>
-<button class="btn btn-secondary" id="openDomainForPublishingBtn" type="button">Manage Domain</button>
-</div>
-<div class="domain-result-message" id="publishingShareMessage"></div>
-</article>
+            <div class="dm-live-status">
+              <span class="dm-live-dot waiting" id="dmLiveDot"></span>
+              <div>
+                <strong id="dmLiveTitle">Not connected</strong>
+                <p id="dmLiveMessage">Enter a domain and select Connect Domain.</p>
+              </div>
+              <span class="dm-status-pill waiting" id="dmStatusPill">Not Connected</span>
+            </div>
 
-<article class="publishing-panel">
-<div class="publishing-panel-head"><div><small>DEPLOYMENT</small><h3>Publishing progress</h3></div><span id="publishingProgressPercent">0%</span></div>
-<div class="publishing-progress-track"><span id="publishingProgressBar"></span></div>
-<div class="publishing-step-list">
-<div data-publish-step="save"><span>1</span><strong>Save latest changes</strong><small>Waiting</small></div>
-<div data-publish-step="media"><span>2</span><strong>Confirm cloud media</strong><small>Waiting</small></div>
-<div data-publish-step="build"><span>3</span><strong>Prepare live website</strong><small>Waiting</small></div>
-<div data-publish-step="deploy"><span>4</span><strong>Publish securely</strong><small>Waiting</small></div>
-</div>
-</article>
-</div>
+            <div class="dm-actions">
+              <button class="btn btn-primary" id="dmVerifyBtn" type="button">Verify Domain</button>
+              <button class="btn btn-secondary" id="dmRetryBtn" type="button">Retry Verification</button>
+              <button class="btn btn-danger" id="dmRemoveBtn" type="button">Remove Domain</button>
+            </div>
+            <div class="dm-inline-message" id="dmStatusMessage"></div>
+          </article>
+        </div>
 
-<article class="publishing-panel publishing-version-panel">
-<div class="publishing-panel-head">
-<div><small>VERSION HISTORY</small><h3>Saved website versions</h3></div>
-<a class="btn btn-secondary" href="#drafts">Manage All Drafts</a>
-</div>
-<div id="publishingVersionHistory" class="publishing-version-history"></div>
-</article>
-</div>
+        <aside class="dm-side">
+          <article class="dm-card">
+            <small>CONNECTION DETAILS</small>
+            <h3 id="dmSideDomain">No custom domain</h3>
+            <dl class="dm-details-list">
+              <div><dt>Domain status</dt><dd id="dmDetailDomainStatus">Not connected</dd></div>
+              <div><dt>DNS verified</dt><dd id="dmDetailDnsStatus">No</dd></div>
+              <div><dt>SSL status</dt><dd id="dmDetailSslStatus">Waiting</dd></div>
+              <div><dt>Verified at</dt><dd id="dmDetailVerifiedAt">—</dd></div>
+              <div><dt>Last checked</dt><dd id="dmDetailLastChecked">—</dd></div>
+            </dl>
+          </article>
+
+          <article class="dm-card">
+            <small>AUTOMATIC CHECKS</small>
+            <h3>Connection monitoring</h3>
+            <p>While this page is open, Bluvixa refreshes pending domain status automatically. HTTPS is handled by Vercel after successful verification.</p>
+            <label class="dm-toggle-row">
+              <input id="dmAutoRefreshToggle" type="checkbox" checked/>
+              <span><strong>Automatic refresh</strong><small>Check every 30 seconds while pending</small></span>
+            </label>
+          </article>
+
+          <article class="dm-card dm-warning-card">
+            <small>IMPORTANT</small>
+            <h3>Email DNS records are not changed</h3>
+            <p>Bluvixa only connects web-hosting records. Do not delete MX records used by Google Workspace, Microsoft 365, or another email provider.</p>
+          </article>
+        </aside>
+      </div>
+
+      <section class="publishing-center" aria-labelledby="publishingCenterTitle">
+        <div class="publishing-center-head">
+          <div>
+            <small>PUBLISHING CENTER</small>
+            <h2 id="publishingCenterTitle">Launch and manage your live website.</h2>
+            <p>Publish, view, copy, share, connect a domain, and review saved versions from one place.</p>
+          </div>
+          <label class="publishing-site-picker">
+            <span>Website</span>
+            <select id="publishingCenterProjectSelect"></select>
+          </label>
+        </div>
+
+        <div id="publishingCenterEmpty" class="empty-state hidden">Create a website before using the Publishing Center.</div>
+
+        <div id="publishingCenterWorkspace" class="publishing-center-workspace">
+          <article class="publishing-status-hero">
+            <div class="publishing-status-copy">
+              <div class="publishing-status-line">
+                <span id="publishingStatusDot" class="publishing-status-dot"></span>
+                <strong id="publishingStatusText">Draft</strong>
+              </div>
+              <h3 id="publishingCenterProjectName">Website</h3>
+              <p id="publishingCenterMessage">This website has not been published yet.</p>
+              <div class="publishing-live-url">
+                <span>Live address</span>
+                <a id="publishingLiveUrl" href="#" target="_blank" rel="noopener">Not published</a>
+              </div>
+            </div>
+            <div class="publishing-primary-actions">
+              <button class="btn btn-primary" id="publishingPrimaryBtn" type="button">Publish Now</button>
+              <a class="btn btn-secondary hidden" id="publishingViewLiveBtn" href="#" target="_blank" rel="noopener">View Live</a>
+            </div>
+          </article>
+
+          <div class="publishing-metrics-grid">
+            <article><span>STATUS</span><strong id="publishingMetricStatus">Draft</strong><small id="publishingMetricStatusDetail">Not publicly visible</small></article>
+            <article><span>LAST PUBLISHED</span><strong id="publishingMetricDate">Never</strong><small>Latest confirmed deployment</small></article>
+            <article class="dm-publishing-domain-card"><span>DOMAIN</span><strong id="publishingMetricDomain">Bluvixa address</strong><small id="publishingMetricDomainDetail">No custom domain connected</small><span class="dm-mini-badge waiting" id="dmPublishingDomainBadge">Not Connected</span></article>
+            <article><span>SSL</span><strong id="publishingMetricSsl">Waiting</strong><small id="dmPublishingSslDetail">HTTPS activates after verification</small></article>
+          </div>
+
+          <div class="publishing-action-grid">
+            <article class="publishing-panel">
+              <div class="publishing-panel-head"><div><small>LINK TOOLS</small><h3>Share your website</h3></div></div>
+              <div class="publishing-link-box">
+                <input id="publishingShareUrl" readonly value="Publish the website to create a public link">
+                <button class="btn btn-secondary" id="copyPublishedLinkBtn" type="button">Copy Link</button>
+              </div>
+              <div class="publishing-inline-actions">
+                <button class="btn btn-secondary" id="sharePublishedSiteBtn" type="button">Share Website</button>
+                <button class="btn btn-secondary" id="openDomainForPublishingBtn" type="button">Manage Domain</button>
+              </div>
+              <div class="domain-result-message" id="publishingShareMessage"></div>
+            </article>
+
+            <article class="publishing-panel">
+              <div class="publishing-panel-head"><div><small>DEPLOYMENT</small><h3>Publishing progress</h3></div><span id="publishingProgressPercent">0%</span></div>
+              <div class="publishing-progress-track"><span id="publishingProgressBar"></span></div>
+              <div class="publishing-step-list">
+                <div data-publish-step="save"><span>1</span><strong>Save latest changes</strong><small>Waiting</small></div>
+                <div data-publish-step="media"><span>2</span><strong>Confirm cloud media</strong><small>Waiting</small></div>
+                <div data-publish-step="build"><span>3</span><strong>Prepare live website</strong><small>Waiting</small></div>
+                <div data-publish-step="deploy"><span>4</span><strong>Publish securely</strong><small>Waiting</small></div>
+              </div>
+            </article>
+          </div>
+
+          <article class="publishing-panel publishing-version-panel">
+            <div class="publishing-panel-head">
+              <div><small>VERSION HISTORY</small><h3>Saved website versions</h3></div>
+              <a class="btn btn-secondary" href="#drafts">Manage All Drafts</a>
+            </div>
+            <div id="publishingVersionHistory" class="publishing-version-history"></div>
+          </article>
+        </div>
+      </section>
+    </div>
+  </div>
 </section>
-</div>
-</div>
-</section>
 
-<section class="app-page pricing-page" id="pricing" data-page="pricing">
+
+<section class="app-page pricing-page id="pricing" data-page="pricing">
 <div class="pricing-inner">
 <div class="container">
 <div class="section-head">
@@ -966,5 +1053,6 @@
 <script defer src="app.js?v=20260727-v123"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script defer src="platform.js?v=20260727-v123"></script>
+<script defer src="domain-manager.js?v=20260727-v1"></script>
 </body>
 </html>
