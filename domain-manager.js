@@ -1,23 +1,742 @@
-(function(){
-"use strict";
-const $=id=>document.getElementById(id);let projects=[],current=null,timer=null,busy=false;
-function token(){try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k?.startsWith("sb-")&&k.endsWith("-auth-token")){const p=JSON.parse(localStorage.getItem(k)||"{}");const t=p.access_token||p.currentSession?.access_token||p.session?.access_token;if(t)return t}}}catch(_){}return""}
-async function api(action,options={}){const t=token();if(!t)throw new Error("Sign out and sign back in.");const sep=action.includes("?")?"&":"?";const r=await fetch(`/api/domain${sep}${action}`,{...options,headers:{"Content-Type":"application/json",Authorization:`Bearer ${t}`,...(options.headers||{})},cache:"no-store"});const p=await r.json().catch(()=>({}));if(!r.ok)throw new Error(p.error||`Request failed (${r.status}).`);return p}
-function msg(id,text,type=""){const e=$(id);if(!e)return;e.textContent=text||"";e.className=`dm-inline-message${type?` ${type}`:""}`}
-function cleanDomain(v){return String(v||"").trim().toLowerCase().replace(/^https?:\/\//,"").replace(/\/.*$/,"")}
-function cleanSlug(v){return String(v||"").toLowerCase().replace(/[^a-z0-9-]+/g,"-").replace(/^-+|-+$/g,"").replace(/-{2,}/g,"").slice(0,63)}
-function label(s){return({not_connected:"Not Connected",verifying:"Verifying",connected:"Connected",failed:"Needs Attention"}[s]||"Not Connected")}
-function setBusy(v){busy=v;["dmCheckSlugBtn","dmReserveSlugBtn","dmConnectBtn","dmVerifyBtn","dmRetryBtn","dmRemoveBtn","dmRefreshAllBtn"].forEach(id=>{if($(id))$(id).disabled=v})}
-function render(p){current=p||null;const slug=p?.slug||"";const bUrl=slug?`https://bluvixa.com/site/${slug}`:"";const status=p?.domain_status||"not_connected";const ssl=p?.ssl_status||"waiting";const cls=status==="connected"?"connected":status==="failed"?"failed":status==="verifying"?"verifying":"waiting";$("dmSlugInput").value=slug;$("dmOverviewBluvixa").textContent=bUrl||"Not reserved";$("dmOverviewBluvixaDetail").textContent=bUrl?"Ready to publish.":"Choose an address below.";$("dmBluvixaAddress").textContent=bUrl||"Not reserved";$("dmBluvixaAddress").href=bUrl||"#";$("dmDetailBluvixa").textContent=bUrl||"Not reserved";$("dmOverviewDomain").textContent=p?.custom_domain||"Not connected";$("dmOverviewDomainDetail").textContent=p?.custom_domain?"Assigned to this website.":"Optional custom domain.";$("dmOverviewSsl").textContent=ssl==="active"?"Active":ssl==="provisioning"?"Provisioning":"Waiting";$("dmOverviewSslDetail").textContent=ssl==="active"?"HTTPS is active.":"HTTPS activates after verification.";$("dmSideDomain").textContent=p?.custom_domain||"No custom domain";$("dmDetailDomainStatus").textContent=label(status);$("dmDetailDnsStatus").textContent=p?.dns_verified?"Yes":"No";$("dmDetailSslStatus").textContent=ssl==="active"?"Active":ssl==="provisioning"?"Provisioning":"Waiting";$("dmDetailVerifiedAt").textContent=p?.verified_at?new Date(p.verified_at).toLocaleString():"—";$("dmDetailLastChecked").textContent=p?.domain_last_checked_at?new Date(p.domain_last_checked_at).toLocaleString():"—";$("dmDomainInput").value=p?.custom_domain||"";$("dmLiveDot").className=`dm-live-dot ${cls}`;$("dmStatusPill").className=`dm-status-pill ${cls}`;$("dmStatusPill").textContent=label(status);$("dmLiveTitle").textContent=status==="connected"?"Domain connected":status==="verifying"?"Waiting for DNS":status==="failed"?"Domain needs attention":"Not connected";$("dmLiveMessage").textContent=p?.domain_error||(status==="connected"?"Custom domain is verified and secured.":status==="verifying"?"Add the DNS records and retry verification.":"Enter a custom domain and select Connect Domain.");const has=!!p?.custom_domain;$("dmDnsEmpty").classList.toggle("hidden",has);$("dmDnsRecords").classList.toggle("hidden",!has);const dns=Array.isArray(p?.dns_records)?p.dns_records:[];const a=dns.find(x=>x.type==="A"),c=dns.find(x=>x.type==="CNAME");if(a){$("dmDnsType1").textContent=a.type;$("dmDnsHost1").textContent=a.name;$("dmDnsValue1").textContent=a.value}if(c){$("dmDnsType2").textContent=c.type;$("dmDnsHost2").textContent=c.name;$("dmDnsValue2").textContent=c.value}const vr=p?.verification_record;$("dmVerificationRecord").classList.toggle("hidden",!vr);if(vr){$("dmVerificationHost").textContent=vr.name||"_vercel";$("dmVerificationValue").textContent=vr.value||""}const badge=$("dmPublishingDomainBadge");if(badge){badge.className=`dm-mini-badge ${cls}`;badge.textContent=label(status)}if($("publishingMetricDomain"))$("publishingMetricDomain").textContent=p?.custom_domain||bUrl||"Bluvixa address";if($("publishingMetricDomainDetail"))$("publishingMetricDomainDetail").textContent=p?.custom_domain?label(status):(bUrl?"Bluvixa address reserved":"No address reserved");if($("publishingMetricSsl"))$("publishingMetricSsl").textContent=ssl==="active"?"Active":ssl==="provisioning"?"Provisioning":"Waiting"}
-function populate(){const s=$("dmProjectSelect");const prev=s.value;s.innerHTML=projects.length?projects.map(p=>`<option value="${p.id}">${String(p.name||p.title||"Untitled Website").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}</option>`).join(""):'<option value="">No websites found</option>';if(projects.some(p=>p.id===prev))s.value=prev}
-async function loadProjects(){setBusy(true);try{const d=await api("action=status");projects=d.projects||[];populate();if(projects.length)await loadStatus(true);else render(null)}catch(e){msg("dmStatusMessage",e.message,"error")}finally{setBusy(false)}}
-async function loadStatus(quiet=false){const id=$("dmProjectSelect").value;if(!id)return render(null);try{const d=await api(`action=status&project_id=${encodeURIComponent(id)}`);render(d.domain);if(!quiet)msg("dmStatusMessage","Status refreshed.","success")}catch(e){if(!quiet)msg("dmStatusMessage",e.message,"error")}}
-async function checkSlug(reserve=false){const id=$("dmProjectSelect").value,slug=cleanSlug($("dmSlugInput").value);$("dmSlugInput").value=slug;if(!id)return msg("dmSlugMessage","Select a website first.","error");setBusy(true);msg("dmSlugMessage",reserve?"Reserving address…":"Checking availability…","info");try{const d=await api(`action=${reserve?"reserve-slug":"check-slug"}`,{method:"POST",body:JSON.stringify({project_id:id,slug})});if(reserve){render(d.domain);msg("dmSlugMessage",d.message,"success")}else msg("dmSlugMessage",d.available?`${d.url} is available.`:"That address is already reserved.",d.available?"success":"error")}catch(e){msg("dmSlugMessage",e.message,"error")}finally{setBusy(false)}}
-async function connect(){const id=$("dmProjectSelect").value,domain=cleanDomain($("dmDomainInput").value);if(!id)return msg("dmConnectMessage","Select a website first.","error");setBusy(true);msg("dmConnectMessage","Adding domain to Vercel…","info");try{const d=await api("action=connect",{method:"POST",body:JSON.stringify({project_id:id,domain})});render(d.domain);msg("dmConnectMessage",d.message,"success");schedule()}catch(e){msg("dmConnectMessage",e.message,"error")}finally{setBusy(false)}}
-async function verify(){const id=$("dmProjectSelect").value;if(!id)return msg("dmStatusMessage","Select a website first.","error");setBusy(true);msg("dmStatusMessage","Checking DNS and SSL…","info");try{const d=await api("action=check",{method:"POST",body:JSON.stringify({project_id:id})});render(d.domain);msg("dmStatusMessage",d.message,d.domain?.domain_status==="connected"?"success":"info");schedule()}catch(e){msg("dmStatusMessage",e.message,"error")}finally{setBusy(false)}}
-async function remove(){const id=$("dmProjectSelect").value;if(!current?.custom_domain)return msg("dmStatusMessage","No custom domain is connected.","error");if(!confirm(`Remove ${current.custom_domain}?`))return;setBusy(true);try{const d=await api("action=remove",{method:"POST",body:JSON.stringify({project_id:id})});render(d.domain);msg("dmStatusMessage","Custom domain removed. The Bluvixa address remains available.","success")}catch(e){msg("dmStatusMessage",e.message,"error")}finally{setBusy(false)}}
-function schedule(){clearInterval(timer);if(!$("dmAutoRefreshToggle")?.checked||!current?.custom_domain||current?.domain_status==="connected")return;timer=setInterval(()=>{if(!busy&&location.hash==="#domains")loadStatus(true)},30000)}
-document.addEventListener("click",async e=>{const b=e.target.closest(".dm-copy-btn");if(!b)return;const v=$(b.dataset.copyTarget)?.textContent?.trim();if(!v)return;try{await navigator.clipboard.writeText(v);const old=b.textContent;b.textContent="Copied";setTimeout(()=>b.textContent=old,1200)}catch(_){prompt("Copy this value:",v)}});
-document.addEventListener("DOMContentLoaded",()=>{$("dmCheckSlugBtn")?.addEventListener("click",()=>checkSlug(false));$("dmReserveSlugBtn")?.addEventListener("click",()=>checkSlug(true));$("dmConnectBtn")?.addEventListener("click",connect);$("dmVerifyBtn")?.addEventListener("click",verify);$("dmRetryBtn")?.addEventListener("click",verify);$("dmRemoveBtn")?.addEventListener("click",remove);$("dmRefreshAllBtn")?.addEventListener("click",()=>loadStatus(false));$("dmProjectSelect")?.addEventListener("change",async()=>{await loadStatus(true);schedule()});$("dmAutoRefreshToggle")?.addEventListener("change",schedule);$("dmSlugInput")?.addEventListener("input",e=>e.target.value=cleanSlug(e.target.value));$("dmDomainInput")?.addEventListener("input",e=>e.target.value=e.target.value.replace(/\s+/g,""));if(location.hash==="#domains")loadProjects()});
-window.addEventListener("hashchange",()=>{if(location.hash==="#domains")loadProjects();else clearInterval(timer)});
+(function () {
+  "use strict";
+
+  const $ = (id) => document.getElementById(id);
+
+  let projects = [];
+  let currentProject = null;
+  let refreshTimer = null;
+  let busy = false;
+  let loadingProjects = false;
+
+  function getAccessToken() {
+    try {
+      for (let index = 0; index < localStorage.length; index += 1) {
+        const key = localStorage.key(index);
+
+        if (!key || !key.startsWith("sb-") || !key.endsWith("-auth-token")) {
+          continue;
+        }
+
+        const stored = JSON.parse(localStorage.getItem(key) || "{}");
+        const accessToken =
+          stored.access_token ||
+          stored.currentSession?.access_token ||
+          stored.session?.access_token;
+
+        if (accessToken) {
+          return accessToken;
+        }
+      }
+    } catch (error) {
+      console.error("Unable to read the Supabase session.", error);
+    }
+
+    return "";
+  }
+
+  async function domainApi(action, options = {}) {
+    const accessToken = getAccessToken();
+
+    if (!accessToken) {
+      throw new Error("Your session has expired. Sign out and sign back in.");
+    }
+
+    const separator = action.includes("?") ? "&" : "?";
+    const response = await fetch(`/api/domain${separator}${action}`, {
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+        ...(options.headers || {})
+      },
+      cache: "no-store"
+    });
+
+    const payload = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      throw new Error(payload.error || `Request failed (${response.status}).`);
+    }
+
+    return payload;
+  }
+
+  function setText(id, value) {
+    const element = $(id);
+    if (element) element.textContent = value;
+  }
+
+  function setValue(id, value) {
+    const element = $(id);
+    if (element) element.value = value;
+  }
+
+  function setHref(id, value) {
+    const element = $(id);
+    if (!element) return;
+
+    element.href = value || "#";
+    element.classList.toggle("disabled-link", !value);
+  }
+
+  function setHidden(id, hidden) {
+    const element = $(id);
+    if (element) element.classList.toggle("hidden", hidden);
+  }
+
+  function showMessage(id, text, type = "") {
+    const element = $(id);
+    if (!element) return;
+
+    element.textContent = text || "";
+    element.className = `dm-inline-message${type ? ` ${type}` : ""}`;
+  }
+
+  function cleanDomain(value) {
+    return String(value || "")
+      .trim()
+      .toLowerCase()
+      .replace(/^https?:\/\//, "")
+      .replace(/\/.*$/, "");
+  }
+
+  function cleanSlug(value) {
+    return String(value || "")
+      .toLowerCase()
+      .replace(/[^a-z0-9-]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .replace(/-{2,}/g, "-")
+      .slice(0, 63);
+  }
+
+  function escapeHtml(value) {
+    return String(value || "").replace(/[&<>"']/g, (character) => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#039;"
+    })[character]);
+  }
+
+  function domainStatusLabel(status) {
+    return ({
+      not_connected: "Not Connected",
+      verifying: "Verifying",
+      connected: "Connected",
+      failed: "Needs Attention",
+      removing: "Removing"
+    })[status] || "Not Connected";
+  }
+
+  function sslStatusLabel(status) {
+    return ({
+      active: "Active",
+      provisioning: "Provisioning",
+      failed: "Needs Attention",
+      waiting: "Waiting"
+    })[status] || "Waiting";
+  }
+
+  function setBusy(value) {
+    busy = value;
+
+    [
+      "dmCheckSlugBtn",
+      "dmReserveSlugBtn",
+      "dmConnectBtn",
+      "dmVerifyBtn",
+      "dmRetryBtn",
+      "dmRemoveBtn",
+      "dmRefreshAllBtn"
+    ].forEach((id) => {
+      const button = $(id);
+      if (button) button.disabled = value;
+    });
+  }
+
+  function selectedProjectId() {
+    return $("dmProjectSelect")?.value ||
+      $("publishingCenterProjectSelect")?.value ||
+      "";
+  }
+
+  function updateLocalProject(project) {
+    if (!project?.id) return;
+
+    const index = projects.findIndex((item) => item.id === project.id);
+
+    if (index >= 0) {
+      projects[index] = { ...projects[index], ...project };
+    } else {
+      projects.push(project);
+    }
+
+    currentProject = project;
+  }
+
+  function populateProjectSelectors(preferredId = "") {
+    const domainSelect = $("dmProjectSelect");
+    const publishingSelect = $("publishingCenterProjectSelect");
+    const previousDomainId = domainSelect?.value || "";
+    const previousPublishingId = publishingSelect?.value || "";
+
+    const options = projects.length
+      ? projects.map((project) => {
+          const projectName = project.name || "Untitled Website";
+          return `<option value="${escapeHtml(project.id)}">${escapeHtml(projectName)}</option>`;
+        }).join("")
+      : '<option value="">No websites found</option>';
+
+    if (domainSelect) domainSelect.innerHTML = options;
+    if (publishingSelect) publishingSelect.innerHTML = options;
+
+    const requestedId =
+      preferredId ||
+      previousDomainId ||
+      previousPublishingId ||
+      projects[0]?.id ||
+      "";
+
+    if (domainSelect && projects.some((project) => project.id === requestedId)) {
+      domainSelect.value = requestedId;
+    }
+
+    if (publishingSelect && projects.some((project) => project.id === requestedId)) {
+      publishingSelect.value = requestedId;
+    }
+  }
+
+  function syncProjectSelectors(projectId, sourceId) {
+    if (!projectId) return;
+
+    const domainSelect = $("dmProjectSelect");
+    const publishingSelect = $("publishingCenterProjectSelect");
+
+    if (sourceId !== "dmProjectSelect" && domainSelect) {
+      domainSelect.value = projectId;
+    }
+
+    if (sourceId !== "publishingCenterProjectSelect" && publishingSelect) {
+      publishingSelect.value = projectId;
+    }
+  }
+
+  function renderDomainManager(project) {
+    currentProject = project || null;
+
+    const slug = project?.slug || "";
+    const bluvixaUrl = slug ? `https://bluvixa.com/site/${slug}` : "";
+    const customDomain = project?.custom_domain || "";
+    const domainStatus = project?.domain_status || "not_connected";
+    const sslStatus = project?.ssl_status || "waiting";
+    const hasCustomDomain = Boolean(customDomain);
+
+    const statusClass =
+      domainStatus === "connected"
+        ? "connected"
+        : domainStatus === "failed"
+          ? "failed"
+          : domainStatus === "verifying"
+            ? "verifying"
+            : "waiting";
+
+    setValue("dmSlugInput", slug);
+    setValue("dmDomainInput", customDomain);
+
+    setText("dmOverviewBluvixa", bluvixaUrl || "Not reserved");
+    setText(
+      "dmOverviewBluvixaDetail",
+      bluvixaUrl ? "Ready to publish." : "Choose an address below."
+    );
+
+    setText("dmBluvixaAddress", bluvixaUrl || "Not reserved");
+    setHref("dmBluvixaAddress", bluvixaUrl);
+    setText("dmDetailBluvixa", bluvixaUrl || "Not reserved");
+
+    setText("dmOverviewDomain", customDomain || "Not connected");
+    setText(
+      "dmOverviewDomainDetail",
+      customDomain ? "Assigned to this website." : "Optional custom domain."
+    );
+
+    setText("dmOverviewSsl", sslStatusLabel(sslStatus));
+    setText(
+      "dmOverviewSslDetail",
+      sslStatus === "active"
+        ? "HTTPS is active."
+        : "HTTPS activates after verification."
+    );
+
+    setText("dmSideDomain", customDomain || "No custom domain");
+    setText("dmDetailDomainStatus", domainStatusLabel(domainStatus));
+    setText("dmDetailDnsStatus", project?.dns_verified ? "Yes" : "No");
+    setText("dmDetailSslStatus", sslStatusLabel(sslStatus));
+    setText(
+      "dmDetailVerifiedAt",
+      project?.verified_at
+        ? new Date(project.verified_at).toLocaleString()
+        : "—"
+    );
+    setText(
+      "dmDetailLastChecked",
+      project?.domain_last_checked_at
+        ? new Date(project.domain_last_checked_at).toLocaleString()
+        : "—"
+    );
+
+    const liveDot = $("dmLiveDot");
+    if (liveDot) liveDot.className = `dm-live-dot ${statusClass}`;
+
+    const statusPill = $("dmStatusPill");
+    if (statusPill) {
+      statusPill.className = `dm-status-pill ${statusClass}`;
+      statusPill.textContent = domainStatusLabel(domainStatus);
+    }
+
+    setText(
+      "dmLiveTitle",
+      domainStatus === "connected"
+        ? "Domain connected"
+        : domainStatus === "verifying"
+          ? "Waiting for DNS"
+          : domainStatus === "failed"
+            ? "Domain needs attention"
+            : "Not connected"
+    );
+
+    setText(
+      "dmLiveMessage",
+      project?.domain_error ||
+        (domainStatus === "connected"
+          ? "Custom domain is verified and secured."
+          : domainStatus === "verifying"
+            ? "Add the DNS records and retry verification."
+            : "Enter a custom domain and select Connect Domain.")
+    );
+
+    setHidden("dmDnsEmpty", hasCustomDomain);
+    setHidden("dmDnsRecords", !hasCustomDomain);
+
+    const dnsRecords = Array.isArray(project?.dns_records)
+      ? project.dns_records
+      : [];
+
+    const aRecord = dnsRecords.find((record) => record.type === "A");
+    const cnameRecord = dnsRecords.find((record) => record.type === "CNAME");
+
+    setText("dmDnsType1", aRecord?.type || "A");
+    setText("dmDnsHost1", aRecord?.name || "@");
+    setText("dmDnsValue1", aRecord?.value || "76.76.21.21");
+
+    setText("dmDnsType2", cnameRecord?.type || "CNAME");
+    setText("dmDnsHost2", cnameRecord?.name || "www");
+    setText(
+      "dmDnsValue2",
+      cnameRecord?.value || "cname.vercel-dns.com"
+    );
+
+    const verificationRecord = project?.verification_record || null;
+    setHidden("dmVerificationRecord", !verificationRecord);
+
+    if (verificationRecord) {
+      setText(
+        "dmVerificationHost",
+        verificationRecord.name || "_vercel"
+      );
+      setText("dmVerificationValue", verificationRecord.value || "");
+    }
+
+    const publishingBadge = $("dmPublishingDomainBadge");
+    if (publishingBadge) {
+      publishingBadge.className = `dm-mini-badge ${statusClass}`;
+      publishingBadge.textContent = domainStatusLabel(domainStatus);
+    }
+
+    setText(
+      "publishingMetricDomain",
+      customDomain || bluvixaUrl || "Bluvixa address"
+    );
+
+    setText(
+      "publishingMetricDomainDetail",
+      customDomain
+        ? domainStatusLabel(domainStatus)
+        : bluvixaUrl
+          ? "Bluvixa address reserved"
+          : "No address reserved"
+    );
+
+    setText("publishingMetricSsl", sslStatusLabel(sslStatus));
+
+    setText(
+      "dmPublishingSslDetail",
+      sslStatus === "active"
+        ? "HTTPS is active"
+        : customDomain
+          ? "HTTPS activates after domain verification"
+          : "HTTPS activates after publishing"
+    );
+
+    const removeButton = $("dmRemoveBtn");
+    if (removeButton) removeButton.disabled = busy || !hasCustomDomain;
+
+    scheduleAutomaticRefresh();
+  }
+
+  async function loadProjects(preferredId = "") {
+    if (loadingProjects) return;
+    loadingProjects = true;
+    setBusy(true);
+
+    try {
+      const data = await domainApi("action=status");
+      projects = Array.isArray(data.projects) ? data.projects : [];
+      populateProjectSelectors(preferredId);
+
+      if (projects.length) {
+        await loadSelectedProjectStatus(true);
+      } else {
+        renderDomainManager(null);
+      }
+    } catch (error) {
+      showMessage("dmStatusMessage", error.message, "error");
+    } finally {
+      loadingProjects = false;
+      setBusy(false);
+    }
+  }
+
+  async function loadSelectedProjectStatus(quiet = false) {
+    const projectId = selectedProjectId();
+
+    if (!projectId) {
+      renderDomainManager(null);
+      return;
+    }
+
+    try {
+      const data = await domainApi(
+        `action=status&project_id=${encodeURIComponent(projectId)}`
+      );
+
+      updateLocalProject(data.domain);
+      syncProjectSelectors(projectId);
+      renderDomainManager(data.domain);
+
+      if (!quiet) {
+        showMessage("dmStatusMessage", "Status refreshed.", "success");
+      }
+    } catch (error) {
+      if (!quiet) {
+        showMessage("dmStatusMessage", error.message, "error");
+      }
+    }
+  }
+
+  async function checkOrReserveSlug(reserve) {
+    const projectId = selectedProjectId();
+    const slug = cleanSlug($("dmSlugInput")?.value);
+
+    setValue("dmSlugInput", slug);
+
+    if (!projectId) {
+      showMessage("dmSlugMessage", "Select a website first.", "error");
+      return;
+    }
+
+    if (slug.length < 3) {
+      showMessage(
+        "dmSlugMessage",
+        "Use at least 3 letters or numbers.",
+        "error"
+      );
+      return;
+    }
+
+    setBusy(true);
+    showMessage(
+      "dmSlugMessage",
+      reserve ? "Reserving address…" : "Checking availability…",
+      "info"
+    );
+
+    try {
+      const action = reserve ? "reserve-slug" : "check-slug";
+      const data = await domainApi(`action=${action}`, {
+        method: "POST",
+        body: JSON.stringify({
+          project_id: projectId,
+          slug
+        })
+      });
+
+      if (reserve) {
+        updateLocalProject(data.domain);
+        renderDomainManager(data.domain);
+        showMessage("dmSlugMessage", data.message, "success");
+      } else {
+        showMessage(
+          "dmSlugMessage",
+          data.available
+            ? `${data.url} is available.`
+            : "That address is already reserved.",
+          data.available ? "success" : "error"
+        );
+      }
+    } catch (error) {
+      showMessage("dmSlugMessage", error.message, "error");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function connectCustomDomain() {
+    const projectId = selectedProjectId();
+    const domain = cleanDomain($("dmDomainInput")?.value);
+
+    setValue("dmDomainInput", domain);
+
+    if (!projectId) {
+      showMessage("dmConnectMessage", "Select a website first.", "error");
+      return;
+    }
+
+    if (!domain) {
+      showMessage("dmConnectMessage", "Enter a domain first.", "error");
+      return;
+    }
+
+    setBusy(true);
+    showMessage(
+      "dmConnectMessage",
+      "Adding domain to Vercel…",
+      "info"
+    );
+
+    try {
+      const data = await domainApi("action=connect", {
+        method: "POST",
+        body: JSON.stringify({
+          project_id: projectId,
+          domain
+        })
+      });
+
+      updateLocalProject(data.domain);
+      renderDomainManager(data.domain);
+      showMessage("dmConnectMessage", data.message, "success");
+    } catch (error) {
+      showMessage("dmConnectMessage", error.message, "error");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function verifyCustomDomain() {
+    const projectId = selectedProjectId();
+
+    if (!projectId) {
+      showMessage("dmStatusMessage", "Select a website first.", "error");
+      return;
+    }
+
+    setBusy(true);
+    showMessage("dmStatusMessage", "Checking DNS and SSL…", "info");
+
+    try {
+      const data = await domainApi("action=check", {
+        method: "POST",
+        body: JSON.stringify({ project_id: projectId })
+      });
+
+      updateLocalProject(data.domain);
+      renderDomainManager(data.domain);
+
+      showMessage(
+        "dmStatusMessage",
+        data.message,
+        data.domain?.domain_status === "connected" ? "success" : "info"
+      );
+    } catch (error) {
+      showMessage("dmStatusMessage", error.message, "error");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function removeCustomDomain() {
+    const projectId = selectedProjectId();
+
+    if (!currentProject?.custom_domain) {
+      showMessage(
+        "dmStatusMessage",
+        "No custom domain is connected.",
+        "error"
+      );
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Remove ${currentProject.custom_domain}?`
+    );
+
+    if (!confirmed) return;
+
+    setBusy(true);
+
+    try {
+      const data = await domainApi("action=remove", {
+        method: "POST",
+        body: JSON.stringify({ project_id: projectId })
+      });
+
+      updateLocalProject(data.domain);
+      renderDomainManager(data.domain);
+
+      showMessage(
+        "dmStatusMessage",
+        "Custom domain removed. The Bluvixa address remains available.",
+        "success"
+      );
+    } catch (error) {
+      showMessage("dmStatusMessage", error.message, "error");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function scheduleAutomaticRefresh() {
+    window.clearInterval(refreshTimer);
+
+    if (
+      !$("dmAutoRefreshToggle")?.checked ||
+      !currentProject?.custom_domain ||
+      currentProject?.domain_status === "connected"
+    ) {
+      return;
+    }
+
+    refreshTimer = window.setInterval(() => {
+      if (!busy && window.location.hash === "#domains") {
+        loadSelectedProjectStatus(true);
+      }
+    }, 30000);
+  }
+
+  function domainsPageIsOpen() {
+    return window.location.hash === "#domains";
+  }
+
+  function bindEvents() {
+    $("dmCheckSlugBtn")?.addEventListener("click", () => {
+      checkOrReserveSlug(false);
+    });
+
+    $("dmReserveSlugBtn")?.addEventListener("click", () => {
+      checkOrReserveSlug(true);
+    });
+
+    $("dmConnectBtn")?.addEventListener("click", connectCustomDomain);
+    $("dmVerifyBtn")?.addEventListener("click", verifyCustomDomain);
+    $("dmRetryBtn")?.addEventListener("click", verifyCustomDomain);
+    $("dmRemoveBtn")?.addEventListener("click", removeCustomDomain);
+
+    $("dmRefreshAllBtn")?.addEventListener("click", () => {
+      loadProjects(selectedProjectId());
+    });
+
+    $("dmProjectSelect")?.addEventListener("change", async (event) => {
+      syncProjectSelectors(event.target.value, "dmProjectSelect");
+      await loadSelectedProjectStatus(true);
+    });
+
+    $("publishingCenterProjectSelect")?.addEventListener(
+      "change",
+      async (event) => {
+        syncProjectSelectors(
+          event.target.value,
+          "publishingCenterProjectSelect"
+        );
+        await loadSelectedProjectStatus(true);
+      }
+    );
+
+    $("dmAutoRefreshToggle")?.addEventListener(
+      "change",
+      scheduleAutomaticRefresh
+    );
+
+    $("dmSlugInput")?.addEventListener("input", (event) => {
+      event.target.value = cleanSlug(event.target.value);
+    });
+
+    $("dmSlugInput")?.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        checkOrReserveSlug(false);
+      }
+    });
+
+    $("dmDomainInput")?.addEventListener("input", (event) => {
+      event.target.value = event.target.value.replace(/\s+/g, "");
+    });
+
+    $("dmDomainInput")?.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        connectCustomDomain();
+      }
+    });
+
+    document.addEventListener("click", async (event) => {
+      const copyButton = event.target.closest(".dm-copy-btn");
+      if (!copyButton) return;
+
+      const target = $(copyButton.dataset.copyTarget);
+      const value = target?.textContent?.trim();
+
+      if (!value) return;
+
+      try {
+        await navigator.clipboard.writeText(value);
+        const originalText = copyButton.textContent;
+        copyButton.textContent = "Copied";
+
+        window.setTimeout(() => {
+          copyButton.textContent = originalText;
+        }, 1200);
+      } catch (error) {
+        window.prompt("Copy this value:", value);
+      }
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    bindEvents();
+
+    if (domainsPageIsOpen()) {
+      loadProjects();
+    }
+  });
+
+  window.addEventListener("hashchange", () => {
+    if (domainsPageIsOpen()) {
+      loadProjects(selectedProjectId());
+    } else {
+      window.clearInterval(refreshTimer);
+    }
+  });
+
+  window.addEventListener("bluvixa:projects-updated", (event) => {
+    if (!domainsPageIsOpen()) return;
+    loadProjects(event.detail?.projectId || selectedProjectId());
+  });
+
+  window.BluvixaDomainManager = {
+    refresh: () => loadProjects(selectedProjectId()),
+    refreshCurrent: () => loadSelectedProjectStatus(false),
+    getCurrentProject: () => currentProject
+  };
 })();
