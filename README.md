@@ -1,15 +1,8 @@
-# Bluvixa Consolidated Production
+# Bluvixa Hobby Production
 
-This package consolidates the browser code into one `app.js` and routes the application API through one Vercel entry function, `api/api.js`. Stripe keeps its own webhook entry at `api/stripe-webhook.js`.
+Consolidated production build with two Vercel serverless entry points:
 
-## Deploy
-1. Extract this ZIP into the root of the Bluvixa Git repository, replacing matching files.
-2. Do not commit `.env.local`.
-3. Run `npm install` and `npm run check`.
-4. Commit and push.
+- `api/api.js` — authentication config, accounts, projects, publishing, public sites, billing sessions, exports, and domains.
+- `api/stripe-webhook.js` — raw-body Stripe webhook.
 
-## Required Vercel environment variables
-`SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, Stripe price IDs, and any Vercel domain-management variables used by the domain system.
-
-## Stripe webhook
-Set Stripe to `https://bluvixa.com/api/stripe-webhook`.
+Backend implementation modules are stored in `server/`, outside Vercel's API function directory. The database contract is defined by `supabase/schema.sql`.

@@ -1,58 +1,57 @@
-# Bluvixa Full Production Root Package
+# BLUVIXA — HOBBY PRODUCTION INSTALL
 
-This ZIP is intentionally packaged with all project files at the ZIP root. Extract it directly into the root of the Git repository so `api`, `supabase`, `index.html`, `app.js`, and `vercel.json` sit beside one another.
+This ZIP is organized so its contents go directly into the Git repository root.
+Do not place the extracted folder itself inside the repository.
 
-## Correct repository layout
+## Expected root structure
 
-```
-Freelance-Website-Design/
-├── api/
-│   ├── config.js
-│   ├── health.js
-│   ├── account.js
-│   ├── projects.js
-│   ├── public-site.js
-│   ├── publish-site.js
-│   ├── create-checkout-session.js
-│   ├── create-portal-session.js
-│   ├── export-website.js
-│   ├── domain.js
-│   ├── stripe-webhook.js
-│   ├── _lib.js
-│   └── _internal/
-├── supabase/
-│   └── schema.sql
-├── index.html
-├── public-site.html
-├── app.js
-├── style.css
-├── package.json
-├── vercel.json
-├── .gitignore
-└── .env.example
-```
+- api/
+  - api.js
+  - stripe-webhook.js
+- server/
+  - backend implementation modules
+- supabase/schema.sql
+- index.html
+- app.js
+- style.css
+- public-site.html
+- package.json
+- vercel.json
 
-## Install
+Only two files live under `api/`, keeping the deployment Hobby-plan friendly.
+All normal endpoints are rewritten to `api/api.js`; Stripe keeps a separate webhook because it requires the raw request body.
 
-1. Delete the old tracked project files from the Git repository, but keep the hidden `.git` folder.
-2. Open this ZIP and copy **everything inside it** into the repository root. Do not copy an extra outer folder.
-3. Confirm GitHub will show `api` and `supabase` at the same level as `index.html`.
-4. In Supabase SQL Editor, run `supabase/schema.sql` once against the intended production project.
-5. Add the required values from `.env.example` under Vercel Project Settings → Environment Variables. Never commit real values.
-6. Commit and push:
+## Installation
 
-```powershell
-git add .
-git commit -m "Install complete Bluvixa production package"
-git push origin main
-```
+1. Keep the repository's hidden `.git` folder.
+2. Delete the old project files.
+3. Copy everything inside this package directly into the repository root.
+4. Do not copy `.env.local` to GitHub.
+5. In Supabase SQL Editor, run `supabase/schema.sql`.
+6. Confirm Vercel environment variables.
+7. Commit and push.
 
-7. After deployment, test:
+## First tests after deployment
 
-- `/api/health` — reports only whether required environment variables exist.
-- `/api/config` — returns the Supabase URL and anon/public key needed by browser authentication.
-- Sign in and create an account from the Bluvixa interface.
+- `/api/health`
+- `/api/config`
+- sign in
+- save/load project
+- publish and open `/site/your-slug`
 
-## Security
+## Required Vercel environment variables
 
-The ZIP contains no live keys. Keep secret keys only in Vercel Environment Variables. The Supabase server key, Stripe secret key, webhook secret, and Vercel token must never appear in frontend JavaScript or Git.
+SUPABASE_URL
+SUPABASE_ANON_KEY
+SUPABASE_SERVICE_ROLE_KEY
+STRIPE_SECRET_KEY
+STRIPE_WEBHOOK_SECRET
+STRIPE_PRICE_STARTER_ANNUAL
+STRIPE_PRICE_PROFESSIONAL_ANNUAL
+STRIPE_PRICE_ADVANCED_ANNUAL
+STRIPE_PRICE_STARTER_BUYOUT
+STRIPE_PRICE_PROFESSIONAL_BUYOUT
+STRIPE_PRICE_ADVANCED_BUYOUT
+VERCEL_TOKEN
+VERCEL_PROJECT_ID
+VERCEL_TEAM_ID (only for a team-owned project)
