@@ -1281,6 +1281,7 @@ function renderPublishingCenter(){
   if(primary){
     primary.textContent=published?"Unpublish Website":"Publish Now";
     primary.dataset.projectId=project.id;
+    primary.dataset.publishAction=published?"unpublish":"publish";
     primary.classList.toggle("btn-danger",published);
   }
   var liveLink=id("publishingLiveUrl");
@@ -1316,13 +1317,12 @@ async function togglePublish(projectId){
     }
 
     /*
-      The visible dashboard button is the action the user selected.
-      Do not trust project.published here because local project data can
-      still be stale after a previous deployment.
+      Use the explicit action assigned when the Publishing Center renders.
+      Reading visible button text is unreliable across mobile browsers.
     */
     var primaryButton=id("publishingPrimaryBtn");
-    var buttonText=String(primaryButton&&primaryButton.textContent||"").trim().toLowerCase();
-    var shouldPublish=buttonText.indexOf("unpublish")===-1;
+    var publishAction=String(primaryButton&&primaryButton.dataset.publishAction||"").toLowerCase();
+    var shouldPublish=publishAction?publishAction==="publish":!project.published;
 
     toast(shouldPublish?"Publishing website…":"Unpublishing website…");
 
@@ -1348,6 +1348,18 @@ async function togglePublish(projectId){
       project.state.backend.publishedAt=project.publishedAt;
       project.state.project.slug=project.slug;
       project.state.project.domainStatus=project.domainStatus;
+    }
+
+    /*
+      Keep the active builder state synchronized with the server result.
+      Mobile browsers fire visibilitychange/pagehide more aggressively;
+      without this update, a later autosave can restore the old published
+      value immediately after an unpublish request.
+    */
+    if(activeProjectId()===projectId&&project.state&&typeof window.bluvixaImportState==="function"){
+      suppressAutosaveUntil=Date.now()+2200;
+      window.bluvixaImportState(clone(project.state));
+      lastAutosaveSignature=stableSignature(project.state);
     }
 
     /*
