@@ -3134,3 +3134,68 @@ button:disabled{opacity:.55;cursor:not-allowed}
 .publishing-version-panel{margin-top:14px}.publishing-version-history{display:grid;gap:8px}.publishing-version-row{display:flex;justify-content:space-between;gap:14px;align-items:center;padding:12px 14px;background:#07101d;border:1px solid #20364f;border-radius:12px}.publishing-version-row.current{border-color:#286ea9}.publishing-version-row strong,.publishing-version-row small{display:block}.publishing-version-row small{color:#778ca2;margin-top:4px}.publishing-version-row>span{color:#58c5ff;font-weight:900}.publishing-version-empty{padding:16px;color:#7f94aa;text-align:center}
 @media(max-width:900px){.publishing-center-head,.publishing-status-hero{align-items:stretch;flex-direction:column}.publishing-site-picker{width:100%;min-width:0}.publishing-primary-actions{justify-content:flex-start}.publishing-metrics-grid{grid-template-columns:repeat(2,1fr)}.publishing-action-grid{grid-template-columns:1fr}}
 @media(max-width:560px){.publishing-center{padding:14px;border-radius:16px}.publishing-metrics-grid{grid-template-columns:1fr}.publishing-link-box{grid-template-columns:1fr}.publishing-panel-head{align-items:flex-start;flex-direction:column}.publishing-version-row{align-items:flex-start;flex-direction:column}.publishing-primary-actions .btn,.publishing-primary-actions a{width:100%}}
+
+
+
+
+/* ===================================================================
+   BLUVIXA DOMAIN MANAGER - DARK NAVY OVERRIDES
+   Added automatically
+   =================================================================== */
+
+#domains,
+.domains-page{
+    background:#020b18 !important;
+}
+
+#domains .dm-card,
+#domains .dm-status-overview article,
+#domains .publishing-center,
+#domains .publishing-status-hero,
+#domains .publishing-panel,
+#domains .publishing-metrics-grid article,
+#domains .domain-manager-card,
+#domains .domain-action-card,
+#domains .domain-search-card{
+    background:#07182b !important;
+    background-image:none !important;
+    color:#f7fbff !important;
+    border:1px solid rgba(93,153,255,.24)!important;
+}
+
+#domains h1,
+#domains h2,
+#domains h3,
+#domains h4,
+#domains strong{
+    color:#f7fbff!important;
+}
+
+#domains p,
+#domains span,
+#domains label,
+#domains small{
+    color:#aabbd1!important;
+}
+
+#domains input,
+#domains select,
+#domains textarea{
+    background:#0a1e35!important;
+    color:#fff!important;
+    border:1px solid rgba(93,153,255,.28)!important;
+}
+
+#domains .btn-primary{
+    background:linear-gradient(135deg,#5ebcff,#316cff)!important;
+}
+
+#domains .btn-secondary{
+    background:#0a1e35!important;
+    color:#fff!important;
+}
+
+#domains .btn-danger{
+    background:#7d1d2b!important;
+    color:#fff!important;
+}
