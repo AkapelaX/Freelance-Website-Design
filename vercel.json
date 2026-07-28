@@ -1,4 +1,5 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
   "rewrites": [
     {
       "source": "/site/:slug",
@@ -7,9 +8,7 @@
   ],
   "functions": {
     "api/export-website.js": {
-      "includeFiles": [
-        "public-site.html"
-      ]
+      "includeFiles": "./public-site.html"
     }
   }
 }
