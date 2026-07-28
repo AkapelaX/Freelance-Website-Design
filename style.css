@@ -3187,3 +3187,281 @@ button:disabled{opacity:.55;cursor:not-allowed}
 @media(max-width:980px){#domains .dm-status-overview,#domains .dm-dual-grid,#domains .dm-layout{grid-template-columns:1fr}}
 @media(max-width:680px){#domains .dm-card{padding:19px}#domains .dm-domain-input-row{grid-template-columns:1fr}#domains .dm-slug-row{grid-template-columns:1fr}#domains .dm-slug-row span{padding:12px 14px 0}#domains .dm-live-status{grid-template-columns:auto 1fr}#domains .dm-status-pill{grid-column:1/-1;justify-self:start}#domains .dm-current-address{flex-direction:column;align-items:flex-start}#domains .dm-actions{flex-direction:column}#domains .dm-actions .btn{width:100%}#domains .dm-dns-record{grid-template-columns:1fr 1fr}#domains .dm-dns-record>div:nth-child(3),#domains .dm-copy-btn{grid-column:1/-1}}
 
+/* =========================================================
+   BLUVIXA MINIMAL REPAIR
+   Keeps the original design unchanged.
+   Fixes only:
+   1. Blank routed pages
+   2. Builder editor/resizer/preview column sizing
+   ========================================================= */
+
+/* Route visibility fix */
+.app-page{
+  display:none !important;
+}
+
+.app-page.route-active,
+.app-page.active{
+  display:block !important;
+  visibility:visible !important;
+  opacity:1 !important;
+  transform:none !important;
+  pointer-events:auto !important;
+}
+
+/* Keep the main application area visible */
+main{
+  display:block !important;
+  visibility:visible !important;
+  opacity:1 !important;
+}
+
+/* Three-column builder layout:
+   editor | resize handle | website preview */
+.builder-shell{
+  grid-template-columns:350px 10px minmax(0,1fr) !important;
+}
+
+.builder-resizer{
+  display:block;
+  width:10px;
+  min-width:10px;
+  height:100%;
+  cursor:col-resize;
+}
+
+.workspace{
+  width:100%;
+  min-width:0;
+}
+
+.preview-wrap{
+  width:100%;
+  min-width:0;
+}
+
+/* Preserve full preview width */
+.preview{
+  width:100%;
+  max-width:100%;
+}
+
+/* Mobile keeps the original stacked layout */
+@media(max-width:900px){
+  .builder-shell{
+    grid-template-columns:1fr !important;
+  }
+
+  .builder-resizer{
+    display:none !important;
+  }
+
+  .workspace{
+    width:100%;
+  }
+}
+
+/* =========================================================
+   BLUVIXA PREVIEW COLOR-CONTROL BRIDGE
+   Connects the current app.js variable names to the original
+   preview stylesheet variable names.
+   ========================================================= */
+
+.preview{
+  --site-theme:var(--theme-color,#1769ff);
+  --site-theme-soft:color-mix(in srgb,var(--theme-color,#1769ff) 10%,#ffffff);
+  --site-theme-pale:color-mix(in srgb,var(--theme-color,#1769ff) 5%,#ffffff);
+
+  --site-header:var(--header-color,#082b5e);
+  --site-header-dark:color-mix(in srgb,var(--header-color,#082b5e) 68%,#000000);
+
+  --site-button:var(--button-color,#1769ff);
+  --site-button-dark:color-mix(in srgb,var(--button-color,#1769ff) 72%,#000000);
+
+  --site-card:var(--card-color,#ffffff);
+  --site-card-text:color-mix(in srgb,var(--card-color,#ffffff) 12%,#000000);
+  --site-card-muted:color-mix(in srgb,var(--card-color,#ffffff) 28%,#334155);
+
+  --site-logo-outline:var(--logo-outline-color,#61c7ff);
+}
+
+/* Ensure every original preview component reads the live variables. */
+.preview .site-header{
+  background:linear-gradient(
+    180deg,
+    var(--site-header),
+    var(--site-header-dark)
+  ) !important;
+  border-bottom-color:var(--site-theme) !important;
+}
+
+.preview .site-footer{
+  background:linear-gradient(
+    180deg,
+    var(--site-header),
+    var(--site-header-dark)
+  ) !important;
+  border-top-color:var(--site-theme) !important;
+}
+
+.preview .site-call,
+.preview .hero-cta{
+  background:linear-gradient(
+    180deg,
+    var(--site-button),
+    var(--site-button-dark)
+  ) !important;
+  border-color:color-mix(in srgb,var(--site-button) 72%,#ffffff) !important;
+  box-shadow:
+    0 10px 24px color-mix(in srgb,var(--site-button) 34%,transparent),
+    inset 0 1px 0 rgba(255,255,255,.24) !important;
+}
+
+.preview .site-logo-frame{
+  border-color:var(--site-logo-outline) !important;
+  box-shadow:
+    0 0 22px color-mix(in srgb,var(--site-logo-outline) 45%,transparent),
+    inset 0 1px 0 rgba(255,255,255,.22) !important;
+}
+
+.preview .kicker,
+.preview #previewPhotoCount,
+.preview #previewGalleryCount{
+  color:var(--site-theme) !important;
+}
+
+.preview .hero-bio{
+  border-left-color:var(--site-theme) !important;
+}
+
+.preview .site-hero{
+  border-bottom-color:var(--site-theme) !important;
+}
+
+.preview .scroll-wrap{
+  background:var(--site-theme-soft) !important;
+  border-bottom-color:var(--site-theme) !important;
+}
+
+.preview .scroll-chip{
+  color:var(--site-card-text) !important;
+  background:var(--site-card) !important;
+  border-color:var(--site-theme) !important;
+}
+
+.preview .business:not(.has-cover),
+.preview .gallery-section:not(.has-cover){
+  background:var(--site-theme-pale) !important;
+}
+
+.preview .content-section:not(.has-cover),
+.preview .map-section:not(.has-cover){
+  background:var(--site-theme-soft) !important;
+}
+
+.preview .info,
+.preview .content-card,
+.preview .card,
+.preview .gallery-item,
+.preview .gallery-card{
+  color:var(--site-card-text) !important;
+  background:var(--site-card) !important;
+  border-color:var(--site-theme) !important;
+}
+
+.preview .info div,
+.preview .content-body p,
+.preview .card p,
+.preview .business p,
+.preview .section-label p{
+  color:var(--site-card-muted) !important;
+}
+
+.preview .info strong,
+.preview .content-body h4,
+.preview .business h3,
+.preview .section-label h3{
+  color:var(--site-card-text) !important;
+}
+
+.preview .map-copy{
+  background:linear-gradient(
+    160deg,
+    var(--site-header),
+    var(--site-header-dark)
+  ) !important;
+  border-color:var(--site-theme) !important;
+}
+
+.preview .map-frame{
+  outline:1px solid color-mix(in srgb,var(--site-theme) 45%,transparent);
+}
+
+/* =========================================================
+   BLUVIXA SCROLL-ITEM BUTTON CARDS
+   The current app.js inserts plain <span> elements into
+   #previewScroll. Style those spans exactly like scroll chips.
+   ========================================================= */
+
+.preview #previewScroll{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  overflow-x:auto;
+  padding:3px 0 7px;
+  scrollbar-width:thin;
+  scrollbar-color:var(--site-theme) transparent;
+}
+
+.preview #previewScroll > span{
+  flex:0 0 auto;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:40px;
+  padding:9px 16px;
+  border:1px solid var(--site-theme);
+  border-radius:999px;
+  color:var(--site-card-text);
+  background:var(--site-card);
+  font-size:12px;
+  font-weight:850;
+  line-height:1;
+  white-space:nowrap;
+  box-shadow:
+    0 5px 16px rgba(15,23,42,.10),
+    inset 0 1px 0 rgba(255,255,255,.55);
+  transition:
+    transform .18s ease,
+    box-shadow .18s ease,
+    background-color .18s ease;
+}
+
+.preview #previewScroll > span:hover{
+  transform:translateY(-1px);
+  background:var(--site-theme-soft);
+  box-shadow:
+    0 8px 20px rgba(15,23,42,.14),
+    inset 0 1px 0 rgba(255,255,255,.65);
+}
+
+.preview #previewScroll::-webkit-scrollbar{
+  height:7px;
+}
+
+.preview #previewScroll::-webkit-scrollbar-track{
+  background:transparent;
+}
+
+.preview #previewScroll::-webkit-scrollbar-thumb{
+  border-radius:999px;
+  background:color-mix(in srgb,var(--site-theme) 70%,transparent);
+}
+
+@media(max-width:560px){
+  .preview #previewScroll > span{
+    min-height:37px;
+    padding:8px 13px;
+    font-size:11px;
+  }
+}

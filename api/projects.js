@@ -1,728 +1,165 @@
 "use strict";
 
-import {
-  admin,
-  requireUser,
-  sendError
-} from "../../Bluvixa-Consolidated-Production-REAL/Bluvixa-Consolidated-Production-REAL/api/_lib.js";
+const { getAdmin } = require("./_supabase");
+const { requireUser, requireProjectOwner } = require("./_auth");
+const {
+  ok,
+  created,
+  fail,
+  method,
+  action,
+  parseJsonBody,
+  text,
+  slugify,
+  handleError
+} = require("./_utils");
 
-function text(value) {
-  return typeof value === "string"
-    ? value.trim()
-    : "";
-}
-
-function cleanSlug(value) {
-  return (
-    text(value)
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "")
-      .slice(0, 48) || ""
-  );
-}
-
-function isObject(value) {
-  return Boolean(
-    value &&
-    typeof value === "object" &&
-    !Array.isArray(value)
-  );
-}
-
-function requestProjectId(req) {
-  return text(
-    req.query?.project_id ||
-    req.query?.projectId ||
-    req.body?.project_id ||
-    req.body?.projectId
-  );
-}
-
-function sendJson(res, status, payload) {
-  res.status(status);
-  res.setHeader(
-    "Content-Type",
-    "application/json; charset=utf-8"
-  );
-  res.setHeader(
-    "Cache-Control",
-    "no-store, no-cache, must-revalidate, max-age=0"
-  );
-
-  return res.end(
-    JSON.stringify(payload)
-  );
-}
-
-function normalizedProjectData(value) {
-  if (!isObject(value)) {
-    return null;
-  }
-
-  return JSON.parse(
-    JSON.stringify(value)
-  );
-}
-
-async function getOwnedProject(
-  projectId,
-  userId
-) {
-  const {
-    data,
-    error
-  } = await admin
-    .from("projects")
-    .select(
-      [
-        "id",
-        "user_id",
-        "name",
-        "slug",
-        "plan",
-        "project_data",
-        "published",
-        "published_url",
-        "custom_domain",
-        "domain_status",
-        "ssl_status",
-        "dns_verified",
-        "dns_records",
-        "verification_record",
-        "verified_at",
-        "domain_last_checked_at",
-        "domain_error",
-        "created_at",
-        "updated_at"
-      ].join(",")
-    )
-    .eq("id", projectId)
-    .eq("user_id", userId)
-    .maybeSingle();
-
-  if (error) {
-    throw error;
-  }
-
-  if (!data) {
-    const error = new Error(
-      "Website project not found."
-    );
-
-    error.status = 404;
-    throw error;
-  }
-
-  return data;
-}
-
-async function listProjects(userId) {
-  const {
-    data,
-    error
-  } = await admin
-    .from("projects")
-    .select(
-      [
-        "id",
-        "user_id",
-        "name",
-        "slug",
-        "plan",
-        "project_data",
-        "published",
-        "published_url",
-        "custom_domain",
-        "domain_status",
-        "ssl_status",
-        "dns_verified",
-        "dns_records",
-        "verification_record",
-        "verified_at",
-        "domain_last_checked_at",
-        "domain_error",
-        "created_at",
-        "updated_at"
-      ].join(",")
-    )
-    .eq("user_id", userId)
-    .order(
-      "updated_at",
-      {
-        ascending: false
-      }
-    );
-
-  if (error) {
-    throw error;
-  }
-
-  return Array.isArray(data)
-    ? data
-    : [];
-}
-
-async function slugIsTaken(
-  slug,
-  projectId
-) {
-  if (!slug) {
-    return false;
-  }
-
-  let query = admin
-    .from("projects")
-    .select("id")
-    .eq("slug", slug)
-    .limit(1);
-
-  if (projectId) {
-    query = query.neq(
-      "id",
-      projectId
-    );
-  }
-
-  const {
-    data,
-    error
-  } = await query;
-
-  if (error) {
-    throw error;
-  }
-
-  return Array.isArray(data) &&
-    data.length > 0;
-}
-
-function buildProtectedProjectData(
-  incomingProject,
-  existingRow,
-  userId,
-  projectId,
-  now
-) {
-  const existingData =
-    isObject(existingRow?.project_data)
-      ? existingRow.project_data
-      : {};
-
-  const existingBackend =
-    isObject(existingData.backend)
-      ? existingData.backend
-      : {};
-
-  const incomingBackend =
-    isObject(incomingProject.backend)
-      ? incomingProject.backend
-      : {};
-
-  const existingProjectSettings =
-    isObject(existingData.project)
-      ? existingData.project
-      : {};
-
-  const incomingProjectSettings =
-    isObject(incomingProject.project)
-      ? incomingProject.project
-      : {};
+function projectPayload(source, userId) {
+  const project = source && typeof source === "object" ? source : {};
+  const data = project.data && typeof project.data === "object" ? project.data : {};
 
   return {
-    ...incomingProject,
-
-    project: {
-      ...incomingProjectSettings,
-
-      customDomain:
-        existingRow?.custom_domain ||
-        existingProjectSettings.customDomain ||
-        "",
-
-      domainStatus:
-        existingRow?.domain_status ||
-        existingProjectSettings.domainStatus ||
-        "not_connected",
-
-      sslStatus:
-        existingRow?.ssl_status ||
-        existingProjectSettings.sslStatus ||
-        "waiting",
-
-      dnsVerified:
-        existingRow?.dns_verified === true,
-
-      dnsRecords:
-        Array.isArray(
-          existingRow?.dns_records
-        )
-          ? existingRow.dns_records
-          : [],
-
-      verificationRecord:
-        existingRow?.verification_record ||
-        null
-    },
-
-    backend: {
-      ...incomingBackend,
-
-      userId,
-
-      websiteId: projectId,
-
-      published:
-        existingRow?.published === true,
-
-      publishedUrl:
-        existingRow?.published_url ||
-        null,
-
-      updatedAt: now,
-
-      createdAt:
-        existingBackend.createdAt ||
-        existingRow?.created_at ||
-        now
-    }
+    user_id: userId,
+    name: text(project.name || data.businessName, 160) || "Untitled Website",
+    slug: slugify(project.slug || project.name || data.businessName),
+    plan: ["starter", "professional", "advanced"].includes(project.plan)
+      ? project.plan
+      : "starter",
+    status: ["draft", "published", "archived"].includes(project.status)
+      ? project.status
+      : "draft",
+    project_data: data,
+    custom_domain: text(project.custom_domain || project.customDomain, 253) || null,
+    domain_status: text(project.domain_status, 40) || "not_connected",
+    ssl_status: text(project.ssl_status, 40) || "waiting",
+    owned: Boolean(project.owned),
+    updated_at: new Date().toISOString()
   };
 }
 
-async function handleGet(
-  req,
-  res,
-  user
-) {
-  const projectId =
-    requestProjectId(req);
-
-  if (projectId) {
-    const project =
-      await getOwnedProject(
-        projectId,
-        user.id
-      );
-
-    return sendJson(
-      res,
-      200,
-      {
-        ok: true,
-        project
-      }
-    );
-  }
-
-  const projects =
-    await listProjects(
-      user.id
-    );
-
-  return sendJson(
-    res,
-    200,
-    {
-      ok: true,
-      projects
-    }
-  );
-}
-
-async function handlePost(
-  req,
-  res,
-  user
-) {
-  const incomingProject =
-    normalizedProjectData(
-      req.body?.projectData ||
-      req.body?.project_data ||
-      req.body?.project
-    );
-
-  if (!incomingProject) {
-    return sendJson(
-      res,
-      400,
-      {
-        ok: false,
-        error:
-          "Project data is required."
-      }
-    );
-  }
-
-  const requestedProjectId =
-    requestProjectId(req);
-
-  let existingRow = null;
-
-  if (requestedProjectId) {
-    existingRow =
-      await getOwnedProject(
-        requestedProjectId,
-        user.id
-      );
-  }
-
-  const requestedName =
-    text(req.body?.name);
-
-  const businessName =
-    text(
-      incomingProject.business?.name
-    );
-
-  const name =
-    requestedName ||
-    (
-      businessName
-        ? `${businessName} Website`
-        : ""
-    ) ||
-    existingRow?.name ||
-    "My Website";
-
-  const requestedSlug =
-    cleanSlug(
-      req.body?.slug ||
-      incomingProject.project?.slug ||
-      existingRow?.slug
-    );
-
-  if (
-    requestedSlug &&
-    await slugIsTaken(
-      requestedSlug,
-      requestedProjectId
-    )
-  ) {
-    return sendJson(
-      res,
-      409,
-      {
-        ok: false,
-        error:
-          "That Bluvixa address is already reserved."
-      }
-    );
-  }
-
-  const plan =
-    text(
-      req.body?.plan ||
-      incomingProject.plan ||
-      existingRow?.plan ||
-      "starter"
-    ).toLowerCase();
-
-  const now =
-    new Date().toISOString();
-
-  if (existingRow) {
-    const protectedProject =
-      buildProtectedProjectData(
-        incomingProject,
-        existingRow,
-        user.id,
-        existingRow.id,
-        now
-      );
-
-    const {
-      data,
-      error
-    } = await admin
-      .from("projects")
-      .update({
-        name,
-        slug:
-          requestedSlug ||
-          existingRow.slug ||
-          null,
-        plan,
-        project_data:
-          protectedProject,
-        updated_at: now
-      })
-      .eq(
-        "id",
-        existingRow.id
-      )
-      .eq(
-        "user_id",
-        user.id
-      )
-      .select(
-        [
-          "id",
-          "user_id",
-          "name",
-          "slug",
-          "plan",
-          "project_data",
-          "published",
-          "published_url",
-          "custom_domain",
-          "domain_status",
-          "ssl_status",
-          "dns_verified",
-          "dns_records",
-          "verification_record",
-          "verified_at",
-          "domain_last_checked_at",
-          "domain_error",
-          "created_at",
-          "updated_at"
-        ].join(",")
-      )
-      .single();
-
-    if (error) {
-      throw error;
-    }
-
-    return sendJson(
-      res,
-      200,
-      {
-        ok: true,
-        saved: true,
-        created: false,
-        project: data
-      }
-    );
-  }
-
-  const temporaryProjectId =
-    null;
-
-  const initialProjectData = {
-    ...incomingProject,
-
-    project: {
-      ...(
-        isObject(
-          incomingProject.project
-        )
-          ? incomingProject.project
-          : {}
-      ),
-
-      customDomain: "",
-      domainStatus:
-        "not_connected",
-      sslStatus: "waiting",
-      dnsVerified: false,
-      dnsRecords: [],
-      verificationRecord: null
-    },
-
-    backend: {
-      ...(
-        isObject(
-          incomingProject.backend
-        )
-          ? incomingProject.backend
-          : {}
-      ),
-
-      userId: user.id,
-      websiteId:
-        temporaryProjectId,
-      published: false,
-      publishedUrl: null,
-      createdAt: now,
-      updatedAt: now
-    }
-  };
-
-  const {
-    data: inserted,
-    error: insertError
-  } = await admin
-    .from("projects")
-    .insert({
-      user_id: user.id,
-      name,
-      slug:
-        requestedSlug ||
-        null,
-      plan,
-      project_data:
-        initialProjectData,
-      published: false,
-      published_url: null,
-      custom_domain: null,
-      domain_status:
-        "not_connected",
-      ssl_status: "waiting",
-      dns_verified: false,
-      dns_records: [],
-      verification_record: null,
-      verified_at: null,
-      domain_last_checked_at:
-        null,
-      domain_error: null,
-      created_at: now,
-      updated_at: now
-    })
-    .select(
-      [
-        "id",
-        "user_id",
-        "name",
-        "slug",
-        "plan",
-        "project_data",
-        "published",
-        "published_url",
-        "custom_domain",
-        "domain_status",
-        "ssl_status",
-        "dns_verified",
-        "dns_records",
-        "verification_record",
-        "verified_at",
-        "domain_last_checked_at",
-        "domain_error",
-        "created_at",
-        "updated_at"
-      ].join(",")
-    )
-    .single();
-
-  if (insertError) {
-    throw insertError;
-  }
-
-  const finalizedProjectData =
-    buildProtectedProjectData(
-      incomingProject,
-      inserted,
-      user.id,
-      inserted.id,
-      now
-    );
-
-  const {
-    data: finalized,
-    error: finalizeError
-  } = await admin
-    .from("projects")
-    .update({
-      project_data:
-        finalizedProjectData,
-      updated_at: now
-    })
-    .eq(
-      "id",
-      inserted.id
-    )
-    .eq(
-      "user_id",
-      user.id
-    )
-    .select(
-      [
-        "id",
-        "user_id",
-        "name",
-        "slug",
-        "plan",
-        "project_data",
-        "published",
-        "published_url",
-        "custom_domain",
-        "domain_status",
-        "ssl_status",
-        "dns_verified",
-        "dns_records",
-        "verification_record",
-        "verified_at",
-        "domain_last_checked_at",
-        "domain_error",
-        "created_at",
-        "updated_at"
-      ].join(",")
-    )
-    .single();
-
-  if (finalizeError) {
-    throw finalizeError;
-  }
-
-  return sendJson(
-    res,
-    201,
-    {
-      ok: true,
-      saved: true,
-      created: true,
-      project: finalized
-    }
-  );
-}
-
-export default async function handler(
-  req,
-  res
-) {
-  if (req.method === "OPTIONS") {
-    res.setHeader(
-      "Allow",
-      "GET, POST, OPTIONS"
-    );
-
-    return res
-      .status(204)
-      .end();
-  }
-
+module.exports = async function handler(req, res) {
   try {
-    const user =
-      await requireUser(req);
+    const name = action(req, "list");
+    const body = parseJsonBody(req);
+    const user = await requireUser(req);
+    const supabase = getAdmin();
 
-    if (req.method === "GET") {
-      return handleGet(
-        req,
-        res,
-        user
-      );
+    if (name === "list") {
+      method(req, ["GET"]);
+      const { data, error } = await supabase
+        .from("projects")
+        .select("*, project_snapshots(*)")
+        .eq("user_id", user.id)
+        .order("updated_at", { ascending: false });
+
+      if (error) throw error;
+      const projects = (data || []).map((row) => ({
+        ...row,
+        data: row.project_data || {},
+        snapshots: row.project_snapshots || []
+      }));
+      return ok(res, { projects });
     }
 
-    if (req.method === "POST") {
-      return handlePost(
-        req,
-        res,
-        user
-      );
+    if (name === "get") {
+      method(req, ["GET"]);
+      const project = await requireProjectOwner(text(req.query.id, 80), user.id);
+      return ok(res, { project: { ...project, data: project.project_data || {} } });
     }
 
-    res.setHeader(
-      "Allow",
-      "GET, POST, OPTIONS"
-    );
+    if (name === "create") {
+      method(req, ["POST"]);
+      const input = body.project || body;
+      const payload = projectPayload(input, user.id);
 
-    return sendJson(
-      res,
-      405,
-      {
-        ok: false,
-        error:
-          "Method not allowed."
+      const { data, error } = await supabase
+        .from("projects")
+        .insert(payload)
+        .select("*")
+        .single();
+
+      if (error) {
+        if (error.code === "23505") {
+          payload.slug = `${payload.slug}-${Math.random().toString(36).slice(2, 6)}`;
+          const retry = await supabase.from("projects").insert(payload).select("*").single();
+          if (retry.error) throw retry.error;
+          return created(res, { project: { ...retry.data, data: retry.data.project_data || {} } });
+        }
+        throw error;
       }
-    );
-  } catch (error) {
-    console.error(
-      "Projects API error:",
-      error
-    );
 
-    return sendError(
-      res,
-      error
-    );
+      return created(res, { project: { ...data, data: data.project_data || {} } });
+    }
+
+    if (name === "save") {
+      method(req, ["POST", "PUT"]);
+      const input = body.project || body;
+      let projectId = text(input.id, 80);
+
+      if (!projectId) {
+        const payload = projectPayload(input, user.id);
+        const { data, error } = await supabase
+          .from("projects")
+          .insert(payload)
+          .select("*")
+          .single();
+        if (error) throw error;
+        return created(res, { project: { ...data, data: data.project_data || {} } });
+      }
+
+      await requireProjectOwner(projectId, user.id);
+      const payload = projectPayload(input, user.id);
+      delete payload.user_id;
+
+      const { data, error } = await supabase
+        .from("projects")
+        .update(payload)
+        .eq("id", projectId)
+        .eq("user_id", user.id)
+        .select("*")
+        .single();
+
+      if (error) throw error;
+      return ok(res, { project: { ...data, data: data.project_data || {} } });
+    }
+
+    if (name === "snapshot") {
+      method(req, ["POST"]);
+      const projectId = text(body.project_id, 80);
+      await requireProjectOwner(projectId, user.id);
+
+      const snapshot = body.snapshot || {};
+      const { data, error } = await supabase
+        .from("project_snapshots")
+        .insert({
+          project_id: projectId,
+          user_id: user.id,
+          name: text(snapshot.name, 180) || `Snapshot ${new Date().toLocaleString()}`,
+          snapshot_data: snapshot.data || {},
+          created_at: new Date().toISOString()
+        })
+        .select("*")
+        .single();
+
+      if (error) throw error;
+      return created(res, { snapshot: { ...data, data: data.snapshot_data || {} } });
+    }
+
+    if (name === "delete") {
+      method(req, ["DELETE", "POST"]);
+      const projectId = text(req.query.id || body.project_id, 80);
+      await requireProjectOwner(projectId, user.id);
+      const { error } = await supabase
+        .from("projects")
+        .delete()
+        .eq("id", projectId)
+        .eq("user_id", user.id);
+      if (error) throw error;
+      return ok(res, { deleted: true });
+    }
+
+    return fail(res, 404, "Unknown projects action");
+  } catch (error) {
+    return handleError(res, error);
   }
-}
+};
