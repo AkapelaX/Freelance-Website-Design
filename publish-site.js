@@ -112,6 +112,7 @@
 
   function readStoredProjects() {
     var possibleKeys = [
+      "bluvixa_projects_v6",
       "bluvixa_projects",
       "bluvixaProjects",
       "bluvixa_platform_projects",

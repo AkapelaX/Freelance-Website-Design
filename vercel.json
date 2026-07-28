@@ -1,14 +1,16 @@
 {
-  "$schema": "https://openapi.vercel.sh/vercel.json",
-  "rewrites": [
-    {
-      "source": "/site/:slug",
-      "destination": "/public-site.html?slug=:slug"
-    }
-  ],
-  "functions": {
-    "api/export-website.js": {
-      "includeFiles": "./public-site.html"
-    }
-  }
+"$schema": "https://openapi.vercel.sh/vercel.json",
+"rewrites": [
+{
+"source": "/site/:slug",
+"destination": "/public-site.html?slug=:slug"
+}
+],
+"functions": {
+"api/export-website.js": {
+"includeFiles": [
+"public-site.html"
+]
+}
+}
 }

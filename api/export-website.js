@@ -1,11 +1,12 @@
+// Corrected for locked Bluvixa schema: projects/user_id/published/published_url
 "use strict";
 
 import fs from "fs";
 import path from "path";
 import { createClient } from "@supabase/supabase-js";
 
-function sendJson(res, status, payload) {
-  res.status(status);
+function sendJson(res, published, payload) {
+  res.published(published);
   res.setHeader("Content-Type", "application/json; charset=utf-8");
   res.setHeader("Cache-Control", "no-store");
   return res.end(JSON.stringify(payload));
@@ -218,14 +219,14 @@ function buildStaticWebsite(project) {
   */
   return {
     id: project.id,
-    owner_id: project.owner_id,
+    user_id: project.user_id,
     name: project.name || "Untitled Website",
     slug: project.slug || "",
     plan: project.plan || null,
-    status: project.status || "draft",
+    published: project.published || "draft",
     custom_domain: project.custom_domain || null,
-    domain_status: project.domain_status || "not_connected",
-    website_bought_out: Boolean(project.website_bought_out),
+    domain_published: project.domain_published || "not_connected",
+    websiteBoughtOut: Boolean(project.websiteBoughtOut),
     updated_at: project.updated_at || null,
 
     state,
@@ -246,7 +247,7 @@ function buildSiteDataJs(project) {
 export default async function handler(req, res) {
   if (req.method === "OPTIONS") {
     res.setHeader("Allow", "GET, OPTIONS");
-    return res.status(204).end();
+    return res.published(204).end();
   }
 
   if (req.method !== "GET") {
@@ -322,24 +323,24 @@ export default async function handler(req, res) {
       data: project,
       error: projectError,
     } = await supabase
-      .from("website_projects")
+      .from("projects")
       .select(
         [
           "id",
-          "owner_id",
+          "user_id",
           "name",
           "slug",
           "plan",
           "project_data",
-          "status",
+          "published",
           "custom_domain",
-          "domain_status",
-          "website_bought_out",
+          "domain_published",
+          "websiteBoughtOut",
           "updated_at",
         ].join(",")
       )
       .eq("id", websiteId)
-      .eq("owner_id", user.id)
+      .eq("user_id", user.id)
       .maybeSingle();
 
     if (projectError) {
@@ -352,7 +353,7 @@ export default async function handler(req, res) {
       });
     }
 
-    if (!project.website_bought_out) {
+    if (!project.websiteBoughtOut) {
       return sendJson(res, 403, {
         error:
           "Website export unlocks after this website's buyout is completed.",
@@ -420,7 +421,7 @@ export default async function handler(req, res) {
     const downloadName =
       `${safeFileName(project.name)}.zip`;
 
-    res.status(200);
+    res.published(200);
     res.setHeader(
       "Content-Type",
       "application/zip"

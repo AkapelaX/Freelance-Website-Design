@@ -1,20 +1,22 @@
-const JSON_HEADERS = {
-  "Content-Type": "application/json; charset=utf-8",
-  "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0"
-};
+"use strict";
 
-function send(res, status, body) {
-  res.status(status);
-
-  Object.entries(JSON_HEADERS).forEach(([key, value]) => {
-    res.setHeader(key, value);
-  });
-
-  return res.json(body);
-}
+import {
+  admin,
+  sendJson
+} from "./_lib.js";
 
 function text(value) {
-  return typeof value === "string" ? value.trim() : "";
+  return typeof value === "string"
+    ? value.trim()
+    : "";
+}
+
+function isObject(value) {
+  return Boolean(
+    value &&
+    typeof value === "object" &&
+    !Array.isArray(value)
+  );
 }
 
 function imageUrl(value) {
@@ -22,7 +24,7 @@ function imageUrl(value) {
     return value.trim();
   }
 
-  if (value && typeof value === "object") {
+  if (isObject(value)) {
     return text(
       value.url ||
       value.src ||
@@ -48,11 +50,27 @@ function firstImage(...values) {
   return "";
 }
 
+function normalizeSlug(value) {
+  return text(value)
+    .toLowerCase()
+    .replace(/[^a-z0-9-]/g, "")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 48);
+}
+
+function normalizeHost(value) {
+  return text(value)
+    .toLowerCase()
+    .replace(/^https?:\/\//, "")
+    .replace(/\/.*$/, "")
+    .replace(/:\d+$/, "")
+    .replace(/^www\./, "")
+    .replace(/\.$/, "");
+}
+
 function normalizeProjectState(projectData) {
   const source =
-    projectData &&
-    typeof projectData === "object" &&
-    !Array.isArray(projectData)
+    isObject(projectData)
       ? projectData
       : {};
 
@@ -61,65 +79,47 @@ function normalizeProjectState(projectData) {
   };
 
   const business =
-    source.business &&
-    typeof source.business === "object" &&
-    !Array.isArray(source.business)
+    isObject(source.business)
       ? { ...source.business }
       : {};
 
   const header =
-    source.header &&
-    typeof source.header === "object" &&
-    !Array.isArray(source.header)
+    isObject(source.header)
       ? { ...source.header }
       : {};
 
   const design =
-    source.design &&
-    typeof source.design === "object" &&
-    !Array.isArray(source.design)
+    isObject(source.design)
       ? { ...source.design }
       : {};
 
   const sections =
-    source.sections &&
-    typeof source.sections === "object" &&
-    !Array.isArray(source.sections)
+    isObject(source.sections)
       ? source.sections
       : {};
 
   const aboutSection =
-    sections.about &&
-    typeof sections.about === "object" &&
-    !Array.isArray(sections.about)
+    isObject(sections.about)
       ? sections.about
       : {};
 
   const featuredSection =
-    sections.featured &&
-    typeof sections.featured === "object" &&
-    !Array.isArray(sections.featured)
+    isObject(sections.featured)
       ? sections.featured
       : {};
 
   const gallerySection =
-    sections.gallery &&
-    typeof sections.gallery === "object" &&
-    !Array.isArray(sections.gallery)
+    isObject(sections.gallery)
       ? sections.gallery
       : {};
 
   const mapSection =
-    sections.map &&
-    typeof sections.map === "object" &&
-    !Array.isArray(sections.map)
+    isObject(sections.map)
       ? sections.map
       : {};
 
   const contactSection =
-    sections.contact &&
-    typeof sections.contact === "object" &&
-    !Array.isArray(sections.contact)
+    isObject(sections.contact)
       ? sections.contact
       : {};
 
@@ -243,143 +243,274 @@ function normalizeProjectState(projectData) {
   state.header = header;
   state.design = design;
 
-  state.photos = Array.isArray(source.photos)
-    ? source.photos
-    : Array.isArray(featuredSection.items)
-      ? featuredSection.items
-      : Array.isArray(featuredSection.photos)
-        ? featuredSection.photos
-        : [];
+  state.photos =
+    Array.isArray(source.photos)
+      ? source.photos
+      : Array.isArray(featuredSection.items)
+        ? featuredSection.items
+        : Array.isArray(featuredSection.photos)
+          ? featuredSection.photos
+          : [];
 
-  state.gallery = Array.isArray(source.gallery)
-    ? source.gallery
-    : Array.isArray(gallerySection.items)
-      ? gallerySection.items
-      : Array.isArray(gallerySection.photos)
-        ? gallerySection.photos
-        : [];
+  state.gallery =
+    Array.isArray(source.gallery)
+      ? source.gallery
+      : Array.isArray(gallerySection.items)
+        ? gallerySection.items
+        : Array.isArray(gallerySection.photos)
+          ? gallerySection.photos
+          : [];
 
   return state;
 }
 
-export default async function handler(req, res) {
+async function findPublishedProject({
+  slug,
+  host
+}) {
+  let query = admin
+    .from("projects")
+    .select(
+      [
+        "id",
+        "user_id",
+        "name",
+        "slug",
+        "plan",
+        "project_data",
+        "published",
+        "published_url",
+        "custom_domain",
+        "domain_status",
+        "ssl_status",
+        "dns_verified",
+        "updated_at"
+      ].join(",")
+    )
+    .eq("published", true)
+    .limit(1);
+
+  if (host) {
+    query = query.eq(
+      "custom_domain",
+      host
+    );
+  } else {
+    query = query.eq(
+      "slug",
+      slug
+    );
+  }
+
+  const {
+    data,
+    error
+  } = await query.maybeSingle();
+
+  if (error) {
+    throw error;
+  }
+
+  return data || null;
+}
+
+export default async function handler(
+  req,
+  res
+) {
+  if (req.method === "OPTIONS") {
+    res.setHeader(
+      "Allow",
+      "GET, OPTIONS"
+    );
+
+    return res
+      .status(204)
+      .end();
+  }
+
   if (req.method !== "GET") {
-    res.setHeader("Allow", "GET");
+    res.setHeader(
+      "Allow",
+      "GET, OPTIONS"
+    );
 
-    return send(res, 405, {
-      error: "Method not allowed."
-    });
+    return sendJson(
+      res,
+      405,
+      {
+        error:
+          "Method not allowed."
+      }
+    );
   }
-
-  const supabaseUrl = process.env.SUPABASE_URL;
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-  if (!supabaseUrl || !serviceRoleKey) {
-    return send(res, 500, {
-      error: "Publishing service is not configured."
-    });
-  }
-
-  const slug = String(req.query.slug || "")
-    .trim()
-    .toLowerCase();
-
-  const host = String(req.query.host || "")
-    .trim()
-    .toLowerCase()
-    .replace(/^www\./, "");
-
-  if (!slug && !host) {
-    return send(res, 400, {
-      error: "A website slug or domain is required."
-    });
-  }
-
-  const field = host ? "custom_domain" : "slug";
-  const lookupValue = host || slug;
-
-  const query = new URLSearchParams({
-    select:
-      "id,name,slug,custom_domain,project_data,status,updated_at",
-    status: "eq.published",
-    [field]: `eq.${lookupValue}`,
-    limit: "1"
-  });
-
-  let response;
 
   try {
-    response = await fetch(
-      `${supabaseUrl}/rest/v1/website_projects?${query.toString()}`,
+    const slug =
+      normalizeSlug(
+        req.query?.slug
+      );
+
+    const host =
+      normalizeHost(
+        req.query?.host
+      );
+
+    if (!slug && !host) {
+      return sendJson(
+        res,
+        400,
+        {
+          error:
+            "A website slug or domain is required."
+        }
+      );
+    }
+
+    const project =
+      await findPublishedProject({
+        slug,
+        host
+      });
+
+    if (!project) {
+      return sendJson(
+        res,
+        404,
+        {
+          error:
+            "This website is not published."
+        }
+      );
+    }
+
+    const state =
+      normalizeProjectState(
+        project.project_data
+      );
+
+    state.plan =
+      project.plan ||
+      state.plan ||
+      "starter";
+
+    state.project = {
+      ...(
+        isObject(state.project)
+          ? state.project
+          : {}
+      ),
+
+      slug:
+        project.slug ||
+        "",
+
+      customDomain:
+        project.custom_domain ||
+        "",
+
+      domainStatus:
+        project.domain_status ||
+        "not_connected",
+
+      sslStatus:
+        project.ssl_status ||
+        "waiting",
+
+      dnsVerified:
+        project.dns_verified === true
+    };
+
+    state.backend = {
+      ...(
+        isObject(state.backend)
+          ? state.backend
+          : {}
+      ),
+
+      userId:
+        project.user_id,
+
+      websiteId:
+        project.id,
+
+      published: true,
+
+      publishedUrl:
+        project.published_url ||
+        null,
+
+      updatedAt:
+        project.updated_at ||
+        null
+    };
+
+    return sendJson(
+      res,
+      200,
       {
-        method: "GET",
-        headers: {
-          apikey: serviceRoleKey,
-          Authorization: `Bearer ${serviceRoleKey}`,
-          Accept: "application/json"
-        },
-        cache: "no-store"
+        website: {
+          id:
+            project.id,
+
+          name:
+            project.name ||
+            "Untitled Website",
+
+          slug:
+            project.slug ||
+            "",
+
+          plan:
+            project.plan ||
+            "starter",
+
+          published:
+            true,
+
+          publishedUrl:
+            project.published_url ||
+            null,
+
+          customDomain:
+            project.custom_domain ||
+            null,
+
+          domainStatus:
+            project.domain_status ||
+            "not_connected",
+
+          sslStatus:
+            project.ssl_status ||
+            "waiting",
+
+          dnsVerified:
+            project.dns_verified === true,
+
+          updatedAt:
+            project.updated_at ||
+            null,
+
+          state
+        }
       }
     );
   } catch (error) {
     console.error(
-      "Published website request failed:",
+      "Public website API error:",
       error
     );
 
-    return send(res, 500, {
-      error: "The website could not be loaded."
-    });
-  }
-
-  if (!response.ok) {
-    const detail = await response.text();
-
-    console.error(
-      "Published website lookup failed:",
-      detail
+    return sendJson(
+      res,
+      Number.isInteger(error?.status)
+        ? error.status
+        : 500,
+      {
+        error:
+          error?.message ||
+          "The website could not be loaded."
+      }
     );
-
-    return send(res, 500, {
-      error: "The website could not be loaded."
-    });
   }
-
-  let rows;
-
-  try {
-    rows = await response.json();
-  } catch (error) {
-    console.error(
-      "Published website response was invalid:",
-      error
-    );
-
-    return send(res, 500, {
-      error: "The website data could not be read."
-    });
-  }
-
-  const row = Array.isArray(rows) ? rows[0] : null;
-
-  if (!row) {
-    return send(res, 404, {
-      error: "This website is not published."
-    });
-  }
-
-  const state = normalizeProjectState(
-    row.project_data
-  );
-
-  return send(res, 200, {
-    website: {
-      id: row.id,
-      name: row.name,
-      slug: row.slug,
-      customDomain: row.custom_domain,
-      updatedAt: row.updated_at,
-      state
-    }
-  });
 }

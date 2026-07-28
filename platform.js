@@ -158,6 +158,7 @@ function lockBuilderPlan(){
   }
 }
 function projectUrl(project){
+  if(project&&project.publishedUrl)return String(project.publishedUrl);
   if(project&&project.customDomain&&project.domainStatus==="connected")return "https://"+project.customDomain;
   var slug=sanitizeSlug(project&&project.slug||project&&project.name||"website");
   return window.location.origin+"/site/"+encodeURIComponent(slug);
@@ -190,6 +191,7 @@ function normalizeProject(project){
   copy.state=copy.state||{};
   copy.slug=copy.slug||"";
   copy.published=!!copy.published;
+  copy.publishedUrl=copy.publishedUrl||"";
   copy.websiteBoughtOut=!!copy.websiteBoughtOut;
   copy.domainStatus=copy.domainStatus||"not_connected";
   return copy;
@@ -366,6 +368,7 @@ function rowToProject(row){
     state:state,
     published:row.status==="published",
     publishedAt:(state.backend&&state.backend.publishedAt)||row.updated_at||null,
+    publishedUrl:(state.backend&&state.backend.publishedUrl)||"",
     customDomain:row.custom_domain||"",
     domainStatus:row.domain_status||"not_connected",
     websiteBoughtOut:!!row.website_bought_out,
@@ -679,8 +682,8 @@ async function applySession(session){
     }catch(error){
       console.warn("Bluvixa cloud workspace did not finish:",error);
       cloudWorkspaceLoaded=false;
-      projectsCache=readJson(PROJECTS_KEY,[]).map(normalizeProject);
-      snapshotsCache=readJson(SNAPSHOTS_KEY,[]).map(normalizeSnapshot);
+      projectsCache=safeJson(PROJECTS_KEY,[]).map(normalizeProject);
+      snapshotsCache=safeJson(SNAPSHOTS_KEY,[]).map(normalizeSnapshot);
       renderProjects();renderDrafts();renderDomainSelectors();renderPublishing();
       toast("Signed in. Cloud data is taking longer than expected.");
     }
@@ -1347,7 +1350,9 @@ async function togglePublish(projectId){
       project.state.backend=project.state.backend||{};
       project.state.project=project.state.project||{};
       project.state.backend.published=project.published;
+      project.publishedUrl=result.url||result.published_url||project.publishedUrl||"";
       project.state.backend.publishedAt=project.publishedAt;
+      project.state.backend.publishedUrl=project.publishedUrl;
       project.state.project.slug=project.slug;
       project.state.project.domainStatus=project.domainStatus;
     }

@@ -89,7 +89,7 @@
       mapUrl:"",
       billing:{status:"trialing",boughtOut:false},
       project:{slug:"",domainMode:"subdomain",customDomain:"",domainStatus:"not_connected",dnsVerified:false},
-      backend:{userId:null,websiteId:null,published:false,updatedAt:null}
+      backend:{userId:null,websiteId:null,published:false,publishedUrl:"",updatedAt:null}
     };
 
     function byId(id){return document.getElementById(id);}
@@ -132,6 +132,9 @@
     }
 
     function getPublishedUrl(){
+      if(state.backend && state.backend.publishedUrl){
+        return state.backend.publishedUrl;
+      }
       if(state.project.domainMode === "custom" && state.project.customDomain){
         return "https://" + state.project.customDomain;
       }
@@ -779,13 +782,13 @@
         },
         website:{
           id:state.backend.websiteId,
-          owner_id:state.backend.userId,
+          user_id:state.backend.userId,
           slug:state.project.slug,
           domain_mode:state.project.domainMode,
           custom_domain:state.project.customDomain,
           domain_status:state.project.domainStatus,
           dns_verified:state.project.dnsVerified,
-          published_url:getPublishedUrl(),
+          published_url:state.backend.publishedUrl || getPublishedUrl(),
           business_name:state.business.name,
           business_bio:state.business.bio,
           phone:state.business.phone,
@@ -956,6 +959,13 @@
           domainStatus:"not_connected",
           dnsVerified:false
         },state.project || {});
+        state.backend = Object.assign({
+          userId:null,
+          websiteId:null,
+          published:false,
+          publishedUrl:"",
+          updatedAt:null
+        },state.backend || {});
         state.design = Object.assign({
           logo:"",
           themeColor:state.design && state.design.color ? state.design.color : "#1769ff",
@@ -1025,7 +1035,7 @@
         mapUrl:"",
         billing:{status:"trialing",boughtOut:false},
         project:{slug:"",domainMode:"subdomain",customDomain:"",domainStatus:"not_connected",dnsVerified:false},
-        backend:{userId:null,websiteId:null,published:false,updatedAt:null}
+        backend:{userId:null,websiteId:null,published:false,publishedUrl:"",updatedAt:null}
       };
 
       pendingPhotoMedia = {src:"",type:""};
@@ -1279,7 +1289,7 @@
           showToast("Enter a website address first.");
           return;
         }
-        showToast(state.project.slug + ".bluvixa.com is available in this prototype.");
+        showToast("Use the connected domain service to confirm whether " + state.project.slug + ".bluvixa.com is available.");
       });
 
       byId("connectDomainBtn").addEventListener("click",function(){
@@ -1308,7 +1318,7 @@
         state.project.dnsVerified = true;
         render();
         saveDraft(false);
-        showToast(state.project.customDomain + " is connected in this prototype.");
+        showToast(state.project.customDomain + " is marked connected locally. Confirm the live status through the domain service.");
       });
 
       byId("saveBtn").addEventListener("click",function(){
@@ -1338,7 +1348,7 @@
         state.billing.status = "bought_out";
         byId("subscriptionStatus").value = "bought_out";
         saveDraft(false);
-        showToast(config.name + " website buyout simulation: $" + config.buyout + ".");
+        showToast(config.name + " buyout selected: $" + config.buyout + ". Complete payment through Stripe Checkout.");
       });
 
       all(".pricingTrial").forEach(function(button){
@@ -1383,6 +1393,13 @@
     window.bluvixaImportState = function(nextState){
       if(!nextState || typeof nextState !== "object") return;
       state = Object.assign({}, state, nextState);
+      state.backend = Object.assign({
+        userId:null,
+        websiteId:null,
+        published:false,
+        publishedUrl:"",
+        updatedAt:null
+      },state.backend || {});
       applyToInputs();
       enforcePlan();
       render();

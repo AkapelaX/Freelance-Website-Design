@@ -1,29 +1,79 @@
 "use strict";
 
-function send(res, status, body) {
-  res.status(status).json(body);
+import {
+  admin,
+  requireUser,
+  sendError
+} from "./api/_lib.js";
+
+function sendJson(res, status, payload) {
+  res.status(status);
+  res.setHeader(
+    "Content-Type",
+    "application/json; charset=utf-8"
+  );
+  res.setHeader(
+    "Cache-Control",
+    "no-store, no-cache, must-revalidate, max-age=0"
+  );
+
+  return res.end(
+    JSON.stringify(payload)
+  );
+}
+
+function text(value) {
+  return typeof value === "string"
+    ? value.trim()
+    : "";
 }
 
 function cleanSlug(value) {
-  return String(value || "website")
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/^-|-$/g, "")
-    .slice(0, 48) || "website";
+  return (
+    text(value || "website")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/-+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 48) ||
+    "website"
+  );
 }
 
 function parsePublishValue(value) {
-  if (value === true || value === 1 || value === "1") return true;
-  if (value === false || value === 0 || value === "0") return false;
+  if (
+    value === true ||
+    value === 1 ||
+    value === "1"
+  ) {
+    return true;
+  }
+
+  if (
+    value === false ||
+    value === 0 ||
+    value === "0"
+  ) {
+    return false;
+  }
 
   if (typeof value === "string") {
-    const normalized = value.trim().toLowerCase();
-    if (normalized === "true" || normalized === "publish" || normalized === "published") {
+    const normalized =
+      value.trim().toLowerCase();
+
+    if (
+      normalized === "true" ||
+      normalized === "publish" ||
+      normalized === "published"
+    ) {
       return true;
     }
-    if (normalized === "false" || normalized === "unpublish" || normalized === "draft") {
+
+    if (
+      normalized === "false" ||
+      normalized === "unpublish" ||
+      normalized === "draft"
+    ) {
       return false;
     }
   }
@@ -31,195 +81,446 @@ function parsePublishValue(value) {
   return null;
 }
 
-async function getAuthenticatedUser(supabaseUrl, anonKey, authorization) {
-  if (!authorization.toLowerCase().startsWith("bearer ")) return null;
-
-  const response = await fetch(`${supabaseUrl}/auth/v1/user`, {
-    headers: {
-      apikey: anonKey,
-      Authorization: authorization
-    }
-  });
-
-  if (!response.ok) return null;
-  return response.json();
+function projectIdFrom(req) {
+  return text(
+    req.body?.project_id ||
+    req.body?.projectId ||
+    req.query?.project_id ||
+    req.query?.projectId
+  );
 }
 
-export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    res.setHeader("Allow", "POST");
-    return send(res, 405, { error: "Method not allowed." });
-  }
-
-  const supabaseUrl = process.env.SUPABASE_URL;
-  const anonKey = process.env.SUPABASE_ANON_KEY;
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  const authorization = req.headers.authorization || "";
-
-  if (!supabaseUrl || !anonKey || !serviceRoleKey) {
-    return send(res, 500, {
-      error: "Publishing service is not configured."
-    });
-  }
-
-  const user = await getAuthenticatedUser(
-    supabaseUrl,
-    anonKey,
-    authorization
-  );
-
-  if (!user || !user.id) {
-    return send(res, 401, { error: "Please sign in again." });
-  }
-
-  const projectId = String(req.body?.projectId || "").trim();
-  const publish = parsePublishValue(req.body?.publish);
-
-  if (!projectId) {
-    return send(res, 400, {
-      error: "A website project is required."
-    });
-  }
-
-  if (publish === null) {
-    return send(res, 400, {
-      error: "Publish must be true or false."
-    });
-  }
-
-  const projectQuery = new URLSearchParams({
-    select: "id,owner_id,name,slug,status",
-    id: `eq.${projectId}`,
-    owner_id: `eq.${user.id}`,
-    limit: "1"
-  });
-
-  const projectResponse = await fetch(
-    `${supabaseUrl}/rest/v1/website_projects?${projectQuery}`,
-    {
-      headers: {
-        apikey: serviceRoleKey,
-        Authorization: `Bearer ${serviceRoleKey}`
-      }
-    }
-  );
-
-  if (!projectResponse.ok) {
-    console.error(
-      "Website verification failed:",
-      await projectResponse.text()
-    );
-    return send(res, 500, {
-      error: "The website could not be verified."
-    });
-  }
-
-  const projectRows = await projectResponse.json();
-  const project = projectRows[0];
-
-  if (!project) {
-    return send(res, 404, { error: "Website not found." });
-  }
-
-  let slug = cleanSlug(
-    project.slug ||
+function requestedSlugFrom(req) {
+  return cleanSlug(
+    req.body?.requested_slug ||
     req.body?.requestedSlug ||
-    project.name
+    req.body?.slug ||
+    ""
+  );
+}
+
+function requestOrigin(req) {
+  const forwardedProto =
+    text(
+      req.headers["x-forwarded-proto"]
+    )
+      .split(",")[0]
+      .trim();
+
+  const protocol =
+    forwardedProto ||
+    "https";
+
+  const forwardedHost =
+    text(
+      req.headers["x-forwarded-host"]
+    )
+      .split(",")[0]
+      .trim();
+
+  const host =
+    forwardedHost ||
+    text(req.headers.host) ||
+    "bluvixa.com";
+
+  return `${protocol}://${host}`;
+}
+
+async function getOwnedProject(
+  projectId,
+  userId
+) {
+  const {
+    data,
+    error
+  } = await admin
+    .from("projects")
+    .select(
+      [
+        "id",
+        "user_id",
+        "name",
+        "slug",
+        "plan",
+        "project_data",
+        "published",
+        "published_url",
+        "custom_domain",
+        "domain_status",
+        "created_at",
+        "updated_at"
+      ].join(",")
+    )
+    .eq("id", projectId)
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (error) {
+    throw error;
+  }
+
+  if (!data) {
+    const error = new Error(
+      "Website not found."
+    );
+
+    error.status = 404;
+    throw error;
+  }
+
+  return data;
+}
+
+async function slugTaken(
+  slug,
+  projectId
+) {
+  const {
+    data,
+    error
+  } = await admin
+    .from("projects")
+    .select("id")
+    .eq("slug", slug)
+    .neq("id", projectId)
+    .limit(1);
+
+  if (error) {
+    throw error;
+  }
+
+  return (
+    Array.isArray(data) &&
+    data.length > 0
+  );
+}
+
+async function uniqueSlug(
+  baseSlug,
+  projectId
+) {
+  const normalizedBase =
+    cleanSlug(baseSlug);
+
+  if (
+    !await slugTaken(
+      normalizedBase,
+      projectId
+    )
+  ) {
+    return normalizedBase;
+  }
+
+  const suffix =
+    String(projectId)
+      .replace(/-/g, "")
+      .slice(-8);
+
+  const trimmedBase =
+    normalizedBase
+      .slice(
+        0,
+        Math.max(
+          1,
+          48 - suffix.length - 1
+        )
+      )
+      .replace(/-+$/g, "");
+
+  const candidate =
+    `${trimmedBase}-${suffix}`;
+
+  if (
+    !await slugTaken(
+      candidate,
+      projectId
+    )
+  ) {
+    return candidate;
+  }
+
+  const error = new Error(
+    "A unique website address could not be created."
   );
 
-  if (publish) {
-    const collisionQuery = new URLSearchParams({
-      select: "id",
-      slug: `eq.${slug}`,
-      id: `neq.${projectId}`,
-      limit: "1"
-    });
+  error.status = 409;
+  throw error;
+}
 
-    const collisionResponse = await fetch(
-      `${supabaseUrl}/rest/v1/website_projects?${collisionQuery}`,
+function buildPublishedUrl(
+  req,
+  project,
+  slug,
+  publish
+) {
+  if (!publish) {
+    return null;
+  }
+
+  const customDomain =
+    text(project.custom_domain)
+      .toLowerCase()
+      .replace(/^https?:\/\//, "")
+      .replace(/\/.*$/, "")
+      .replace(/^www\./, "");
+
+  if (
+    customDomain &&
+    project.domain_status === "connected"
+  ) {
+    return `https://${customDomain}`;
+  }
+
+  return (
+    `${requestOrigin(req)}` +
+    `/site/${encodeURIComponent(slug)}`
+  );
+}
+
+function protectProjectData(
+  projectData,
+  {
+    projectId,
+    userId,
+    published,
+    publishedUrl,
+    slug,
+    updatedAt
+  }
+) {
+  const source =
+    projectData &&
+    typeof projectData === "object" &&
+    !Array.isArray(projectData)
+      ? projectData
+      : {};
+
+  const projectSettings =
+    source.project &&
+    typeof source.project === "object" &&
+    !Array.isArray(source.project)
+      ? source.project
+      : {};
+
+  const backend =
+    source.backend &&
+    typeof source.backend === "object" &&
+    !Array.isArray(source.backend)
+      ? source.backend
+      : {};
+
+  return {
+    ...source,
+
+    project: {
+      ...projectSettings,
+      slug
+    },
+
+    backend: {
+      ...backend,
+      userId,
+      websiteId: projectId,
+      published,
+      publishedUrl,
+      updatedAt
+    }
+  };
+}
+
+export default async function handler(
+  req,
+  res
+) {
+  if (req.method === "OPTIONS") {
+    res.setHeader(
+      "Allow",
+      "POST, OPTIONS"
+    );
+
+    return res
+      .status(204)
+      .end();
+  }
+
+  if (req.method !== "POST") {
+    res.setHeader(
+      "Allow",
+      "POST, OPTIONS"
+    );
+
+    return sendJson(
+      res,
+      405,
       {
-        headers: {
-          apikey: serviceRoleKey,
-          Authorization: `Bearer ${serviceRoleKey}`
-        }
+        ok: false,
+        error:
+          "Method not allowed."
       }
     );
+  }
 
-    if (!collisionResponse.ok) {
-      console.error(
-        "Slug collision check failed:",
-        await collisionResponse.text()
+  try {
+    const user =
+      await requireUser(req);
+
+    const projectId =
+      projectIdFrom(req);
+
+    const publish =
+      parsePublishValue(
+        req.body?.publish
       );
-      return send(res, 500, {
-        error: "The website address could not be verified."
-      });
+
+    if (!projectId) {
+      return sendJson(
+        res,
+        400,
+        {
+          ok: false,
+          error:
+            "A website project is required."
+        }
+      );
     }
 
-    const collision = (await collisionResponse.json())[0];
-
-    if (collision) {
-      slug = `${slug}-${projectId.replace(/-/g, "").slice(-8)}`;
+    if (publish === null) {
+      return sendJson(
+        res,
+        400,
+        {
+          ok: false,
+          error:
+            "Publish must be true or false."
+        }
+      );
     }
-  }
 
-  const patchBody = {
-    status: publish ? "published" : "draft"
-  };
+    const project =
+      await getOwnedProject(
+        projectId,
+        user.id
+      );
 
-  if (publish || !project.slug) {
-    patchBody.slug = slug;
-  }
+    let slug =
+      cleanSlug(
+        project.slug ||
+        requestedSlugFrom(req) ||
+        project.name
+      );
 
-  const updateResponse = await fetch(
-    `${supabaseUrl}/rest/v1/website_projects` +
-      `?id=eq.${encodeURIComponent(projectId)}` +
-      `&owner_id=eq.${encodeURIComponent(user.id)}`,
-    {
-      method: "PATCH",
-      headers: {
-        apikey: serviceRoleKey,
-        Authorization: `Bearer ${serviceRoleKey}`,
-        "Content-Type": "application/json",
-        Prefer: "return=representation"
-      },
-      body: JSON.stringify(patchBody)
+    if (publish) {
+      slug =
+        await uniqueSlug(
+          slug,
+          project.id
+        );
     }
-  );
 
-  if (!updateResponse.ok) {
-    console.error(
-      "Website publishing update failed:",
-      await updateResponse.text()
+    const now =
+      new Date().toISOString();
+
+    const publishedUrl =
+      buildPublishedUrl(
+        req,
+        project,
+        slug,
+        publish
+      );
+
+    const protectedProjectData =
+      protectProjectData(
+        project.project_data,
+        {
+          projectId:
+            project.id,
+          userId:
+            user.id,
+          published:
+            publish,
+          publishedUrl,
+          slug,
+          updatedAt:
+            now
+        }
+      );
+
+    const {
+      data: updatedProject,
+      error: updateError
+    } = await admin
+      .from("projects")
+      .update({
+        slug,
+        published:
+          publish,
+        published_url:
+          publishedUrl,
+        project_data:
+          protectedProjectData,
+        updated_at:
+          now
+      })
+      .eq(
+        "id",
+        project.id
+      )
+      .eq(
+        "user_id",
+        user.id
+      )
+      .select(
+        [
+          "id",
+          "user_id",
+          "name",
+          "slug",
+          "plan",
+          "project_data",
+          "published",
+          "published_url",
+          "custom_domain",
+          "domain_status",
+          "created_at",
+          "updated_at"
+        ].join(",")
+      )
+      .single();
+
+    if (updateError) {
+      throw updateError;
+    }
+
+    return sendJson(
+      res,
+      200,
+      {
+        ok: true,
+        projectId:
+          updatedProject.id,
+        published:
+          updatedProject.published === true,
+        slug:
+          updatedProject.slug,
+        url:
+          updatedProject.published_url,
+        project:
+          updatedProject,
+        message:
+          updatedProject.published
+            ? "Website published successfully."
+            : "Website unpublished successfully."
+      }
     );
-    return send(res, 500, {
-      error: publish
-        ? "The website could not be published."
-        : "The website could not be unpublished."
-    });
+  } catch (error) {
+    console.error(
+      "Publish site API error:",
+      error
+    );
+
+    return sendError(
+      res,
+      error
+    );
   }
-
-  const updatedRows = await updateResponse.json();
-  const updatedProject = updatedRows[0];
-
-  if (!updatedProject) {
-    return send(res, 500, {
-      error: "The publishing update returned no website."
-    });
-  }
-
-  const published = updatedProject.status === "published";
-  const finalSlug = cleanSlug(updatedProject.slug || slug);
-  const protocol = String(
-    req.headers["x-forwarded-proto"] || "https"
-  ).split(",")[0].trim();
-  const host = req.headers.host;
-
-  return send(res, 200, {
-    ok: true,
-    projectId: updatedProject.id,
-    published,
-    status: updatedProject.status,
-    slug: finalSlug,
-    url: `${protocol}://${host}/site/${encodeURIComponent(finalSlug)}`
-  });
 }

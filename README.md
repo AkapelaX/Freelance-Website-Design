@@ -1,61 +1,167 @@
-# Bluvixa Domains — Full Combined Package
+# Bluvixa Domain Management — Full Combined Package
 
-This package supports both:
+This package enables both publishing methods supported by Bluvixa:
 
-- Free Bluvixa addresses: `https://bluvixa.com/site/your-business`
-- Customer-owned custom domains: `https://yourbusiness.com`
+* **Bluvixa Hosted URL**
 
-## Included
+  * `https://bluvixa.com/site/your-business`
+* **Customer-Owned Custom Domain**
 
-- Full replacement `index.html`
-- Full replacement `style.css`
-- `domain-manager.js`
-- One Hobby-plan-safe serverless function: `api/domain.js`
-- Shared server helper: `lib/domain-utils.js`
-- Corrected SQL migration using your real `projects.user_id` schema
-- Installation documentation
+  * `https://yourbusiness.com`
 
-## Before replacing files
+Both publishing methods use the same project and publishing system.
 
-Back up the production repository.
+---
 
-Delete obsolete domain endpoints if they still exist:
+# Package Contents
 
-- `api/connect-domain.js`
-- `api/check-domain.js`
-- `api/remove-domain.js`
-- `api/domain-status.js`
-- `api/domain-search.js`
-- `api/domain-utils.js`
-- `api/_lib/domain-utils.js`
+* Full replacement `index.html`
+* Full replacement `style.css`
+* `domain-manager.js`
+* `api/domain.js` (single domain API)
+* `lib/domain-utils.js` (shared helper)
+* SQL migration for the existing `projects` table
+* Installation guide
 
-Keep only `api/domain.js` for this domain feature.
+---
 
-## Existing files that remain required
+# Before Installing
 
-The supplied `index.html` still loads:
+Back up the current production repository.
 
-- `app.js`
-- `platform.js`
-- Supabase browser library
-- existing assets and favicon files
+Remove any legacy domain-management endpoints that are still present:
 
-Do not remove those existing files.
+```
+api/connect-domain.js
+api/check-domain.js
+api/remove-domain.js
+api/domain-status.js
+api/domain-search.js
+api/domain-utils.js
+api/_lib/domain-utils.js
+```
 
-## Environment variables
+The new system replaces these with a single endpoint:
 
-- `SUPABASE_URL`
-- `SUPABASE_ANON_KEY`
-- `SUPABASE_SERVICE_ROLE_KEY`
-- `VERCEL_TOKEN`
-- `VERCEL_PROJECT_ID`
-- `VERCEL_TEAM_ID` only for a team-owned Vercel project
+```
+api/domain.js
+```
 
-## Important
+---
 
-Test with a spare domain before customer use. Never delete MX records used for business email.
+# Existing Files That Must Remain
 
+This package is designed to work with the existing Bluvixa platform.
 
-## Schema correction
+Do **not** remove:
 
-This corrected build uses `public.projects` and `user_id`. It does not use `website_projects` or `owner_id`.
+* `app.js`
+* `platform.js`
+* Supabase browser library
+* Existing assets
+* Favicon files
+* Existing authentication system
+* Existing publishing system
+* Existing `/api/publish-site`
+* Existing `/api/public-site`
+
+The domain manager extends the current platform rather than replacing it.
+
+---
+
+# Required Environment Variables
+
+```
+SUPABASE_URL
+SUPABASE_ANON_KEY
+SUPABASE_SERVICE_ROLE_KEY
+
+VERCEL_TOKEN
+VERCEL_PROJECT_ID
+VERCEL_TEAM_ID    (only if using a Team-owned Vercel project)
+```
+
+---
+
+# Database
+
+This package uses the existing Bluvixa schema.
+
+Table:
+
+```
+public.projects
+```
+
+Primary ownership column:
+
+```
+user_id
+```
+
+It does **not** create or require:
+
+* `website_projects`
+* `owner_id`
+
+---
+
+# Supported Publishing
+
+After installation, every project can be published in one of two ways:
+
+### Bluvixa URL
+
+```
+https://bluvixa.com/site/your-business
+```
+
+### Custom Domain
+
+```
+https://yourbusiness.com
+```
+
+The publishing system automatically serves the same website regardless of which address the visitor uses.
+
+---
+
+# Compatibility
+
+This package is intended to work alongside:
+
+* Existing authentication
+* Existing Stripe subscriptions
+* Existing project storage
+* Existing autosave
+* Existing publish/unpublish workflow
+* Existing `/api/public-site` renderer
+
+No customer websites should require rebuilding after installation.
+
+---
+
+# Installation Notes
+
+1. Back up the repository.
+2. Remove the obsolete domain API files listed above.
+3. Add the new package files.
+4. Run the SQL migration.
+5. Configure the required environment variables.
+6. Redeploy the project.
+7. Test using a spare domain before connecting customer domains.
+
+---
+
+# Important
+
+* Never remove customer MX records used for email.
+* Verify DNS propagation before marking a custom domain as connected.
+* Test both Bluvixa-hosted URLs and custom domains after deployment.
+* Confirm that publishing, unpublishing, and SSL provisioning function correctly before customer use.
+
+---
+
+# Architecture
+
+This package is designed to integrate with the current Bluvixa platform and does **not** replace the existing publishing or website-rendering system. It provides a unified domain-management layer while preserving compatibility with the current frontend, backend, and database architecture.
