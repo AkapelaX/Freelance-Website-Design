@@ -2,14 +2,377 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="index,follow">
+<meta name="theme-color" content="#082b5e">
 <title>Loading website…</title>
 <meta name="description" content="">
-<link rel="stylesheet" href="/public-site.css?v=20260727-v101">
-</head>
-<body>
 
+<style>
+:root{
+  --theme:#1769ff;
+  --header:#082b5e;
+  --button:#1769ff;
+  --card:#ffffff;
+  --cardText:#101827;
+  --outline:#61c7ff;
+  --ink:#101827;
+  --muted:#637083;
+  --page:#eef4ff;
+  --headerText:#ffffff;
+  --sectionText:#ffffff;
+  --radius:28px;
+  --shadow:0 20px 60px rgba(20,50,100,.14);
+}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:96px}
+body{
+  margin:0;
+  min-width:0;
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--page);
+  color:var(--ink);
+  overflow-x:hidden;
+}
+button,input,textarea,select{font:inherit}
+img,video,iframe{max-width:100%}
+a{color:inherit}
+[hidden]{display:none!important}
+
+.loading-screen,.not-found{
+  min-height:100vh;
+  place-items:center;
+  padding:30px;
+  background:#041023;
+  color:#fff;
+  text-align:center;
+}
+.loading-screen:not([hidden]),.not-found:not([hidden]){display:grid}
+.not-found strong{display:block;font-size:clamp(1.8rem,5vw,3rem);margin-bottom:10px}
+.not-found p{margin:0;opacity:.8;font-size:1.05rem}
+
+.site-header{
+  position:sticky;
+  top:0;
+  z-index:100;
+  min-height:82px;
+  padding:12px clamp(18px,4vw,56px);
+  display:flex;
+  align-items:center;
+  gap:22px;
+  background:var(--header);
+  color:var(--headerText);
+  border-bottom:2px solid var(--outline);
+  box-shadow:0 12px 35px rgba(0,0,0,.18);
+}
+.brand{
+  min-width:0;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  text-decoration:none;
+  margin-right:auto;
+}
+.brand-copy{min-width:0}
+.brand strong,.brand small{display:block}
+.brand strong{
+  max-width:min(42vw,430px);
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  font-size:1.08rem;
+  letter-spacing:.08em;
+}
+.brand small{
+  max-width:min(42vw,430px);
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  opacity:.76;
+  margin-top:3px;
+}
+.logo-frame{
+  width:58px;
+  height:58px;
+  border:3px solid var(--outline);
+  border-radius:18px;
+  display:grid;
+  place-items:center;
+  overflow:hidden;
+  background:#fff;
+  color:#111;
+  font-weight:900;
+  font-size:1.5rem;
+  flex:0 0 auto;
+}
+.logo-frame img{width:100%;height:100%;object-fit:cover}
+
+.site-header nav{display:flex;align-items:center;gap:7px}
+.site-header nav a{
+  text-decoration:none;
+  padding:10px 12px;
+  border-radius:10px;
+  font-weight:750;
+  white-space:nowrap;
+}
+.site-header nav a:hover,.site-header nav a:focus-visible{background:rgba(255,255,255,.12)}
+
+.call-button{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:48px;
+  text-decoration:none;
+  border:0;
+  border-radius:16px;
+  padding:13px 22px;
+  background:var(--button);
+  color:#fff;
+  font-weight:900;
+  box-shadow:0 10px 25px rgba(0,0,0,.2);
+  cursor:pointer;
+}
+.call-button:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.call-button.large{padding:16px 30px}
+.menu-button{
+  display:none;
+  border:1px solid rgba(255,255,255,.32);
+  background:transparent;
+  color:#fff;
+  border-radius:12px;
+  width:46px;
+  height:46px;
+  font-size:1.4rem;
+  cursor:pointer;
+}
+
+.hero{
+  position:relative;
+  min-height:72vh;
+  display:grid;
+  align-items:end;
+  background-position:center;
+  background-size:cover;
+  background-repeat:no-repeat;
+  background-color:var(--header);
+  color:#fff;
+}
+.hero-overlay{
+  position:absolute;
+  inset:0;
+  background:
+    linear-gradient(90deg,rgba(2,10,25,.92),rgba(2,10,25,.42) 58%,rgba(2,10,25,.18)),
+    linear-gradient(0deg,rgba(2,10,25,.55),transparent 48%);
+}
+.hero-content{
+  position:relative;
+  z-index:1;
+  width:min(900px,100%);
+  padding:clamp(70px,12vw,150px) clamp(22px,7vw,100px);
+}
+.eyebrow{
+  margin:0;
+  font-weight:900;
+  letter-spacing:.18em;
+  color:var(--outline);
+  white-space:pre-line;
+}
+h1{
+  font-size:clamp(2.7rem,7vw,6.4rem);
+  line-height:.95;
+  margin:12px 0 22px;
+  text-transform:uppercase;
+  overflow-wrap:anywhere;
+}
+.lead{
+  font-size:clamp(1.05rem,2vw,1.35rem);
+  line-height:1.7;
+  max-width:700px;
+  white-space:pre-line;
+}
+.hero .call-button{margin-top:12px}
+
+.section{
+  position:relative;
+  padding:clamp(72px,9vw,120px) 22px;
+  overflow:hidden;
+}
+.section-inner{
+  position:relative;
+  z-index:2;
+  width:min(1160px,100%);
+  margin:auto;
+}
+.section-heading{margin-bottom:32px}
+.section-heading span{
+  color:var(--theme);
+  font-weight:900;
+  letter-spacing:.18em;
+}
+.section-heading h2{
+  font-size:clamp(2rem,5vw,4rem);
+  line-height:1.05;
+  margin:8px 0 10px;
+  overflow-wrap:anywhere;
+}
+.section-heading p{
+  max-width:850px;
+  font-size:1.08rem;
+  line-height:1.65;
+  color:var(--muted);
+  white-space:pre-line;
+}
+.info-section{background:var(--page)}
+.info-card,.content-card{
+  padding:clamp(24px,5vw,50px);
+  background:var(--card);
+  color:var(--cardText);
+  border:2px solid var(--theme);
+  border-radius:32px;
+  box-shadow:var(--shadow);
+}
+.info-card{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px 30px;
+  font-size:1.1rem;
+}
+.info-card p{margin:8px 0;overflow-wrap:anywhere}
+.info-card a{font-weight:750}
+.content-card{
+  white-space:pre-line;
+  font-size:1.1rem;
+  line-height:1.8;
+}
+
+.cover-section,.media-section,.map-section{
+  background:#071324;
+  color:var(--sectionText);
+  isolation:isolate;
+}
+.cover-bg{
+  position:absolute;
+  inset:0;
+  z-index:0;
+  background-position:center;
+  background-size:cover;
+  background-repeat:no-repeat;
+  opacity:.48;
+  transform:scale(1.01);
+}
+.cover-bg::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:
+    linear-gradient(180deg,rgba(4,12,28,.30),rgba(4,12,28,.88)),
+    linear-gradient(90deg,rgba(4,12,28,.30),transparent 55%);
+}
+.cover-section .section-heading p,
+.media-section .section-heading p,
+.map-section .section-heading p{color:rgba(255,255,255,.78)}
+
+.media-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:20px;
+}
+.media-card{
+  overflow:hidden;
+  border-radius:24px;
+  background:rgba(255,255,255,.10);
+  border:1px solid rgba(255,255,255,.18);
+  backdrop-filter:blur(10px);
+  box-shadow:0 15px 40px rgba(0,0,0,.2);
+}
+.media-card img,.media-card video{
+  display:block;
+  width:100%;
+  aspect-ratio:4/3;
+  object-fit:cover;
+  background:#000;
+}
+.media-card div{padding:18px}
+.media-card strong{display:block;font-size:1.15rem;overflow-wrap:anywhere}
+.media-card p{margin-bottom:0;opacity:.8;line-height:1.55;white-space:pre-line}
+
+.empty-media{
+  grid-column:1/-1;
+  padding:30px;
+  border:1px solid rgba(255,255,255,.16);
+  border-radius:22px;
+  background:rgba(255,255,255,.06);
+  color:rgba(255,255,255,.75);
+}
+
+.map-wrap{
+  overflow:hidden;
+  border-radius:28px;
+  border:2px solid var(--theme);
+  background:#fff;
+  margin-bottom:24px;
+  box-shadow:0 18px 50px rgba(0,0,0,.22);
+}
+.map-wrap iframe{width:100%;height:480px;border:0;display:block}
+.map-address-fallback{
+  padding:26px;
+  background:rgba(255,255,255,.1);
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:22px;
+  margin-bottom:24px;
+  font-size:1.1rem;
+}
+
+footer{
+  padding:34px clamp(22px,4vw,56px);
+  background:#020814;
+  color:#fff;
+  display:flex;
+  justify-content:space-between;
+  gap:20px;
+}
+footer small{opacity:.55}
+
+@media(max-width:980px){
+  .site-header{gap:12px}
+  .menu-button{display:block}
+  .site-header{flex-wrap:wrap}
+  .site-header nav{
+    display:none;
+    order:4;
+    width:100%;
+    flex-direction:column;
+    align-items:stretch;
+    padding:8px 0;
+  }
+  .site-header nav.open{display:flex}
+  .site-header nav a{padding:13px}
+  .site-header>.call-button{display:none}
+  .media-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+
+@media(max-width:640px){
+  html{scroll-padding-top:84px}
+  .site-header{min-height:74px;padding:10px 14px}
+  .logo-frame{width:50px;height:50px;border-radius:15px}
+  .brand strong{max-width:58vw;font-size:.96rem}
+  .brand small{max-width:58vw;font-size:.78rem}
+  .hero{min-height:68vh;background-position:center}
+  .hero-content{padding:78px 20px 64px}
+  h1{font-size:clamp(2.35rem,13vw,4rem)}
+  .section{padding:68px 16px}
+  .info-card{grid-template-columns:1fr;border-radius:24px}
+  .content-card{border-radius:24px}
+  .media-grid{grid-template-columns:1fr}
+  .map-wrap{border-radius:22px}
+  .map-wrap iframe{height:360px}
+  footer{flex-direction:column}
+}
+</style>
+</head>
+
+<body>
 <div id="loadingScreen" class="loading-screen">Loading website…</div>
 
 <div id="notFoundScreen" class="not-found" hidden>
@@ -20,76 +383,469 @@
 </div>
 
 <main id="siteRoot" hidden>
+  <header class="site-header">
+    <a class="brand" href="#home" aria-label="Go to home">
+      <span class="logo-frame">
+        <img id="logoImage" alt="" hidden>
+        <span id="logoFallback">B</span>
+      </span>
+      <span class="brand-copy">
+        <strong id="businessName">Your Business</strong>
+        <small id="tagline"></small>
+      </span>
+    </a>
 
-<header class="site-header">
-  <a class="brand" href="#home">
-    <span class="logo-frame"><img id="logoImage" alt="" hidden><span id="logoFallback">B</span></span>
-    <span><strong id="businessName">Your Business</strong><small id="tagline"></small></span>
-  </a>
-  <button id="menuButton" class="menu-button" type="button" aria-label="Open navigation">☰</button>
-  <nav id="siteNav"></nav>
-  <a id="headerCall" class="call-button" href="#">Call Now</a>
-</header>
+    <button id="menuButton" class="menu-button" type="button" aria-label="Open navigation" aria-expanded="false">☰</button>
+    <nav id="siteNav" aria-label="Website navigation"></nav>
+    <a id="headerCall" class="call-button" href="#">Call Now</a>
+  </header>
 
-<section id="home" class="hero">
-  <div class="hero-overlay"></div>
-  <div class="hero-content">
-    <p id="headerBio" class="eyebrow"></p>
-    <h1 id="headline">Build a stronger online presence.</h1>
-    <p id="businessBio" class="lead"></p>
-    <a id="heroCall" class="call-button large" href="#">Call Now</a>
-  </div>
-</section>
-
-<section id="services" class="section info-section">
-  <div class="section-inner">
-    <div class="section-heading"><span>BUSINESS INFORMATION</span><h2>Get in touch</h2></div>
-    <div class="info-card">
-      <p><strong>Phone:</strong> <a id="phoneLink"></a></p>
-      <p><strong>Email:</strong> <a id="emailLink"></a></p>
-      <p><strong>Hours:</strong> <span id="hours"></span></p>
-      <p><strong>Location:</strong> <span id="address"></span></p>
+  <section id="home" class="hero">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <p id="headerBio" class="eyebrow"></p>
+      <h1 id="headline">Build a stronger online presence.</h1>
+      <p id="businessBio" class="lead"></p>
+      <a id="heroCall" class="call-button large" href="#">Call Now</a>
     </div>
-  </div>
-</section>
+  </section>
 
-<section id="about" class="section cover-section" hidden>
-  <div class="cover-bg" id="aboutCover"></div>
-  <div class="section-inner">
-    <div class="section-heading"><span>ABOUT</span><h2 id="aboutHeading"></h2></div>
-    <div id="aboutText" class="content-card"></div>
-  </div>
-</section>
+  <section id="services" class="section info-section">
+    <div class="section-inner">
+      <div class="section-heading">
+        <span>BUSINESS INFORMATION</span>
+        <h2>Get in touch</h2>
+      </div>
 
-<section id="featured" class="section media-section" hidden>
-  <div class="cover-bg" id="featuredCover"></div>
-  <div class="section-inner">
-    <div class="section-heading"><span>FEATURED</span><h2 id="featuredHeading"></h2><p id="featuredDescription"></p></div>
-    <div id="photoGrid" class="media-grid"></div>
-  </div>
-</section>
+      <div class="info-card">
+        <p id="phoneRow"><strong>Phone:</strong> <a id="phoneLink"></a></p>
+        <p id="emailRow"><strong>Email:</strong> <a id="emailLink"></a></p>
+        <p id="hoursRow"><strong>Hours:</strong> <span id="hours"></span></p>
+        <p id="addressRow"><strong>Location:</strong> <span id="address"></span></p>
+      </div>
+    </div>
+  </section>
 
-<section id="gallery" class="section media-section" hidden>
-  <div class="cover-bg" id="galleryCover"></div>
-  <div class="section-inner">
-    <div class="section-heading"><span>GALLERY</span><h2 id="galleryHeading"></h2><p id="galleryDescription"></p></div>
-    <div id="galleryGrid" class="media-grid"></div>
-  </div>
-</section>
+  <section id="about" class="section cover-section" hidden>
+    <div class="cover-bg" id="aboutCover"></div>
+    <div class="section-inner">
+      <div class="section-heading">
+        <span>ABOUT</span>
+        <h2 id="aboutHeading"></h2>
+      </div>
+      <div id="aboutText" class="content-card"></div>
+    </div>
+  </section>
 
-<section id="contact" class="section map-section" hidden>
-  <div class="cover-bg" id="mapCover"></div>
-  <div class="section-inner">
-    <div class="section-heading"><span>LOCATION</span><h2 id="mapHeading"></h2></div>
-    <div class="map-wrap"><iframe id="mapFrame" title="Business location" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe></div>
-    <a id="mapCall" class="call-button large" href="#">Call Now</a>
-  </div>
-</section>
+  <section id="featured" class="section media-section" hidden>
+    <div class="cover-bg" id="featuredCover"></div>
+    <div class="section-inner">
+      <div class="section-heading">
+        <span>FEATURED</span>
+        <h2 id="featuredHeading"></h2>
+        <p id="featuredDescription"></p>
+      </div>
+      <div id="photoGrid" class="media-grid"></div>
+    </div>
+  </section>
 
-<footer><span id="footerText"></span><small>Built with Bluvixa</small></footer>
+  <section id="gallery" class="section media-section" hidden>
+    <div class="cover-bg" id="galleryCover"></div>
+    <div class="section-inner">
+      <div class="section-heading">
+        <span>GALLERY</span>
+        <h2 id="galleryHeading"></h2>
+        <p id="galleryDescription"></p>
+      </div>
+      <div id="galleryGrid" class="media-grid"></div>
+    </div>
+  </section>
 
+  <section id="contact" class="section map-section" hidden>
+    <div class="cover-bg" id="mapCover"></div>
+    <div class="section-inner">
+      <div class="section-heading">
+        <span>LOCATION</span>
+        <h2 id="mapHeading"></h2>
+      </div>
+
+      <div id="mapWrap" class="map-wrap">
+        <iframe id="mapFrame" title="Business location" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+      </div>
+
+      <div id="mapAddressFallback" class="map-address-fallback" hidden></div>
+      <a id="mapCall" class="call-button large" href="#">Call Now</a>
+    </div>
+  </section>
+
+  <footer>
+    <span id="footerText"></span>
+    <small>Built with Bluvixa</small>
+  </footer>
 </main>
 
-<script defer src="/public-site.js?v=20260727-v101"></script>
+<script>
+"use strict";
+
+(function(){
+  const byId=id=>document.getElementById(id);
+
+  function value(input,fallback=""){
+    return input==null?fallback:String(input);
+  }
+
+  function firstValue(){
+    for(const candidate of arguments){
+      const text=value(candidate).trim();
+      if(text)return text;
+    }
+    return "";
+  }
+
+  function phoneHref(input){
+    const cleaned=value(input).replace(/[^\d+]/g,"");
+    return cleaned?"tel:"+cleaned:"#";
+  }
+
+  function setText(id,input){
+    const node=byId(id);
+    if(node)node.textContent=value(input);
+  }
+
+  function safeCssUrl(url){
+    return value(url).replace(/\\/g,"\\\\").replace(/"/g,"%22").replace(/\n|\r/g,"");
+  }
+
+  function setCover(id,url){
+    const node=byId(id);
+    if(!node)return;
+    const cover=value(url).trim();
+    node.style.backgroundImage=cover?`url("${safeCssUrl(cover)}")`:"";
+  }
+
+  function validHttpUrl(url){
+    return /^https?:\/\//i.test(value(url).trim());
+  }
+
+  function escapeHtml(input){
+    return value(input)
+      .replace(/&/g,"&amp;")
+      .replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;")
+      .replace(/'/g,"&#039;");
+  }
+
+  function showLoading(){
+    byId("loadingScreen").hidden=false;
+    byId("notFoundScreen").hidden=true;
+    byId("siteRoot").hidden=true;
+  }
+
+  function showWebsite(){
+    byId("loadingScreen").hidden=true;
+    byId("notFoundScreen").hidden=true;
+    byId("siteRoot").hidden=false;
+  }
+
+  function showUnavailable(message){
+    byId("loadingScreen").hidden=true;
+    byId("siteRoot").hidden=true;
+    byId("notFoundScreen").hidden=false;
+    setText("notFoundMessage",message||"This website is not published.");
+  }
+
+  function normalizeMapEmbedUrl(mapUrl,address){
+    const raw=value(mapUrl).trim();
+
+    if(raw){
+      if(/google\.[^/]+\/maps\/embed/i.test(raw)||/[?&]output=embed(?:&|$)/i.test(raw)){
+        return raw;
+      }
+
+      if(/^https?:\/\/(?:www\.)?google\.[^/]+\/maps/i.test(raw)){
+        const placeMatch=raw.match(/\/place\/([^/?#]+)/i);
+        if(placeMatch){
+          return `https://www.google.com/maps?q=${encodeURIComponent(decodeURIComponent(placeMatch[1]).replace(/\+/g," "))}&output=embed`;
+        }
+      }
+
+      if(validHttpUrl(raw)&&!address){
+        return raw;
+      }
+    }
+
+    return address
+      ?`https://www.google.com/maps?q=${encodeURIComponent(address)}&output=embed`
+      :"";
+  }
+
+  function renderMedia(items,containerId){
+    const container=byId(containerId);
+    const list=Array.isArray(items)?items.filter(Boolean):[];
+
+    if(!list.length){
+      container.innerHTML='<div class="empty-media">Content can be added here from the Bluvixa builder.</div>';
+      return;
+    }
+
+    container.innerHTML=list.map(item=>{
+      const src=firstValue(item.src,item.url,item.file,item.mediaUrl);
+      const title=firstValue(item.title,item.name,item.heading);
+      const description=firstValue(item.description,item.bio,item.caption);
+      const type=value(item.type).toLowerCase();
+      const isVideo=type==="video"||/\.(mp4|webm|mov|m4v)(\?|#|$)/i.test(src);
+
+      if(!src)return "";
+
+      const media=isVideo
+        ?`<video src="${escapeHtml(src)}" controls playsinline preload="metadata"></video>`
+        :`<img src="${escapeHtml(src)}" alt="${escapeHtml(title)}" loading="lazy">`;
+
+      return `<article class="media-card">
+        ${media}
+        ${(title||description)?`<div>${title?`<strong>${escapeHtml(title)}</strong>`:""}${description?`<p>${escapeHtml(description)}</p>`:""}</div>`:""}
+      </article>`;
+    }).join("");
+  }
+
+  function applyWebsite(project){
+    const s=project&&project.state?project.state:{};
+    const business=s.business||{};
+    const header=s.header||{};
+    const design=s.design||{};
+
+    const photos=Array.isArray(s.photos)?s.photos:
+      Array.isArray(s.featured)?s.featured:
+      Array.isArray(s.uploads)?s.uploads:[];
+
+    const gallery=Array.isArray(s.gallery)?s.gallery:
+      Array.isArray(s.galleryItems)?s.galleryItems:[];
+
+    const businessName=firstValue(business.name,project.name,"Your Business");
+    const businessBio=firstValue(business.bio,s.aboutText,design.aboutText);
+    const headerImage=firstValue(header.image,header.cover,design.headerImage,design.heroImage);
+
+    const aboutCover=firstValue(design.aboutCover,s.aboutCover);
+    const featuredCover=firstValue(design.featuredCover,s.featuredCover,design.latestUploadCover);
+    const galleryCover=firstValue(design.galleryCover,s.galleryCover);
+    const mapCover=firstValue(design.mapCover,s.mapCover,design.contactCover);
+
+    document.title=businessName;
+
+    const description=firstValue(businessBio,header.headline,businessName);
+    document.querySelector('meta[name="description"]').setAttribute("content",description.slice(0,160));
+    document.querySelector('meta[name="theme-color"]').setAttribute("content",design.headerColor||"#082b5e");
+
+    const variables={
+      "--theme":design.themeColor||"#1769ff",
+      "--header":design.headerColor||"#082b5e",
+      "--button":design.buttonColor||"#1769ff",
+      "--card":design.cardColor||"#ffffff",
+      "--cardText":design.cardTextColor||"#101827",
+      "--outline":design.logoOutlineColor||"#61c7ff",
+      "--page":design.pageColor||design.backgroundColor||"#eef4ff",
+      "--headerText":design.headerTextColor||"#ffffff",
+      "--sectionText":design.sectionTextColor||"#ffffff"
+    };
+
+    Object.entries(variables).forEach(([name,val])=>{
+      document.documentElement.style.setProperty(name,val);
+    });
+
+    setText("businessName",businessName.toUpperCase());
+    setText("tagline",header.tagline);
+    setText("headline",header.headline||"Build a stronger online presence.");
+    setText("headerBio",header.bio);
+    setText("businessBio",businessBio);
+    setText("phoneLink",business.phone);
+    setText("emailLink",business.email);
+    setText("hours",business.hours);
+    setText("address",business.address);
+    setText("aboutHeading",design.aboutHeading||"About Us");
+    setText("aboutText",firstValue(design.aboutText,businessBio));
+    setText("featuredHeading",design.featuredHeading||design.latestUploadHeading||"Featured");
+    setText("featuredDescription",design.featuredDescription||design.latestUploadDescription);
+    setText("galleryHeading",design.galleryHeading||"Gallery");
+    setText("galleryDescription",design.galleryDescription);
+    setText("mapHeading",design.mapHeading||"Find Us");
+    setText("footerText",`© ${new Date().getFullYear()} ${businessName}`);
+
+    const logo=firstValue(design.logo,business.logo,s.logo);
+    const logoImage=byId("logoImage");
+    const logoFallback=byId("logoFallback");
+
+    if(logo){
+      logoImage.src=logo;
+      logoImage.alt=businessName+" logo";
+      logoImage.hidden=false;
+      logoFallback.hidden=true;
+    }else{
+      logoImage.hidden=true;
+      logoFallback.hidden=false;
+      logoFallback.textContent=businessName.charAt(0).toUpperCase()||"B";
+    }
+
+    byId("home").style.backgroundImage=headerImage?`url("${safeCssUrl(headerImage)}")`:"";
+
+    const callText=business.callText||"Call Now";
+    ["headerCall","heroCall","mapCall"].forEach(id=>{
+      const node=byId(id);
+      node.textContent=callText;
+      node.href=phoneHref(business.phone);
+      node.hidden=!value(business.phone).trim();
+    });
+
+    byId("phoneLink").href=phoneHref(business.phone);
+    byId("emailLink").href=business.email?`mailto:${business.email}`:"#";
+
+    byId("phoneRow").hidden=!value(business.phone).trim();
+    byId("emailRow").hidden=!value(business.email).trim();
+    byId("hoursRow").hidden=!value(business.hours).trim();
+    byId("addressRow").hidden=!value(business.address).trim();
+
+    setCover("aboutCover",aboutCover);
+    setCover("featuredCover",featuredCover);
+    setCover("galleryCover",galleryCover);
+    setCover("mapCover",mapCover);
+
+    const hasAbout=Boolean(
+      design.aboutHeading||design.aboutText||aboutCover||businessBio
+    );
+
+    const hasFeatured=Boolean(
+      photos.length||featuredCover||design.featuredHeading||
+      design.featuredDescription||design.latestUploadHeading||
+      design.latestUploadDescription
+    );
+
+    const hasGallery=Boolean(
+      gallery.length||galleryCover||design.galleryHeading||design.galleryDescription
+    );
+
+    byId("about").hidden=!hasAbout;
+    byId("featured").hidden=!hasFeatured;
+    byId("gallery").hidden=!hasGallery;
+
+    renderMedia(photos,"photoGrid");
+    renderMedia(gallery,"galleryGrid");
+
+    const mapUrl=normalizeMapEmbedUrl(firstValue(s.mapUrl,design.mapUrl,business.mapUrl),business.address);
+    const hasContact=Boolean(mapUrl||business.address||mapCover||design.mapHeading);
+
+    byId("contact").hidden=!hasContact;
+    byId("mapWrap").hidden=!mapUrl;
+    byId("mapAddressFallback").hidden=Boolean(mapUrl)||!business.address;
+
+    if(mapUrl){
+      byId("mapFrame").src=mapUrl;
+    }else{
+      byId("mapFrame").removeAttribute("src");
+      setText("mapAddressFallback",business.address);
+    }
+
+    const navNames=Array.isArray(design.scroll)&&design.scroll.length
+      ?design.scroll
+      :["Home","Services","About","Featured","Gallery","Contact"];
+
+    const available=[
+      ["Home","home",true],
+      ["Services","services",true],
+      ["About","about",hasAbout],
+      ["Featured","featured",hasFeatured],
+      ["Gallery","gallery",hasGallery],
+      ["Contact","contact",hasContact]
+    ];
+
+    const chosen=[];
+
+    navNames.forEach(label=>{
+      const lower=value(label).toLowerCase().trim();
+      const match=available.find(item=>item[0].toLowerCase()===lower&&item[2]);
+      if(match&&!chosen.some(item=>item[1]===match[1]))chosen.push(match);
+    });
+
+    available.forEach(item=>{
+      if(item[2]&&!chosen.some(chosenItem=>chosenItem[1]===item[1]))chosen.push(item);
+    });
+
+    byId("siteNav").innerHTML=chosen
+      .map(item=>`<a href="#${item[1]}">${escapeHtml(item[0])}</a>`)
+      .join("");
+
+    showWebsite();
+  }
+
+  async function start(){
+    showLoading();
+
+    const params=new URLSearchParams(location.search);
+    const pathMatch=location.pathname.match(/^\/site\/([^/?#]+)/i);
+
+    const slug=params.get("slug")||(pathMatch?decodeURIComponent(pathMatch[1]):"");
+
+    const host=params.get("host")||(
+      location.hostname!=="bluvixa.com"&&
+      location.hostname!=="www.bluvixa.com"&&
+      location.hostname!=="localhost"&&
+      location.hostname!=="127.0.0.1"
+        ?location.hostname
+        :""
+    );
+
+    if(!host&&!slug){
+      showUnavailable("This website address is incomplete.");
+      return;
+    }
+
+    const query=new URLSearchParams();
+    if(host)query.set("host",host);
+    else query.set("slug",slug);
+
+    try{
+      const response=await fetch(`/api/public-site?${query.toString()}`,{
+        method:"GET",
+        headers:{"Accept":"application/json"},
+        cache:"no-store"
+      });
+
+      let data={};
+      try{data=await response.json()}catch(_error){}
+
+      if(!response.ok){
+        throw new Error(data.error||"Website unavailable.");
+      }
+
+      if(!data.website){
+        throw new Error("This website could not be found.");
+      }
+
+      applyWebsite(data.website);
+    }catch(error){
+      showUnavailable(error&&error.message?error.message:"This website is not published.");
+    }
+  }
+
+  byId("menuButton").addEventListener("click",()=>{
+    const nav=byId("siteNav");
+    const isOpen=nav.classList.toggle("open");
+    byId("menuButton").setAttribute("aria-expanded",String(isOpen));
+  });
+
+  byId("siteNav").addEventListener("click",()=>{
+    byId("siteNav").classList.remove("open");
+    byId("menuButton").setAttribute("aria-expanded","false");
+  });
+
+  window.addEventListener("resize",()=>{
+    if(window.innerWidth>980){
+      byId("siteNav").classList.remove("open");
+      byId("menuButton").setAttribute("aria-expanded","false");
+    }
+  });
+
+  start();
+})();
+</script>
 </body>
 </html>
