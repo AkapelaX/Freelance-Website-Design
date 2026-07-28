@@ -4,5 +4,12 @@
       "source": "/site/:slug",
       "destination": "/public-site.html?slug=:slug"
     }
-  ]
+  ],
+  "functions": {
+    "api/export-website.js": {
+      "includeFiles": [
+        "public-site.html"
+      ]
+    }
+  }
 }
