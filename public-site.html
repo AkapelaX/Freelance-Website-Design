@@ -204,7 +204,8 @@ h1{
   scrollbar-width:none;
 }
 .scroll-nav::-webkit-scrollbar{display:none}
-.scroll-nav a{
+.scroll-nav a,
+.scroll-nav span{
   flex:0 0 auto;
   min-width:106px;
   padding:14px 24px;
@@ -216,6 +217,7 @@ h1{
   text-align:center;
   font-weight:900;
   box-shadow:0 8px 20px rgba(20,50,100,.08);
+  white-space:nowrap;
 }
 
 .section{
@@ -918,13 +920,28 @@ footer small{opacity:.55}
       if(item[2]&&!chosen.some(chosenItem=>chosenItem[1]===item[1]))chosen.push(item);
     });
 
-    const navHtml=chosen
+    /*
+      The header navigation remains functional and points to real sections.
+      The horizontal scroll bar is different: it mirrors exactly what the
+      user typed in the builder's "Scroll bar items" field. These are visual
+      labels, not fixed section buttons, so arbitrary entries such as Rock,
+      Concerts, Tickets, and Podcasts are preserved exactly.
+    */
+    const headerNavHtml=chosen
       .map(item=>`<a href="#${item[1]}">${escapeHtml(item[0])}</a>`)
       .join("");
 
-    byId("siteNav").innerHTML=navHtml;
-    byId("scrollNav").innerHTML=navHtml;
-    byId("scrollNav").hidden=chosen.length===0;
+    const scrollLabels=Array.isArray(design.scroll)
+      ?design.scroll.map(item=>value(item).trim()).filter(Boolean)
+      :[];
+
+    const scrollHtml=scrollLabels
+      .map(label=>`<span>${escapeHtml(label)}</span>`)
+      .join("");
+
+    byId("siteNav").innerHTML=headerNavHtml;
+    byId("scrollNav").innerHTML=scrollHtml;
+    byId("scrollNav").hidden=scrollLabels.length===0;
 
     showWebsite();
   }
