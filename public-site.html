@@ -613,6 +613,15 @@ footer small{opacity:.55}
       The saved business address is the most reliable fallback and works
       even when the user pasted a mobile Google Maps share link.
     */
+    /*
+      The builder's "Map search location" field stores plain text in
+      state.mapUrl, such as a street address, business name, city, or
+      landmark. It is not required to be a URL.
+    */
+    if(raw){
+      return `https://www.google.com/maps?q=${encodeURIComponent(raw)}&output=embed`;
+    }
+
     if(cleanAddress){
       return `https://www.google.com/maps?q=${encodeURIComponent(cleanAddress)}&output=embed`;
     }
@@ -801,7 +810,7 @@ footer small{opacity:.55}
 
     const navNames=Array.isArray(design.scroll)&&design.scroll.length
       ?design.scroll
-      :["Home","Services","About","Featured","Gallery","Contact"];
+      :["Home","Services","About","Featured","Gallery","Location"];
 
     const available=[
       ["Home","home",true],
@@ -809,14 +818,17 @@ footer small{opacity:.55}
       ["About","about",hasAbout],
       ["Featured","featured",hasFeatured],
       ["Gallery","gallery",hasGallery],
-      ["Contact","contact",hasContact]
+      ["Location","contact",hasContact]
     ];
 
     const chosen=[];
 
     navNames.forEach(label=>{
       const lower=value(label).toLowerCase().trim();
-      const match=available.find(item=>item[0].toLowerCase()===lower&&item[2]);
+      const normalizedLabel=(lower==="contact"||lower==="contact us"||lower==="find us")
+        ?"location"
+        :lower;
+      const match=available.find(item=>item[0].toLowerCase()===normalizedLabel&&item[2]);
       if(match&&!chosen.some(item=>item[1]===match[1]))chosen.push(match);
     });
 
