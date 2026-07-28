@@ -193,6 +193,31 @@ h1{
 }
 .hero .call-button{margin-top:12px}
 
+.scroll-nav{
+  display:flex;
+  gap:16px;
+  overflow-x:auto;
+  padding:28px clamp(20px,5vw,70px);
+  background:var(--page);
+  border-top:2px solid var(--theme);
+  border-bottom:1px solid rgba(16,24,39,.10);
+  scrollbar-width:none;
+}
+.scroll-nav::-webkit-scrollbar{display:none}
+.scroll-nav a{
+  flex:0 0 auto;
+  min-width:106px;
+  padding:14px 24px;
+  border:2px solid var(--theme);
+  border-radius:999px;
+  background:var(--card);
+  color:var(--cardText);
+  text-decoration:none;
+  text-align:center;
+  font-weight:900;
+  box-shadow:0 8px 20px rgba(20,50,100,.08);
+}
+
 .section{
   position:relative;
   padding:clamp(72px,9vw,120px) 22px;
@@ -409,6 +434,8 @@ footer small{opacity:.55}
       <a id="heroCall" class="call-button large" href="#">Call Now</a>
     </div>
   </section>
+
+  <nav id="scrollNav" class="scroll-nav" aria-label="Section shortcuts"></nav>
 
   <section id="services" class="section info-section">
     <div class="section-inner">
@@ -659,19 +686,68 @@ footer small{opacity:.55}
   }
 
   function applyWebsite(project){
-    const s=project&&project.state?project.state:{};
-    const business=s.business||{};
-    const header=s.header||{};
-    const design=s.design||{};
+    project=project||{};
 
-    const photos=Array.isArray(s.photos)?s.photos:
-      Array.isArray(s.featured)?s.featured:
-      Array.isArray(s.uploads)?s.uploads:[];
+    /*
+      Publishing may return either the original builder state or the
+      normalized database/API record. Support both so the live website
+      displays exactly what appears in the builder preview.
+    */
+    const rawState=
+      project.state ||
+      project.builder_state ||
+      project.website_state ||
+      project.site_state ||
+      project.data ||
+      {};
 
-    const gallery=Array.isArray(s.gallery)?s.gallery:
-      Array.isArray(s.galleryItems)?s.galleryItems:[];
+    const rawBusiness=rawState.business||{};
+    const rawHeader=rawState.header||project.header||{};
+    const rawDesign=rawState.design||project.site_settings||project.design||{};
 
-    const businessName=firstValue(business.name,project.name,"Your Business");
+    const business={
+      name:firstValue(rawBusiness.name,project.business_name,project.businessName),
+      bio:firstValue(rawBusiness.bio,project.business_bio,project.businessBio),
+      phone:firstValue(rawBusiness.phone,project.phone,project.phone_number),
+      email:firstValue(rawBusiness.email,project.email,project.email_address),
+      hours:firstValue(rawBusiness.hours,project.business_hours,project.hours),
+      address:firstValue(rawBusiness.address,project.address,project.business_address),
+      callText:firstValue(rawBusiness.callText,project.call_button_text,project.callText)
+    };
+
+    const header={
+      tagline:firstValue(rawHeader.tagline,project.header_tagline),
+      headline:firstValue(rawHeader.headline,project.header_headline),
+      image:firstValue(rawHeader.image,rawHeader.image_url,project.header_image,project.header_image_url),
+      bio:firstValue(rawHeader.bio,project.header_bio)
+    };
+
+    const design=rawDesign||{};
+
+    const s=Object.assign({},rawState,{
+      business,
+      header,
+      design,
+      mapUrl:firstValue(
+        rawState.mapUrl,
+        rawState.map_embed_url,
+        project.map_embed_url,
+        project.mapUrl
+      )
+    });
+
+    const photos=Array.isArray(rawState.photos)?rawState.photos:
+      Array.isArray(rawState.featured)?rawState.featured:
+      Array.isArray(rawState.uploads)?rawState.uploads:
+      Array.isArray(project.content_cards)?project.content_cards:
+      Array.isArray(project.photos)?project.photos:[];
+
+    const gallery=Array.isArray(rawState.gallery)?rawState.gallery:
+      Array.isArray(rawState.galleryItems)?rawState.galleryItems:
+      Array.isArray(project.gallery_items)?project.gallery_items:
+      Array.isArray(project.gallery)?project.gallery:[];
+
+    const businessName=firstValue(business.name,project.name,project.title,"Your Business");
     const businessBio=firstValue(business.bio,s.aboutText,design.aboutText);
     const headerImage=firstValue(header.image,header.cover,design.headerImage,design.heroImage);
 
@@ -748,10 +824,16 @@ footer small{opacity:.55}
     byId("phoneLink").href=phoneHref(business.phone);
     byId("emailLink").href=business.email?`mailto:${business.email}`:"#";
 
-    byId("phoneRow").hidden=!value(business.phone).trim();
-    byId("emailRow").hidden=!value(business.email).trim();
-    byId("hoursRow").hidden=!value(business.hours).trim();
-    byId("addressRow").hidden=!value(business.address).trim();
+    const hasPhone=Boolean(value(business.phone).trim());
+    const hasEmail=Boolean(value(business.email).trim());
+    const hasHours=Boolean(value(business.hours).trim());
+    const hasAddress=Boolean(value(business.address).trim());
+
+    byId("phoneRow").hidden=!hasPhone;
+    byId("emailRow").hidden=!hasEmail;
+    byId("hoursRow").hidden=!hasHours;
+    byId("addressRow").hidden=!hasAddress;
+    byId("services").hidden=!(hasPhone||hasEmail||hasHours||hasAddress);
 
     setCover("aboutCover",aboutCover);
     setCover("featuredCover",featuredCover);
@@ -814,7 +896,7 @@ footer small{opacity:.55}
 
     const available=[
       ["Home","home",true],
-      ["Services","services",true],
+      ["Services","services",!byId("services").hidden],
       ["About","about",hasAbout],
       ["Featured","featured",hasFeatured],
       ["Gallery","gallery",hasGallery],
@@ -836,9 +918,13 @@ footer small{opacity:.55}
       if(item[2]&&!chosen.some(chosenItem=>chosenItem[1]===item[1]))chosen.push(item);
     });
 
-    byId("siteNav").innerHTML=chosen
+    const navHtml=chosen
       .map(item=>`<a href="#${item[1]}">${escapeHtml(item[0])}</a>`)
       .join("");
+
+    byId("siteNav").innerHTML=navHtml;
+    byId("scrollNav").innerHTML=navHtml;
+    byId("scrollNav").hidden=chosen.length===0;
 
     showWebsite();
   }
