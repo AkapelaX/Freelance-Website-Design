@@ -1,47 +1,15 @@
-# Installation Guide
+# Installation
 
-1. Back up the existing Bluvixa repository.
-
-2. Copy these files into the repository root:
-   - `index.html`
-   - `domain-manager.css`
-   - `domain-manager.js`
-   - `api/`
-   - `sql/`
-
-3. Keep the existing Bluvixa files beside them:
-   - `style.css`
-   - `app.js`
-   - `platform.js`
-   - existing API routes and public-site files
-
-4. In Supabase, open **SQL Editor**, paste `sql/001_custom_domains.sql`, and run it once.
-
-5. In Vercel, add the environment variables listed in `.env.example` to Production, Preview, and Development as appropriate.
-
-6. Create a Vercel access token that can manage the Bluvixa project. Never expose this token in browser JavaScript.
-
-7. Redeploy Bluvixa.
-
-8. Sign in, open **Domains & Publishing**, choose a website, and connect a test domain.
-
-9. Add the DNS records shown by the wizard at the domain registrar.
-
-10. Press **Verify Domain**. Pending domains are rechecked every 30 seconds while the page remains open.
-
-## Required schema assumption
-
-The project table is named `public.website_projects` and uses:
-- `id`
-- `user_id`
-- `name` or `title`
-- `slug`
-- `published_url` or `public_url`
-- `updated_at`
-
-Change the queries in `api/_lib/domain-utils.js` if the production table or ownership column uses different names.
-
-
-## Hobby plan function limit
-
-This corrected package adds only one Vercel serverless function: `api/domain.js`. The shared helper is stored in `lib/domain-utils.js` and does not create an API endpoint.
+1. Back up the existing repository.
+2. Replace `index.html` and `style.css`.
+3. Add `domain-manager.js`.
+4. Add `api/domain.js`.
+5. Add `lib/domain-utils.js`.
+6. Delete the obsolete separate domain API files listed in README.
+7. Run `sql/001_domains_both.sql` once in Supabase SQL Editor.
+8. Add the required environment variables in Vercel.
+9. Redeploy.
+10. Sign in and open Domains & Publishing.
+11. Select a website.
+12. Test reserving a Bluvixa address.
+13. Test a spare custom domain.

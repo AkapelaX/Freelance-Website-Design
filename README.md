@@ -1,59 +1,56 @@
-# Bluvixa Custom Domain Manager
+# Bluvixa Domains — Full Combined Package
 
-This package adds a self-contained custom-domain workflow to the existing Bluvixa single-page application.
+This package supports both:
+
+- Free Bluvixa addresses: `https://bluvixa.com/site/your-business`
+- Customer-owned custom domains: `https://yourbusiness.com`
 
 ## Included
 
-- Full replacement `index.html` based on the supplied Bluvixa file
-- `domain-manager.css`
+- Full replacement `index.html`
+- Full replacement `style.css`
 - `domain-manager.js`
-- Connect Domain wizard
-- DNS instructions
-- Live status badges:
-  - Not Connected
-  - Verifying
-  - Connected
-  - Needs Attention
-- SSL status
-- Copy DNS record buttons
-- Remove Domain
-- Retry Verification
-- 30-second automatic status refresh while pending
-- Publishing Center domain and SSL integration
-- Authenticated Vercel API routes
-- Supabase SQL migration
+- One Hobby-plan-safe serverless function: `api/domain.js`
+- Shared server helper: `lib/domain-utils.js`
+- Corrected SQL migration using `owner_id`
 - Installation documentation
 
-## API route
+## Before replacing files
 
-This Hobby-plan-safe version uses one serverless function:
+Back up the production repository.
 
-- `GET /api/domain?action=status`
-- `POST /api/domain?action=connect`
-- `POST /api/domain?action=check`
-- `POST /api/domain?action=remove`
+Delete obsolete domain endpoints if they still exist:
 
-The shared helper lives in `/lib/domain-utils.js`, outside `/api`, so it is not deployed as another function.
+- `api/connect-domain.js`
+- `api/check-domain.js`
+- `api/remove-domain.js`
+- `api/domain-status.js`
+- `api/domain-search.js`
+- `api/domain-utils.js`
+- `api/_lib/domain-utils.js`
 
-All routes require a valid Supabase bearer token. The service-role key and Vercel token remain server-side.
+Keep only `api/domain.js` for this domain feature.
 
-## How routing works
+## Existing files that remain required
 
-All customer domains are assigned to the same Bluvixa Vercel project. The existing `index.html` host redirect forwards unknown hostnames to `public-site.html?host=...`, where Bluvixa can load the website project associated with the request hostname.
+The supplied `index.html` still loads:
 
-## Vercel and HTTPS
+- `app.js`
+- `platform.js`
+- Supabase browser library
+- existing assets and favicon files
 
-Vercel applies a configured custom domain to the latest production deployment and handles HTTPS certificate provisioning after domain verification. Third-party domains still require DNS configuration at their registrar.
+Do not remove those existing files.
 
-## Cloudflare compatibility
+## Environment variables
 
-A domain registered or DNS-hosted at Cloudflare can be connected by adding the records shown by Bluvixa. During initial verification, set a relevant CNAME record to **DNS only** if proxying prevents Vercel from validating it. After Vercel reports the domain as connected, Cloudflare proxy behavior can be tested carefully.
+- `SUPABASE_URL`
+- `SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `VERCEL_TOKEN`
+- `VERCEL_PROJECT_ID`
+- `VERCEL_TEAM_ID` only for a team-owned Vercel project
 
-## Production cautions
+## Important
 
-- Test with a spare domain before offering this to customers.
-- Do not delete MX records used for email.
-- Vercel account and project domain limits still apply.
-- Wildcard domains require a different nameserver-based workflow and are not included in this package.
-- Domain purchase/registration is not included; this package connects domains customers already own.
-- Confirm the exact `website_projects` schema before deployment.
+Test with a spare domain before customer use. Never delete MX records used for business email.
