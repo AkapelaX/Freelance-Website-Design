@@ -1,7 +1,0 @@
-{
-  "functions": {
-    "api/export-website.js": {
-      "includeFiles": "{templates/**,assets/**}"
-    }
-  }
-}
