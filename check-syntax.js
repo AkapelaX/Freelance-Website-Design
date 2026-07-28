@@ -1,3 +1,44 @@
-import fs from "fs"; import path from "path"; import { pathToFileURL } from "url";
-const files=[]; const walk=d=>fs.readdirSync(d,{withFileTypes:true}).forEach(e=>{const p=path.join(d,e.name);if(e.isDirectory()&&!p.includes('node_modules'))walk(p);else if(e.isFile()&&p.endsWith('.js'))files.push(p)}); walk(process.cwd());
-for(const file of files){ if(file.endsWith('app.js')){new Function(fs.readFileSync(file,'utf8'));} else await import(pathToFileURL(file)); console.log('OK',path.relative(process.cwd(),file)); }
+import { execFileSync } from "node:child_process";
+import { readdirSync, statSync } from "node:fs";
+import { join, resolve } from "node:path";
+
+const rootDirectory = resolve(process.cwd());
+
+const filesToCheck = [
+  join(rootDirectory, "app.js"),
+  join(rootDirectory, "platform.js"),
+  ...collectJavaScriptFiles(join(rootDirectory, "api"))
+];
+
+for (const filePath of filesToCheck) {
+  try {
+    execFileSync(process.execPath, ["--check", filePath], {
+      stdio: "inherit"
+    });
+  } catch {
+    process.exitCode = 1;
+    break;
+  }
+}
+
+if (!process.exitCode) {
+  console.log(`Syntax check passed for ${filesToCheck.length} JavaScript files.`);
+}
+
+function collectJavaScriptFiles(directoryPath) {
+  try {
+    return readdirSync(directoryPath).flatMap((entryName) => {
+      const entryPath = join(directoryPath, entryName);
+      const entryStats = statSync(entryPath);
+
+      if (entryStats.isDirectory()) {
+        return collectJavaScriptFiles(entryPath);
+      }
+
+      return entryName.endsWith(".js") ? [entryPath] : [];
+    });
+  } catch (error) {
+    console.error(`Unable to scan ${directoryPath}:`, error.message);
+    process.exit(1);
+  }
+}
