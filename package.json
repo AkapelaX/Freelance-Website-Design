@@ -1,13 +1,8 @@
 {
-  "name": "bluvixa-master-corrected",
+  "name": "bluvixa-platform",
   "version": "13.0.0",
   "private": true,
   "type": "module",
-  "scripts": {
-    "check": "node --check app.js && node --check api/api.js && node --check lib/server.js && node --check api/stripe-webhook.js"
-  },
-  "dependencies": {
-    "@supabase/supabase-js": "^2.49.1",
-    "stripe": "^17.7.0"
-  }
+  "scripts": { "check": "node scripts/check-syntax.js" },
+  "dependencies": { "@supabase/supabase-js": "^2.49.1", "stripe": "^17.7.0" }
 }

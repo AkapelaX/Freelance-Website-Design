@@ -973,7 +973,7 @@ footer small{opacity:.55}
     else query.set("slug",slug);
 
     try{
-      const response=await fetch(`/api/api?action=public-site&${query.toString()}`,{
+      const response=await fetch(`/api/public-site?${query.toString()}`,{
         method:"GET",
         headers:{"Accept":"application/json"},
         cache:"no-store"

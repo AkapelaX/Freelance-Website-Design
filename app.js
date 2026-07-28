@@ -1,7 +1,3 @@
-/* =========================================================
-   BLUVIXA MASTER FRONTEND
-   Consolidated: platform, domain manager, and visual builder.
-   ========================================================= */
 (function(){
 "use strict";
 
@@ -162,6 +158,7 @@ function lockBuilderPlan(){
   }
 }
 function projectUrl(project){
+  if(project&&project.publishedUrl)return String(project.publishedUrl);
   if(project&&project.customDomain&&project.domainStatus==="connected")return "https://"+project.customDomain;
   var slug=sanitizeSlug(project&&project.slug||project&&project.name||"website");
   return window.location.origin+"/site/"+encodeURIComponent(slug);
@@ -325,15 +322,14 @@ function projectToRow(project){
   state.__bluvixa_record_type="project";
   return {
     id:project.id,
-    user_id:currentUser.id,
+    owner_id:currentUser.id,
     name:project.name||"Untitled Website",
     slug:(project.published||project.domainStatus==="reserved"||project.customDomain)?(project.slug||uniquePublishedSlug(project)):null,
     plan:project.plan||"starter",
     project_data:state,
-    published:project.published===true,
-    published_url:project.publishedUrl||null,
+    status:project.published?"published":"draft",
     custom_domain:project.customDomain||null,
-    domain_status:["not_connected","verifying","connected","failed","removing"].indexOf(project.domainStatus)>=0?project.domainStatus:"not_connected",
+    domain_status:project.domainStatus||"not_connected",
     website_bought_out:!!project.websiteBoughtOut,
     buyout_plan:project.buyoutPlan||null,
     buyout_completed_at:project.buyoutCompletedAt||null
@@ -346,12 +342,12 @@ function snapshotToRow(snapshot){
   state.__bluvixa_saved_at=snapshot.savedAt||new Date().toISOString();
   return {
     id:snapshot.id,
-    user_id:currentUser.id,
+    owner_id:currentUser.id,
     name:snapshot.name||"Untitled Snapshot",
     slug:null,
     plan:snapshot.plan||"starter",
     project_data:state,
-    published:false,
+    status:"draft",
     custom_domain:null,
     domain_status:"not_connected",
     website_bought_out:false,
@@ -370,9 +366,9 @@ function rowToProject(row){
     slug:row.slug,
     plan:row.plan,
     state:state,
-    published:row.published===true,
-    publishedUrl:row.published_url||null,
+    published:row.status==="published",
     publishedAt:(state.backend&&state.backend.publishedAt)||row.updated_at||null,
+    publishedUrl:(state.backend&&state.backend.publishedUrl)||"",
     customDomain:row.custom_domain||"",
     domainStatus:row.domain_status||"not_connected",
     websiteBoughtOut:!!row.website_bought_out,
@@ -401,7 +397,7 @@ function rowToSnapshot(row){
 async function saveCloudRow(row){
   if(!currentUser||!supabaseClient)throw new Error("You must be signed in before saving to the cloud.");
   var result=await supabaseClient
-    .from("projects")
+    .from("website_projects")
     .upsert([row],{onConflict:"id"})
     .select("id")
     .single();
@@ -444,7 +440,7 @@ async function deleteCloudRecord(recordId){
   if(!currentUser||!supabaseClient||!recordId)return true;
   try{
     var result=await supabaseClient
-      .from("projects")
+      .from("website_projects")
       .delete()
       .eq("id",recordId);
     if(result.error)throw result.error;
@@ -467,7 +463,7 @@ async function loadCloudWorkspace(){
   cloudRecordIds=new Set();
 
   var result=await supabaseClient
-    .from("projects")
+    .from("website_projects")
     .select("*")
     .order("updated_at",{ascending:false});
 
@@ -686,8 +682,8 @@ async function applySession(session){
     }catch(error){
       console.warn("Bluvixa cloud workspace did not finish:",error);
       cloudWorkspaceLoaded=false;
-      projectsCache=readJson(PROJECTS_KEY,[]).map(normalizeProject);
-      snapshotsCache=readJson(SNAPSHOTS_KEY,[]).map(normalizeSnapshot);
+      projectsCache=safeJson(PROJECTS_KEY,[]).map(normalizeProject);
+      snapshotsCache=safeJson(SNAPSHOTS_KEY,[]).map(normalizeSnapshot);
       renderProjects();renderDrafts();renderDomainSelectors();renderPublishing();
       toast("Signed in. Cloud data is taking longer than expected.");
     }
@@ -710,7 +706,7 @@ async function applySession(session){
 }
 async function initAuth(){
   try{
-    var config=await withTimeout(api("/api/api?action=config"),10000,"Configuration");
+    var config=await withTimeout(api("/api/config"),10000,"Configuration");
     if(!config.supabaseUrl||!config.supabaseAnonKey){
       closeLoading();
       return;
@@ -738,7 +734,7 @@ function accountDate(data){
 }
 async function loadAccount(){
   try{
-    var data=await api("/api/api?action=account");
+    var data=await api("/api/account");
     accountData=data;
     var plan=data.plan?titleCase(data.plan):"Starter";
     var status=data.subscriptionStatus?titleCase(data.subscriptionStatus):"Not subscribed";
@@ -761,13 +757,13 @@ async function loadAccount(){
   }catch(error){
     console.warn("Account data could not be loaded:",error);
     text("trialHomeTitle","Your Bluvixa workspace");
-    text("trialHomeMessage","You are signed in. Account details will appear when the master account endpoint responds.");
+    text("trialHomeMessage","You are signed in. Account details will appear when /api/account responds.");
   }
 }
 async function checkout(plan,purchaseType,websiteId){
   if(!currentUser){openAuth("signup");return;}
   try{
-    var data=await api("/api/api?action=checkout",{
+    var data=await api("/api/create-checkout-session",{
       method:"POST",
       body:JSON.stringify({
         plan:plan,
@@ -784,7 +780,7 @@ async function checkout(plan,purchaseType,websiteId){
 async function portal(){
   if(!currentUser){openAuth("signin");return;}
   try{
-    var data=await api("/api/api?action=portal",{
+    var data=await api("/api/create-portal-session",{
       method:"POST",
       body:JSON.stringify({returnUrl:location.origin+"/#billing"})
     });
@@ -797,7 +793,7 @@ async function exportWebsite(projectId){
   try{
     var sessionResult=await supabaseClient.auth.getSession();
     var session=sessionResult.data.session;
-    var response=await fetch("/api/api?action=export&project_id="+encodeURIComponent(projectId||""),{
+    var response=await fetch("/api/export-website?websiteId="+encodeURIComponent(projectId||""),{
       headers:{Authorization:"Bearer "+session.access_token}
     });
     if(!response.ok){
@@ -1078,7 +1074,7 @@ async function searchDomains(){
   var results=domainSuggestions(term,extension);
   var live=false;
   try{
-    var response=await fetch("/api/api?action=domain-search",{
+    var response=await fetch("/api/domain-search",{
       method:"POST",
       headers:{"Content-Type":"application/json"},
       body:JSON.stringify({query:term,extension:extension})
@@ -1088,7 +1084,7 @@ async function searchDomains(){
       if(Array.isArray(data.results)&&data.results.length){results=data.results;live=true;}
     }
   }catch(_error){}
-  text("domainProviderNote",live?"Live availability returned by the connected domain provider.":"Showing generated suggestions. Connect a registrar provider for live availability and pricing.");
+  text("domainProviderNote",live?"Live availability returned by the connected domain provider.":"Showing generated suggestions. Connect /api/domain-search for live availability and registrar pricing.");
   id("domainResultsGrid").innerHTML=results.map(function(result){
     var domain=typeof result==="string"?result:result.domain;
     var available=typeof result==="string"?null:result.available;
@@ -1133,7 +1129,7 @@ async function connectCustomDomain(){
 
   text("customDomainResultMessage","Connecting "+domain+"…");
   try{
-    var result=await authenticatedApi("/api/api?action=domain&domain_action=connect",{projectId:projectId,domain:domain});
+    var result=await authenticatedApi("/api/connect-domain",{projectId:projectId,domain:domain});
     var projects=getProjects();
     var project=projects.find(function(item){return item.id===projectId;});
     if(project){
@@ -1335,7 +1331,7 @@ async function togglePublish(projectId){
 
     toast(shouldPublish?"Publishing website…":"Unpublishing website…");
 
-    var result=await authenticatedApi("/api/api?action=publish",{
+    var result=await authenticatedApi("/api/publish-site",{
       projectId:projectId,
       publish:shouldPublish,
       requestedSlug:project.slug||sanitizeSlug(project.name)
@@ -1347,7 +1343,6 @@ async function togglePublish(projectId){
 
     project.published=result.published;
     project.slug=result.slug||project.slug||"";
-    project.publishedUrl=project.published?(result.url||project.publishedUrl||projectUrl(project)):"";
     project.updatedAt=new Date().toISOString();
     project.publishedAt=project.published?project.updatedAt:null;
 
@@ -1355,8 +1350,9 @@ async function togglePublish(projectId){
       project.state.backend=project.state.backend||{};
       project.state.project=project.state.project||{};
       project.state.backend.published=project.published;
-      project.state.backend.publishedUrl=project.publishedUrl||null;
+      project.publishedUrl=result.url||result.published_url||project.publishedUrl||"";
       project.state.backend.publishedAt=project.publishedAt;
+      project.state.backend.publishedUrl=project.publishedUrl;
       project.state.project.slug=project.slug;
       project.state.project.domainStatus=project.domainStatus;
     }
@@ -1619,12 +1615,7 @@ async function authenticatedApi(path,payload){
   return data;
 }
 
-})();
-
-
-/* ================= DOMAIN MANAGER ================= */
-
-(function () {
+})();(function () {
   "use strict";
 
   const $ = (id) => document.getElementById(id);
@@ -1668,10 +1659,8 @@ async function authenticatedApi(path,payload){
       throw new Error("Your session has expired. Sign out and sign back in.");
     }
 
-    const domainQuery = String(action || "")
-      .replace(/^\?/, "")
-      .replace(/^action=/, "domain_action=");
-    const response = await fetch(`/api/api?action=domain&${domainQuery}`, {
+    const separator = action.includes("?") ? "&" : "?";
+    const response = await fetch(`/api/domain${separator}${action}`, {
       ...options,
       headers: {
         "Content-Type": "application/json",
@@ -2367,11 +2356,1710 @@ async function authenticatedApi(path,payload){
     refreshCurrent: () => loadSelectedProjectStatus(false),
     getCurrentProject: () => currentProject
   };
-})();
+})();(function () {
+  "use strict";
 
-/* ================= VISUAL BUILDER ================= */
+  var SNAPSHOTS_KEY = "bluvixa_saved_drafts_v3";
+  var ACTIVE_PROJECT_KEY = "bluvixa_active_project_id";
+  var draftFilter = "all";
+  var projectCache = [];
+  var accountCache = null;
+  var loadingProjects = false;
 
-"use strict";
+  var API = {
+    accountStatus: "/api/account-status",
+    projects: "/api/projects",
+    saveProject: "/api/projects/save",
+    deleteProject: "/api/projects/delete"
+  };
+
+  function byId(id) {
+    return document.getElementById(id);
+  }
+
+  function qa(selector) {
+    return Array.prototype.slice.call(document.querySelectorAll(selector));
+  }
+
+  function toast(message) {
+    var node = byId("toast");
+
+    if (!node) {
+      window.alert(message);
+      return;
+    }
+
+    node.textContent = message;
+    node.classList.add("show");
+
+    window.clearTimeout(toast.timer);
+
+    toast.timer = window.setTimeout(function () {
+      node.classList.remove("show");
+    }, 2700);
+  }
+
+  function escapeHtml(value) {
+    return String(value == null ? "" : value).replace(/[&<>"']/g, function (character) {
+      return {
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+      }[character];
+    });
+  }
+
+  function readJson(key, fallback) {
+    try {
+      var value = JSON.parse(localStorage.getItem(key) || "null");
+      return value == null ? fallback : value;
+    } catch (_error) {
+      return fallback;
+    }
+  }
+
+  function writeJson(key, value) {
+    localStorage.setItem(key, JSON.stringify(value));
+  }
+
+  function clone(value) {
+    return JSON.parse(JSON.stringify(value));
+  }
+
+  function snapshots() {
+    var value = readJson(SNAPSHOTS_KEY, []);
+    return Array.isArray(value) ? value : [];
+  }
+
+  function activeProjectId() {
+    return localStorage.getItem(ACTIVE_PROJECT_KEY) || "";
+  }
+
+  function setActiveProjectId(id) {
+    localStorage.setItem(ACTIVE_PROJECT_KEY, id || "");
+  }
+
+  function currentBuilderState() {
+    try {
+      return typeof window.bluvixaExportState === "function"
+        ? window.bluvixaExportState()
+        : null;
+    } catch (_error) {
+      return null;
+    }
+  }
+
+  function formatDate(value) {
+    var date = new Date(value);
+
+    return Number.isNaN(date.getTime())
+      ? "Unknown"
+      : date.toLocaleString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+          hour: "numeric",
+          minute: "2-digit"
+        });
+  }
+
+  function planName(value) {
+    return String(value || "professional").replace(/\b\w/g, function (character) {
+      return character.toUpperCase();
+    });
+  }
+
+  function sanitizeSlug(value) {
+    return (
+      String(value || "website")
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "")
+        .slice(0, 48) || "website"
+    );
+  }
+
+  function buyoutPrice(plan) {
+    return {
+      starter: 499,
+      professional: 599,
+      advanced: 699
+    }[String(plan || "professional").toLowerCase()] || 599;
+  }
+
+  function cleanDomain(value) {
+    return String(value || "")
+      .trim()
+      .toLowerCase()
+      .replace(/^https?:\/\//, "")
+      .replace(/\/.*$/, "")
+      .replace(/\.$/, "");
+  }
+
+  function projectUrl(project) {
+    if (!project || typeof project !== "object") {
+      return "";
+    }
+
+    var customDomain = cleanDomain(project.custom_domain);
+
+    if (customDomain) {
+      return "https://" + customDomain;
+    }
+
+    if (project.published_url) {
+      return String(project.published_url);
+    }
+
+    var slug = project.slug || sanitizeSlug(project.name || "website");
+    return "https://bluvixa.com/site/" + slug;
+  }
+
+  function normalizeProject(raw) {
+    raw = raw && typeof raw === "object" ? raw : {};
+
+    return {
+      id: String(raw.id || ""),
+      user_id: raw.user_id || null,
+      name: String(raw.name || "Untitled Website"),
+      slug: String(raw.slug || ""),
+      plan: String(raw.plan || "professional").toLowerCase(),
+      project_data:
+        raw.project_data && typeof raw.project_data === "object"
+          ? raw.project_data
+          : {},
+      published: raw.published === true,
+      published_url: raw.published_url || null,
+      custom_domain: raw.custom_domain || null,
+      domain_status: raw.domain_status || "not_connected",
+      ssl_status: raw.ssl_status || "waiting",
+      verified_at: raw.verified_at || null,
+      dns_verified: raw.dns_verified === true,
+      domain_last_checked_at: raw.domain_last_checked_at || null,
+      domain_error: raw.domain_error || null,
+      dns_records: Array.isArray(raw.dns_records) ? raw.dns_records : [],
+      verification_record:
+        raw.verification_record && typeof raw.verification_record === "object"
+          ? raw.verification_record
+          : null,
+      created_at: raw.created_at || new Date().toISOString(),
+      updated_at: raw.updated_at || raw.created_at || new Date().toISOString()
+    };
+  }
+
+  function projectState(project) {
+    var state = clone(project.project_data || {});
+
+    state.plan = project.plan || state.plan || "professional";
+
+    state.project = Object.assign({}, state.project || {}, {
+      slug: project.slug || "",
+      domainMode: project.custom_domain ? "custom" : "subdomain",
+      customDomain: project.custom_domain || "",
+      domainStatus: project.domain_status || "not_connected",
+      sslStatus: project.ssl_status || "waiting",
+      dnsVerified: project.dns_verified === true,
+      dnsRecords: clone(project.dns_records || []),
+      verificationRecord: project.verification_record
+        ? clone(project.verification_record)
+        : null
+    });
+
+    state.backend = Object.assign({}, state.backend || {}, {
+      userId: project.user_id || null,
+      websiteId: project.id,
+      published: project.published === true,
+      publishedUrl: project.published_url || null,
+      updatedAt: project.updated_at || null
+    });
+
+    return state;
+  }
+
+  async function getAccessToken() {
+    if (
+      window.BluvixaMVP &&
+      typeof window.BluvixaMVP.getAccessToken === "function"
+    ) {
+      return (await window.BluvixaMVP.getAccessToken()) || "";
+    }
+
+    if (
+      window.supabaseClient &&
+      window.supabaseClient.auth &&
+      typeof window.supabaseClient.auth.getSession === "function"
+    ) {
+      var result = await window.supabaseClient.auth.getSession();
+      return result?.data?.session?.access_token || "";
+    }
+
+    if (
+      window.supabase &&
+      window.supabase.auth &&
+      typeof window.supabase.auth.getSession === "function"
+    ) {
+      var fallbackResult = await window.supabase.auth.getSession();
+      return fallbackResult?.data?.session?.access_token || "";
+    }
+
+    return "";
+  }
+
+  async function apiRequest(url, options) {
+    options = options || {};
+
+    var token = await getAccessToken();
+    var headers = Object.assign(
+      {
+        Accept: "application/json"
+      },
+      options.headers || {}
+    );
+
+    if (options.body !== undefined && !headers["Content-Type"]) {
+      headers["Content-Type"] = "application/json; charset=utf-8";
+    }
+
+    if (token) {
+      headers.Authorization = "Bearer " + token;
+    }
+
+    var response = await fetch(url, {
+      method: options.method || "GET",
+      headers: headers,
+      body:
+        options.body === undefined
+          ? undefined
+          : typeof options.body === "string"
+            ? options.body
+            : JSON.stringify(options.body),
+      cache: "no-store"
+    });
+
+    var payload = null;
+
+    try {
+      payload = await response.json();
+    } catch (_error) {
+      payload = null;
+    }
+
+    if (!response.ok) {
+      var error = new Error(
+        payload?.error ||
+          payload?.message ||
+          "The request could not be completed."
+      );
+
+      error.status = response.status;
+      error.payload = payload;
+      throw error;
+    }
+
+    return payload || {};
+  }
+
+  async function loadAccountStatus(force) {
+    if (accountCache && !force) {
+      return accountCache;
+    }
+
+    try {
+      accountCache = await apiRequest(API.accountStatus);
+      return accountCache;
+    } catch (error) {
+      if (error.status === 401) {
+        accountCache = {
+          signedIn: false,
+          subscribed: false,
+          websiteBoughtOut: false
+        };
+
+        return accountCache;
+      }
+
+      throw error;
+    }
+  }
+
+  async function loadProjects(force) {
+    if (loadingProjects && !force) {
+      return projectCache;
+    }
+
+    loadingProjects = true;
+
+    try {
+      var payload = await apiRequest(API.projects);
+      var rows = Array.isArray(payload)
+        ? payload
+        : Array.isArray(payload.projects)
+          ? payload.projects
+          : [];
+
+      projectCache = rows.map(normalizeProject);
+      return projectCache;
+    } finally {
+      loadingProjects = false;
+    }
+  }
+
+  function findProject(id) {
+    return projectCache.find(function (project) {
+      return project.id === id;
+    }) || null;
+  }
+
+  async function saveProjectRequest(projectId, state, nameOverride) {
+    var normalizedState = clone(state || {});
+    var existing = projectId ? findProject(projectId) : null;
+
+    var businessName =
+      normalizedState.business && normalizedState.business.name
+        ? String(normalizedState.business.name).trim()
+        : "";
+
+    var name =
+      String(
+        nameOverride ||
+          (businessName ? businessName + " Website" : "") ||
+          existing?.name ||
+          "Untitled Website"
+      ).trim() || "Untitled Website";
+
+    var slug =
+      String(normalizedState.project?.slug || existing?.slug || "").trim() ||
+      sanitizeSlug(name);
+
+    var plan =
+      String(normalizedState.plan || existing?.plan || "professional")
+        .trim()
+        .toLowerCase();
+
+    var payload = await apiRequest(API.saveProject, {
+      method: "POST",
+      body: {
+        projectId: projectId || null,
+        name: name,
+        slug: slug,
+        plan: plan,
+        projectData: normalizedState
+      }
+    });
+
+    var saved = normalizeProject(payload.project || payload.data || payload);
+
+    if (!saved.id) {
+      throw new Error("The project was saved, but no project ID was returned.");
+    }
+
+    var index = projectCache.findIndex(function (project) {
+      return project.id === saved.id;
+    });
+
+    if (index >= 0) {
+      projectCache[index] = saved;
+    } else {
+      projectCache.unshift(saved);
+    }
+
+    setActiveProjectId(saved.id);
+    notifyProjectsUpdated(saved.id);
+
+    return saved;
+  }
+
+  async function createProject(name, state) {
+    var base = state ? clone(state) : currentBuilderState();
+
+    if (!base) {
+      toast("The builder is still loading.");
+      return null;
+    }
+
+    try {
+      var project = await saveProjectRequest(null, base, name);
+      renderAll();
+      return project;
+    } catch (error) {
+      console.error("Create project error:", error);
+      toast(error.message || "The website could not be created.");
+      return null;
+    }
+  }
+
+  async function saveActiveProject(showMessage) {
+    var state = currentBuilderState();
+
+    if (!state) {
+      toast("The builder is still loading.");
+      return null;
+    }
+
+    try {
+      var project = await saveProjectRequest(
+        activeProjectId() || null,
+        state,
+        null
+      );
+
+      if (showMessage) {
+        toast("Website saved.");
+      }
+
+      renderAll();
+      updateBuilderHeading(project);
+
+      return project;
+    } catch (error) {
+      console.error("Save project error:", error);
+      toast(error.message || "The website could not be saved.");
+      return null;
+    }
+  }
+
+  async function newWebsite() {
+    var state = currentBuilderState();
+
+    if (!state) {
+      toast("The builder is still loading.");
+      return;
+    }
+
+    var blank = clone(state);
+
+    blank.business = {
+      name: "",
+      bio: "",
+      phone: "",
+      email: "",
+      hours: "",
+      address: "",
+      callText: ""
+    };
+
+    blank.header = {
+      tagline: "",
+      headline: "",
+      image: "",
+      bio: ""
+    };
+
+    blank.photos = [];
+    blank.gallery = [];
+    blank.mapUrl = "";
+
+    blank.project = {
+      slug: "",
+      domainMode: "subdomain",
+      customDomain: "",
+      domainStatus: "not_connected",
+      sslStatus: "waiting",
+      dnsVerified: false,
+      dnsRecords: [],
+      verificationRecord: null
+    };
+
+    blank.backend = {
+      userId: null,
+      websiteId: null,
+      published: false,
+      publishedUrl: null,
+      updatedAt: null
+    };
+
+    var project = await createProject("Untitled Website", blank);
+
+    if (
+      project &&
+      typeof window.bluvixaImportState === "function"
+    ) {
+      window.bluvixaImportState(projectState(project));
+      updateBuilderHeading(project);
+      location.hash = "#builder";
+      toast("New website created.");
+    }
+  }
+
+  function loadProject(id) {
+    var project = findProject(id);
+
+    if (!project) {
+      toast("That website was not found.");
+      return;
+    }
+
+    setActiveProjectId(project.id);
+
+    if (typeof window.bluvixaImportState === "function") {
+      window.bluvixaImportState(projectState(project));
+      updateBuilderHeading(project);
+      location.hash = "#builder";
+      toast(project.name + " loaded.");
+    }
+  }
+
+  async function duplicateProject(id) {
+    var source = findProject(id);
+
+    if (!source) {
+      toast("That website was not found.");
+      return;
+    }
+
+    var duplicateState = projectState(source);
+
+    duplicateState.project = Object.assign({}, duplicateState.project || {}, {
+      slug: ""
+    });
+
+    duplicateState.backend = Object.assign({}, duplicateState.backend || {}, {
+      userId: null,
+      websiteId: null,
+      published: false,
+      publishedUrl: null,
+      updatedAt: null
+    });
+
+    try {
+      var copy = await saveProjectRequest(
+        null,
+        duplicateState,
+        source.name + " Copy"
+      );
+
+      if (copy) {
+        toast("Website duplicated.");
+        renderAll();
+      }
+    } catch (error) {
+      console.error("Duplicate project error:", error);
+      toast(error.message || "The website could not be duplicated.");
+    }
+  }
+
+  async function deleteProject(id) {
+    var project = findProject(id);
+
+    if (!project) {
+      toast("That website was not found.");
+      return;
+    }
+
+    if (
+      !window.confirm(
+        'Delete "' + project.name + '"? This cannot be undone.'
+      )
+    ) {
+      return;
+    }
+
+    try {
+      await apiRequest(API.deleteProject, {
+        method: "POST",
+        body: {
+          projectId: id
+        }
+      });
+
+      projectCache = projectCache.filter(function (item) {
+        return item.id !== id;
+      });
+
+      if (activeProjectId() === id) {
+        setActiveProjectId("");
+      }
+
+      renderAll();
+      notifyProjectsUpdated(id);
+      toast("Website deleted.");
+    } catch (error) {
+      console.error("Delete project error:", error);
+      toast(error.message || "The website could not be deleted.");
+    }
+  }
+
+  function saveSnapshot() {
+    var state = currentBuilderState();
+
+    if (!state) {
+      toast("The builder is still loading.");
+      return;
+    }
+
+    var project = findProject(activeProjectId());
+    var now = new Date().toISOString();
+
+    var item = {
+      id: "snap_" + Date.now() + "_" + Math.random().toString(16).slice(2),
+      projectId: project ? project.id : "",
+      name: project
+        ? project.name + " Snapshot"
+        : ((state.business && state.business.name) || "Untitled") + " Snapshot",
+      plan: state.plan || project?.plan || "professional",
+      savedAt: now,
+      state: clone(state)
+    };
+
+    var items = snapshots();
+    items.unshift(item);
+    writeJson(SNAPSHOTS_KEY, items.slice(0, 60));
+
+    toast("Snapshot saved.");
+    renderAll();
+  }
+
+  function loadSnapshot(id) {
+    var item = snapshots().find(function (entry) {
+      return entry.id === id;
+    });
+
+    if (!item) {
+      toast("That snapshot was not found.");
+      return;
+    }
+
+    if (typeof window.bluvixaImportState === "function") {
+      setActiveProjectId(item.projectId || "");
+      window.bluvixaImportState(clone(item.state));
+      location.hash = "#builder";
+      toast("Snapshot loaded.");
+    }
+  }
+
+  function deleteSnapshot(id) {
+    writeJson(
+      SNAPSHOTS_KEY,
+      snapshots().filter(function (item) {
+        return item.id !== id;
+      })
+    );
+
+    renderAll();
+    toast("Snapshot deleted.");
+  }
+
+  function buyoutProject(id) {
+    var project = findProject(id);
+
+    if (!project) {
+      toast("That website was not found.");
+      return;
+    }
+
+    setActiveProjectId(project.id);
+
+    if (
+      window.BluvixaMVP &&
+      typeof window.BluvixaMVP.checkout === "function"
+    ) {
+      window.BluvixaMVP.checkout(
+        project.plan || "professional",
+        "buyout",
+        project.id
+      );
+      return;
+    }
+
+    toast("The checkout system is not connected yet.");
+  }
+
+  async function exportProject(id) {
+    var project = findProject(id);
+
+    if (!project) {
+      toast("That website was not found.");
+      return;
+    }
+
+    var account;
+
+    try {
+      account = await loadAccountStatus(true);
+    } catch (error) {
+      console.error("Account status error:", error);
+      toast(error.message || "Ownership could not be verified.");
+      return;
+    }
+
+    if (account.websiteBoughtOut !== true) {
+      toast("Buy out this website before exporting it.");
+      return;
+    }
+
+    if (
+      window.BluvixaMVP &&
+      typeof window.BluvixaMVP.exportWebsite === "function"
+    ) {
+      window.BluvixaMVP.exportWebsite(project.id);
+      return;
+    }
+
+    toast("The export API is not connected yet.");
+  }
+
+  function websiteCard(project) {
+    var url = projectUrl(project);
+    var accountOwned = accountCache?.websiteBoughtOut === true;
+
+    var accent =
+      project.plan === "advanced"
+        ? "#673ab7"
+        : project.plan === "starter"
+          ? "#226d88"
+          : "#245f9e";
+
+    var statusClass = accountOwned
+      ? "owned"
+      : project.published
+        ? "published"
+        : "";
+
+    var statusText = accountOwned
+      ? "Owned"
+      : project.published
+        ? "Published"
+        : "Draft";
+
+    return (
+      '<article class="website-project-card" data-project-id="' +
+      escapeHtml(project.id) +
+      '">' +
+      '<div class="website-project-preview" style="--project-accent:' +
+      accent +
+      '"><div><strong>' +
+      escapeHtml(project.name) +
+      "</strong><small>" +
+      escapeHtml(url) +
+      "</small></div></div>" +
+      '<div class="website-project-body">' +
+      '<div class="project-meta-row"><strong>' +
+      escapeHtml(planName(project.plan)) +
+      '</strong><span class="project-status ' +
+      statusClass +
+      '">' +
+      statusText +
+      "</span></div>" +
+      '<div class="project-meta"><div><span>UPDATED</span><strong>' +
+      escapeHtml(formatDate(project.updated_at)) +
+      '</strong></div><div><span>OWNERSHIP</span><strong>' +
+      (accountOwned ? "Purchased" : "Subscription") +
+      "</strong></div></div>" +
+      '<div class="project-actions">' +
+      '<button class="btn btn-primary" data-project-load="' +
+      escapeHtml(project.id) +
+      '">Edit</button>' +
+      '<button class="btn btn-secondary" data-project-duplicate="' +
+      escapeHtml(project.id) +
+      '">Duplicate</button>' +
+      '<button class="btn btn-secondary" data-project-drafts="' +
+      escapeHtml(project.id) +
+      '">Drafts</button>' +
+      '<button class="btn btn-danger" data-project-delete="' +
+      escapeHtml(project.id) +
+      '">Delete</button>' +
+      "</div></div></article>"
+    );
+  }
+
+  function renderProjects() {
+    var grid = byId("websiteLibraryGrid");
+
+    if (!grid) {
+      return;
+    }
+
+    var query = (
+      byId("projectSearchInput")
+        ? byId("projectSearchInput").value
+        : ""
+    )
+      .trim()
+      .toLowerCase();
+
+    var items = projectCache.filter(function (item) {
+      return (
+        !query ||
+        item.name.toLowerCase().indexOf(query) >= 0 ||
+        projectUrl(item).toLowerCase().indexOf(query) >= 0
+      );
+    });
+
+    if (byId("projectCount")) {
+      byId("projectCount").textContent = String(projectCache.length);
+    }
+
+    if (byId("publishedProjectCount")) {
+      byId("publishedProjectCount").textContent = String(
+        projectCache.filter(function (project) {
+          return project.published;
+        }).length
+      );
+    }
+
+    if (byId("draftProjectCount")) {
+      byId("draftProjectCount").textContent = String(
+        projectCache.filter(function (project) {
+          return !project.published;
+        }).length
+      );
+    }
+
+    grid.innerHTML = items.length
+      ? items.map(websiteCard).join("")
+      : '<div class="empty-state">No websites yet. Select “Create New Website” to begin.</div>';
+  }
+
+  function draftCard(item, type) {
+    var project =
+      type === "project"
+        ? item
+        : findProject(item.projectId);
+
+    var owned = accountCache?.websiteBoughtOut === true;
+
+    var status =
+      type === "project"
+        ? item.published
+          ? "Published website"
+          : "Incomplete website"
+        : "Saved snapshot";
+
+    var itemId = escapeHtml(item.id);
+
+    return (
+      '<article class="draft-card ' +
+      (type === "project" ? "project-draft" : "snapshot-draft") +
+      '">' +
+      '<div class="draft-thumb"><strong>' +
+      escapeHtml(item.name) +
+      "</strong></div>" +
+      '<div class="draft-card-body"><span class="draft-type-label">' +
+      (type === "project" ? "WEBSITE PROJECT" : "SNAPSHOT") +
+      "</span>" +
+      "<strong>" +
+      escapeHtml(status) +
+      "</strong><small>" +
+      escapeHtml(
+        formatDate(
+          type === "project"
+            ? item.updated_at
+            : item.savedAt
+        )
+      ) +
+      "</small>" +
+      '<div class="draft-ownership-row"><small>' +
+      (owned ? "Website owned" : "Buyout $" + buyoutPrice(item.plan)) +
+      '</small><span class="project-status ' +
+      (owned ? "owned" : "") +
+      '">' +
+      (owned ? "Export unlocked" : "Export locked") +
+      "</span></div>" +
+      '<div class="draft-card-actions">' +
+      '<button class="btn btn-primary btn-small" data-' +
+      (type === "project" ? "project-load" : "snapshot-load") +
+      '="' +
+      itemId +
+      '">Load</button>' +
+      (type === "project"
+        ? '<button class="btn btn-secondary btn-small" data-project-duplicate="' +
+          itemId +
+          '">Duplicate</button>' +
+          (owned
+            ? '<button class="btn btn-primary btn-small" data-project-export="' +
+              itemId +
+              '">Export ZIP</button>'
+            : '<button class="btn btn-secondary btn-small" data-project-buyout="' +
+              itemId +
+              '">Buy Out $' +
+              buyoutPrice(item.plan) +
+              "</button>")
+        : '<button class="btn btn-secondary btn-small" data-snapshot-delete="' +
+          itemId +
+          '">Delete</button>') +
+      "</div></div></article>"
+    );
+  }
+
+  function renderDrafts() {
+    var grid = byId("savedDraftsGrid");
+
+    if (!grid) {
+      return;
+    }
+
+    var query = (
+      byId("draftSearchInput")
+        ? byId("draftSearchInput").value
+        : ""
+    )
+      .trim()
+      .toLowerCase();
+
+    var entries = [];
+
+    projectCache.forEach(function (item) {
+      var incomplete = !item.published;
+
+      if (
+        draftFilter === "all" ||
+        draftFilter === "project" ||
+        (draftFilter === "incomplete" && incomplete)
+      ) {
+        entries.push({
+          item: item,
+          type: "project",
+          date: item.updated_at
+        });
+      }
+    });
+
+    if (draftFilter === "all" || draftFilter === "snapshot") {
+      snapshots().forEach(function (item) {
+        entries.push({
+          item: item,
+          type: "snapshot",
+          date: item.savedAt
+        });
+      });
+    }
+
+    entries = entries.filter(function (entry) {
+      return (
+        !query ||
+        entry.item.name.toLowerCase().indexOf(query) >= 0
+      );
+    });
+
+    entries.sort(function (a, b) {
+      return new Date(b.date) - new Date(a.date);
+    });
+
+    if (byId("savedDraftCount")) {
+      byId("savedDraftCount").textContent = String(entries.length);
+    }
+
+    grid.innerHTML = entries.length
+      ? entries
+          .map(function (entry) {
+            return draftCard(entry.item, entry.type);
+          })
+          .join("")
+      : '<div class="empty-state">No matching drafts or websites.</div>';
+  }
+
+  function updateBuilderHeading(project) {
+    if (byId("builderProjectTitle")) {
+      byId("builderProjectTitle").textContent = project
+        ? project.name
+        : "Build your website";
+    }
+
+    if (byId("builderProjectSubtitle")) {
+      byId("builderProjectSubtitle").textContent = project
+        ? "Editing website project · " +
+          planName(project.plan) +
+          " plan"
+        : "Create or load a website project.";
+    }
+  }
+
+  function notifyProjectsUpdated(projectId) {
+    window.dispatchEvent(
+      new CustomEvent("bluvixa:projects-updated", {
+        detail: {
+          projectId: projectId || activeProjectId() || ""
+        }
+      })
+    );
+  }
+
+  function renderAll() {
+    renderProjects();
+    renderDrafts();
+  }
+
+  function currentRoute() {
+    var route = (location.hash || "#home")
+      .slice(1)
+      .split("?")[0];
+
+    return [
+      "home",
+      "projects",
+      "drafts",
+      "builder",
+      "billing",
+      "domains",
+      "pricing"
+    ].indexOf(route) >= 0
+      ? route
+      : "home";
+  }
+
+  async function route() {
+    var name = currentRoute();
+    var authenticated =
+      document.body.classList.contains("member-authenticated");
+
+    if (authenticated && name === "home") {
+      name = "projects";
+    }
+
+    if (
+      !authenticated &&
+      ["projects", "drafts", "billing", "domains"].indexOf(name) >= 0
+    ) {
+      name = "home";
+    }
+
+    qa(".app-page").forEach(function (page) {
+      page.classList.toggle(
+        "route-active",
+        page.dataset.page === name
+      );
+    });
+
+    qa("[data-route-link]").forEach(function (link) {
+      link.classList.toggle(
+        "active",
+        link.dataset.routeLink === name
+      );
+    });
+
+    document.body.className =
+      (authenticated ? "member-authenticated " : "") +
+      "route-" +
+      name;
+
+    window.scrollTo(0, 0);
+
+    if (
+      authenticated &&
+      (name === "projects" ||
+        name === "drafts" ||
+        name === "builder" ||
+        name === "domains")
+    ) {
+      try {
+        await Promise.all([
+          loadProjects(true),
+          loadAccountStatus(true)
+        ]);
+
+        renderAll();
+      } catch (error) {
+        console.error("Workspace load error:", error);
+        toast(error.message || "Your websites could not be loaded.");
+      }
+    }
+
+    if (
+      name === "domains" &&
+      window.BluvixaDomainManager &&
+      typeof window.BluvixaDomainManager.refresh === "function"
+    ) {
+      window.BluvixaDomainManager.refresh();
+    }
+
+    if (name === "builder") {
+      updateBuilderHeading(findProject(activeProjectId()));
+    }
+  }
+
+  function bind() {
+    window.addEventListener("hashchange", route);
+
+    ["createWebsiteBtn", "createWebsiteFromDraftsBtn"].forEach(function (id) {
+      var button = byId(id);
+
+      if (button) {
+        button.addEventListener("click", newWebsite);
+      }
+    });
+
+    if (byId("saveWebsiteProjectBtn")) {
+      byId("saveWebsiteProjectBtn").addEventListener("click", function () {
+        saveActiveProject(true);
+      });
+    }
+
+    ["saveCurrentDraftBtn", "saveSnapshotTopBtn"].forEach(function (id) {
+      var button = byId(id);
+
+      if (button) {
+        button.addEventListener("click", saveSnapshot);
+      }
+    });
+
+    if (byId("projectSearchInput")) {
+      byId("projectSearchInput").addEventListener(
+        "input",
+        renderProjects
+      );
+    }
+
+    if (byId("draftSearchInput")) {
+      byId("draftSearchInput").addEventListener(
+        "input",
+        renderDrafts
+      );
+    }
+
+    qa("[data-draft-filter]").forEach(function (button) {
+      button.addEventListener("click", function () {
+        draftFilter = button.dataset.draftFilter;
+
+        qa("[data-draft-filter]").forEach(function (item) {
+          item.classList.toggle("active", item === button);
+        });
+
+        renderDrafts();
+      });
+    });
+
+    document.addEventListener("click", function (event) {
+      var node;
+
+      if ((node = event.target.closest("[data-project-load]"))) {
+        loadProject(node.dataset.projectLoad);
+        return;
+      }
+
+      if ((node = event.target.closest("[data-project-duplicate]"))) {
+        duplicateProject(node.dataset.projectDuplicate);
+        return;
+      }
+
+      if ((node = event.target.closest("[data-project-delete]"))) {
+        deleteProject(node.dataset.projectDelete);
+        return;
+      }
+
+      if ((node = event.target.closest("[data-project-drafts]"))) {
+        setActiveProjectId(node.dataset.projectDrafts);
+        location.hash = "#drafts";
+        return;
+      }
+
+      if ((node = event.target.closest("[data-project-buyout]"))) {
+        buyoutProject(node.dataset.projectBuyout);
+        return;
+      }
+
+      if ((node = event.target.closest("[data-project-export]"))) {
+        exportProject(node.dataset.projectExport);
+        return;
+      }
+
+      if ((node = event.target.closest("[data-snapshot-load]"))) {
+        loadSnapshot(node.dataset.snapshotLoad);
+        return;
+      }
+
+      if ((node = event.target.closest("[data-snapshot-delete]"))) {
+        deleteSnapshot(node.dataset.snapshotDelete);
+      }
+    });
+
+    qa(".memberPlanCheckout").forEach(function (button) {
+      button.addEventListener("click", function () {
+        if (
+          window.BluvixaMVP &&
+          typeof window.BluvixaMVP.checkout === "function"
+        ) {
+          window.BluvixaMVP.checkout(
+            button.dataset.plan,
+            "annual"
+          );
+        }
+      });
+    });
+
+    window.addEventListener("bluvixa:auth-changed", function () {
+      accountCache = null;
+      projectCache = [];
+      route();
+    });
+
+    window.addEventListener("bluvixa:project-published", function () {
+      loadProjects(true)
+        .then(renderAll)
+        .catch(function (error) {
+          console.error("Project refresh error:", error);
+        });
+    });
+
+    route();
+  }
+
+  document.addEventListener("DOMContentLoaded", bind);
+
+  window.BluvixaWorkspace = {
+    createProject: createProject,
+    saveActiveProject: saveActiveProject,
+    refresh: async function () {
+      await Promise.all([
+        loadProjects(true),
+        loadAccountStatus(true)
+      ]);
+
+      renderAll();
+
+      return projectCache.slice();
+    },
+    getProjects: function () {
+      return projectCache.slice();
+    },
+    getProject: function (projectId) {
+      return findProject(projectId);
+    },
+    getActiveProjectId: activeProjectId,
+    setActiveProjectId: setActiveProjectId,
+    markOwned: async function () {
+      accountCache = null;
+
+      try {
+        await loadAccountStatus(true);
+        renderAll();
+      } catch (error) {
+        console.error("Ownership refresh error:", error);
+      }
+    }
+  };
+})();"use strict";
+
+(function () {
+  var bound = false;
+  var supabaseClient = null;
+
+  function toast(message) {
+    if (
+      window.BluvixaMVP &&
+      typeof window.BluvixaMVP.toast === "function"
+    ) {
+      window.BluvixaMVP.toast(message);
+      return;
+    }
+
+    var element = document.getElementById("toast");
+
+    if (element) {
+      element.textContent = message;
+      element.classList.add("show");
+      clearTimeout(toast.timer);
+      toast.timer = setTimeout(function () {
+        element.classList.remove("show");
+      }, 2800);
+      return;
+    }
+
+    console.log(message);
+  }
+
+  function sanitizeSlug(value) {
+    return String(value || "website")
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/-+/g, "-")
+      .replace(/^-|-$/g, "")
+      .slice(0, 48) || "website";
+  }
+
+  async function getSupabaseClient() {
+    if (supabaseClient) return supabaseClient;
+
+    if (!window.supabase) {
+      throw new Error("Supabase did not load.");
+    }
+
+    var response = await fetch("/api/config", {
+      headers: { Accept: "application/json" }
+    });
+
+    var config = {};
+
+    try {
+      config = await response.json();
+    } catch (_error) {}
+
+    if (!response.ok) {
+      throw new Error(
+        config.error || "Supabase configuration could not be loaded."
+      );
+    }
+
+    var url =
+      config.supabaseUrl ||
+      config.supabase_url ||
+      config.url;
+
+    var anonKey =
+      config.supabaseAnonKey ||
+      config.supabase_anon_key ||
+      config.anonKey ||
+      config.anon_key;
+
+    if (!url || !anonKey) {
+      throw new Error("Supabase configuration is incomplete.");
+    }
+
+    supabaseClient = window.supabase.createClient(url, anonKey);
+    return supabaseClient;
+  }
+
+  async function getAccessToken() {
+    var client = await getSupabaseClient();
+    var result = await client.auth.getSession();
+    var session =
+      result &&
+      result.data &&
+      result.data.session
+        ? result.data.session
+        : null;
+
+    if (!session || !session.access_token) {
+      throw new Error("Please sign in again.");
+    }
+
+    return session.access_token;
+  }
+
+  function getBuilderState() {
+    if (typeof window.bluvixaExportState !== "function") {
+      return null;
+    }
+
+    try {
+      return window.bluvixaExportState();
+    } catch (error) {
+      console.error("Builder state could not be read:", error);
+      return null;
+    }
+  }
+
+  function readStoredProjects() {
+    var possibleKeys = [
+      "bluvixa_projects_v6",
+      "bluvixa_projects",
+      "bluvixaProjects",
+      "bluvixa_platform_projects",
+      "bluvixaPlatformProjects"
+    ];
+
+    for (var index = 0; index < possibleKeys.length; index += 1) {
+      try {
+        var raw = localStorage.getItem(possibleKeys[index]);
+        if (!raw) continue;
+
+        var parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          return {
+            key: possibleKeys[index],
+            projects: parsed
+          };
+        }
+      } catch (_error) {}
+    }
+
+    return null;
+  }
+
+  function findStoredProject(projectId) {
+    var stored = readStoredProjects();
+    if (!stored) return null;
+
+    return stored.projects.find(function (project) {
+      return String(project.id) === String(projectId);
+    }) || null;
+  }
+
+  function getProjectId(button, state) {
+    return String(
+      button.dataset.projectId ||
+      button.getAttribute("data-project-id") ||
+      (state && state.backend && state.backend.websiteId) ||
+      (state && state.backend && state.backend.website_id) ||
+      ""
+    ).trim();
+  }
+
+  function getRequestedSlug(button, state, storedProject) {
+    return sanitizeSlug(
+      button.dataset.slug ||
+      (storedProject && storedProject.slug) ||
+      (state && state.project && state.project.slug) ||
+      (storedProject && storedProject.name) ||
+      "website"
+    );
+  }
+
+  function buttonMeansUnpublish(button, state, storedProject) {
+    var text = String(button.textContent || "")
+      .trim()
+      .toLowerCase();
+
+    if (text.indexOf("unpublish") !== -1) return true;
+    if (text.indexOf("publish") !== -1) return false;
+
+    if (typeof button.dataset.published === "string") {
+      return button.dataset.published === "true";
+    }
+
+    if (storedProject && typeof storedProject.published === "boolean") {
+      return storedProject.published;
+    }
+
+    return Boolean(
+      state &&
+      state.backend &&
+      state.backend.published
+    );
+  }
+
+  function updateButton(button, published) {
+    var isDashboardButton =
+      button.id === "publishingPrimaryBtn";
+
+    button.dataset.published = String(published);
+    button.textContent = published
+      ? "Unpublish Website"
+      : isDashboardButton
+        ? "Publish Now"
+        : "Publish Website";
+
+    button.classList.toggle("btn-danger", published);
+    button.disabled = false;
+  }
+
+  function updateBuilderState(result) {
+    var state = getBuilderState();
+    if (!state) return;
+
+    state.backend = state.backend || {};
+    state.project = state.project || {};
+
+    state.backend.published = result.published === true;
+    state.backend.updatedAt = new Date().toISOString();
+    state.project.slug = result.slug || state.project.slug || "";
+
+    if (typeof window.bluvixaImportState === "function") {
+      window.bluvixaImportState(state);
+    }
+  }
+
+  function updateStoredProject(projectId, result) {
+    var stored = readStoredProjects();
+    if (!stored) return;
+
+    var changed = false;
+
+    stored.projects.forEach(function (project) {
+      if (String(project.id) !== String(projectId)) return;
+
+      project.published = result.published === true;
+      project.slug = result.slug || project.slug || "";
+      project.updatedAt = new Date().toISOString();
+
+      if (project.published) {
+        project.publishedAt = project.updatedAt;
+      } else {
+        project.publishedAt = null;
+      }
+
+      if (project.state) {
+        project.state.backend = project.state.backend || {};
+        project.state.project = project.state.project || {};
+        project.state.backend.published = project.published;
+        project.state.backend.publishedAt =
+          project.publishedAt || null;
+        project.state.project.slug = project.slug;
+      }
+
+      changed = true;
+    });
+
+    if (changed) {
+      try {
+        localStorage.setItem(
+          stored.key,
+          JSON.stringify(stored.projects)
+        );
+      } catch (error) {
+        console.error("Publishing state could not be saved:", error);
+      }
+    }
+  }
+
+  async function requestPublication(options) {
+    var accessToken = await getAccessToken();
+
+    var response = await fetch("/api/publish-site", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + accessToken
+      },
+      body: JSON.stringify({
+        projectId: options.projectId,
+        publish: options.publish === true,
+        requestedSlug: options.requestedSlug
+      })
+    });
+
+    var result = {};
+
+    try {
+      result = await response.json();
+    } catch (_error) {}
+
+    if (!response.ok) {
+      throw new Error(
+        result.error ||
+        (options.publish
+          ? "The website could not be published."
+          : "The website could not be unpublished.")
+      );
+    }
+
+    if (typeof result.published !== "boolean") {
+      throw new Error(
+        "The server returned an invalid publishing status."
+      );
+    }
+
+    return result;
+  }
+
+  async function toggle(button) {
+    var state = getBuilderState();
+    var projectId = getProjectId(button, state);
+
+    if (!projectId) {
+      throw new Error(
+        "Save this website to your account before publishing."
+      );
+    }
+
+    var storedProject = findStoredProject(projectId);
+    var currentlyPublished = buttonMeansUnpublish(
+      button,
+      state,
+      storedProject
+    );
+    var shouldPublish = !currentlyPublished;
+    var requestedSlug = getRequestedSlug(
+      button,
+      state,
+      storedProject
+    );
+
+    if (
+      shouldPublish &&
+      state &&
+      state.project &&
+      state.project.domainMode === "custom" &&
+      !state.project.dnsVerified
+    ) {
+      throw new Error(
+        "Connect and verify your custom domain before publishing."
+      );
+    }
+
+    button.disabled = true;
+    button.textContent = shouldPublish
+      ? "Publishing…"
+      : "Unpublishing…";
+
+    var result;
+
+    try {
+      result = await requestPublication({
+        projectId: projectId,
+        publish: shouldPublish,
+        requestedSlug: requestedSlug
+      });
+
+      updateBuilderState(result);
+      updateStoredProject(projectId, result);
+      updateButton(button, result.published);
+
+      document.dispatchEvent(
+        new CustomEvent("bluvixa:publication-changed", {
+          detail: result
+        })
+      );
+
+      toast(
+        result.published
+          ? "Website published successfully."
+          : "Website unpublished successfully."
+      );
+
+      return result;
+    } catch (error) {
+      updateButton(button, currentlyPublished);
+      throw error;
+    }
+  }
+
+  function isPublishingButton(target) {
+    return target && (
+      target.id === "publishBtn" ||
+      target.id === "publishingPrimaryBtn" ||
+      target.matches("[data-bluvixa-publish]")
+    );
+  }
+
+  function bind() {
+    if (bound) return;
+    bound = true;
+
+    /*
+      Capture phase is intentional. It prevents older app.js or platform.js
+      publish handlers from firing a second request after this controller.
+    */
+    document.addEventListener(
+      "click",
+      function (event) {
+        var button = event.target.closest(
+          "#publishBtn, #publishingPrimaryBtn, [data-bluvixa-publish]"
+        );
+
+        if (!isPublishingButton(button)) return;
+
+        event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation();
+
+        toggle(button).catch(function (error) {
+          console.error("Bluvixa publishing failed:", error);
+          toast(
+            "Publishing failed: " +
+            (error.message || "Unknown error")
+          );
+        });
+      },
+      true
+    );
+  }
+
+  window.BluvixaPublishing = {
+    bind: bind,
+    toggle: toggle,
+    request: requestPublication
+  };
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", bind);
+  } else {
+    bind();
+  }
+})();"use strict";
 
     var PLAN_CONFIG = {
       starter:{name:"Starter",monthly:15,annual:180,buyout:499,photos:10,gallery:0},
@@ -2462,7 +4150,7 @@ async function authenticatedApi(path,payload){
       mapUrl:"",
       billing:{status:"trialing",boughtOut:false},
       project:{slug:"",domainMode:"subdomain",customDomain:"",domainStatus:"not_connected",dnsVerified:false},
-      backend:{userId:null,websiteId:null,published:false,updatedAt:null}
+      backend:{userId:null,websiteId:null,published:false,publishedUrl:"",updatedAt:null}
     };
 
     function byId(id){return document.getElementById(id);}
@@ -2505,6 +4193,9 @@ async function authenticatedApi(path,payload){
     }
 
     function getPublishedUrl(){
+      if(state.backend && state.backend.publishedUrl){
+        return state.backend.publishedUrl;
+      }
       if(state.project.domainMode === "custom" && state.project.customDomain){
         return "https://" + state.project.customDomain;
       }
@@ -3158,7 +4849,7 @@ async function authenticatedApi(path,payload){
           custom_domain:state.project.customDomain,
           domain_status:state.project.domainStatus,
           dns_verified:state.project.dnsVerified,
-          published_url:getPublishedUrl(),
+          published_url:state.backend.publishedUrl || getPublishedUrl(),
           business_name:state.business.name,
           business_bio:state.business.bio,
           phone:state.business.phone,
@@ -3329,6 +5020,13 @@ async function authenticatedApi(path,payload){
           domainStatus:"not_connected",
           dnsVerified:false
         },state.project || {});
+        state.backend = Object.assign({
+          userId:null,
+          websiteId:null,
+          published:false,
+          publishedUrl:"",
+          updatedAt:null
+        },state.backend || {});
         state.design = Object.assign({
           logo:"",
           themeColor:state.design && state.design.color ? state.design.color : "#1769ff",
@@ -3398,7 +5096,7 @@ async function authenticatedApi(path,payload){
         mapUrl:"",
         billing:{status:"trialing",boughtOut:false},
         project:{slug:"",domainMode:"subdomain",customDomain:"",domainStatus:"not_connected",dnsVerified:false},
-        backend:{userId:null,websiteId:null,published:false,updatedAt:null}
+        backend:{userId:null,websiteId:null,published:false,publishedUrl:"",updatedAt:null}
       };
 
       pendingPhotoMedia = {src:"",type:""};
@@ -3652,7 +5350,7 @@ async function authenticatedApi(path,payload){
           showToast("Enter a website address first.");
           return;
         }
-        showToast(state.project.slug + ".bluvixa.com is available in this prototype.");
+        showToast("Use the connected domain service to confirm whether " + state.project.slug + ".bluvixa.com is available.");
       });
 
       byId("connectDomainBtn").addEventListener("click",function(){
@@ -3681,7 +5379,7 @@ async function authenticatedApi(path,payload){
         state.project.dnsVerified = true;
         render();
         saveDraft(false);
-        showToast(state.project.customDomain + " is connected in this prototype.");
+        showToast(state.project.customDomain + " is marked connected locally. Confirm the live status through the domain service.");
       });
 
       byId("saveBtn").addEventListener("click",function(){
@@ -3711,7 +5409,7 @@ async function authenticatedApi(path,payload){
         state.billing.status = "bought_out";
         byId("subscriptionStatus").value = "bought_out";
         saveDraft(false);
-        showToast(config.name + " website buyout simulation: $" + config.buyout + ".");
+        showToast(config.name + " buyout selected: $" + config.buyout + ". Complete payment through Stripe Checkout.");
       });
 
       all(".pricingTrial").forEach(function(button){
@@ -3756,6 +5454,13 @@ async function authenticatedApi(path,payload){
     window.bluvixaImportState = function(nextState){
       if(!nextState || typeof nextState !== "object") return;
       state = Object.assign({}, state, nextState);
+      state.backend = Object.assign({
+        userId:null,
+        websiteId:null,
+        published:false,
+        publishedUrl:"",
+        updatedAt:null
+      },state.backend || {});
       applyToInputs();
       enforcePlan();
       render();

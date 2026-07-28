@@ -4,7 +4,7 @@ import {
   authenticatedUser,
   assertServerConfig,
   sendJson
-} from "./_lib.js";
+} from "../Bluvixa-Full-Production-Root/scripts/_lib.js";
 
 const PRICE_ENVIRONMENTS = {
   starter: {
