@@ -12,6 +12,11 @@
   const PENDING_CHECKOUT_KEY = "bluvixa.pending.checkout.v4";
   const API_BASE = "/api";
 
+  // Public browser configuration only. Never place a service-role key here.
+  const SUPABASE_URL = "https://nhgadyglmuuisxyxcdli.supabase.co" ;
+  const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_Qx0bvWmTegwuGn5K8MGZqQ_urXSjQkB" ;
+  const STORAGE_BUCKET = "website-media";
+
   const $ = (id) => document.getElementById(id);
   const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
   const text = (value) => typeof value === "string" ? value.trim() : "";
@@ -1130,6 +1135,49 @@
     });
   }
 
+  async function ensureSupabaseClient() {
+    if (state.supabase) return state.supabase;
+
+    if (SUPABASE_URL.includes("PASTE_YOUR_") || SUPABASE_PUBLISHABLE_KEY.includes("PASTE_YOUR_")) {
+      throw new Error("Add your Supabase project URL and publishable key at the top of app.js.");
+    }
+
+    const module = await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");
+    state.supabase = module.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+        detectSessionInUrl: false
+      }
+    });
+
+    return state.supabase;
+  }
+
+  async function syncSupabaseStorageSession(client) {
+    const accessToken = state.session?.access_token;
+    const refreshToken = state.session?.refresh_token;
+
+    if (!accessToken || !refreshToken) {
+      throw new Error("Your sign-in session is missing. Sign out and sign in again.");
+    }
+
+    const { error } = await client.auth.setSession({
+      access_token: accessToken,
+      refresh_token: refreshToken
+    });
+
+    if (error) throw error;
+  }
+
+  function storageExtension(file) {
+    const fromName = text(file?.name).split(".").pop()?.toLowerCase();
+    if (fromName && /^[a-z0-9]+$/.test(fromName)) return fromName;
+
+    const fromType = text(file?.type).split("/").pop()?.toLowerCase();
+    return fromType === "jpeg" ? "jpg" : fromType || "bin";
+  }
+
   async function ensureCloudProject(project) {
     if (!state.user) throw new Error("Sign in before uploading media.");
     if (!state.apiOnline) throw new Error("The media backend is unavailable.");
@@ -1158,18 +1206,30 @@
       ? await compressImage(file, purpose)
       : file;
 
-    const formData = new FormData();
-    formData.append("file", optimizedFile, optimizedFile.name);
-    formData.append("project_id", cloudProject.id);
-    formData.append("purpose", purpose);
+    const client = await ensureSupabaseClient();
+    await syncSupabaseStorageSession(client);
 
-    const result = await api("media?action=upload", {
-      method: "POST",
-      body: formData
-    });
+    const extension = storageExtension(optimizedFile);
+    const safePurpose = slugify(purpose || "content");
+    const ownerId = state.user?.id || cloudProject.user_id;
+    const objectPath = `${ownerId}/${cloudProject.id}/${safePurpose}/${uid()}.${extension}`;
 
-    const url = uploadedMediaUrl(result);
-    if (!url) throw new Error("The media upload completed without returning a public URL.");
+    const { error: uploadError } = await client.storage
+      .from(STORAGE_BUCKET)
+      .upload(objectPath, optimizedFile, {
+        cacheControl: "3600",
+        contentType: optimizedFile.type || file.type || "application/octet-stream",
+        upsert: false
+      });
+
+    if (uploadError) throw uploadError;
+
+    const { data: publicData } = client.storage
+      .from(STORAGE_BUCKET)
+      .getPublicUrl(objectPath);
+
+    const url = text(publicData?.publicUrl);
+    if (!url) throw new Error("The file uploaded, but Supabase did not return a public URL.");
 
     return {
       url,
