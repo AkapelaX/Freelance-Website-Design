@@ -4206,20 +4206,56 @@ main{
 
 
 /* =========================================================
-   BLUVIXA MASTER MVP — SAFE GALLERY SIZE + SELECTIVE SHINE
-   Authoritative final overrides only.
-   - Featured layout remains unchanged.
-   - Gallery photos are larger and taller.
-   - Shine is limited to the hero, media cards, and main CTAs.
+   BLUVIXA MASTER MVP — THREE REQUESTED CUSTOMER-SITE FIXES
+   1. Larger, longer Featured and Gallery media
+   2. Real bold section headings without header cards
+   3. Visible controlled glimmer on key website surfaces
+   No builder, backend, upload, publishing, billing, domain,
+   authentication, or JavaScript behavior is changed.
    ========================================================= */
 
-/* Larger, longer Gallery photos */
+/* ---------- 1. LARGER, LONGER WEBSITE PHOTOS ---------- */
+
+/* Featured: one large normal website showcase per row */
+.preview #previewPhotoGrid{
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) !important;
+  gap:24px !important;
+  width:100%;
+  max-width:1050px;
+  margin-inline:auto;
+}
+
+.preview #previewPhotoGrid > .card{
+  position:relative;
+  width:100%;
+  min-width:0;
+  aspect-ratio:4 / 5 !important;
+  min-height:560px;
+  overflow:hidden !important;
+  padding:0 !important;
+  border-radius:28px !important;
+}
+
+.preview #previewPhotoGrid > .card img,
+.preview #previewPhotoGrid > .card video{
+  position:absolute;
+  inset:0;
+  width:100% !important;
+  height:100% !important;
+  min-height:0 !important;
+  object-fit:cover !important;
+  object-position:center center !important;
+  border-radius:inherit !important;
+}
+
+/* Gallery: two substantial portrait cards per row */
 .preview #previewGalleryGrid{
   display:grid !important;
   grid-template-columns:repeat(2,minmax(0,1fr)) !important;
-  gap:16px !important;
+  gap:18px !important;
   width:100%;
-  max-width:980px;
+  max-width:1050px;
   margin-inline:auto;
 }
 
@@ -4227,6 +4263,7 @@ main{
   position:relative;
   min-width:0;
   aspect-ratio:4 / 5 !important;
+  min-height:390px;
   overflow:hidden !important;
   padding:0 !important;
   border-radius:24px !important;
@@ -4244,29 +4281,89 @@ main{
   border-radius:inherit !important;
 }
 
-/* Keep captions readable and above the shine */
-.preview #previewGalleryGrid > .gallery-card p{
-  z-index:3 !important;
+/* ---------- 2. REAL SECTION HEADERS — NO HEADER CARDS ---------- */
+
+/* Remove the rounded/glass introduction cards from Featured and Gallery */
+.preview #previewFeaturedSection .section-label,
+.preview #previewGallerySection .section-label{
+  display:block !important;
+  width:100%;
+  margin:0 auto 28px !important;
+  padding:0 !important;
+  border:0 !important;
+  border-radius:0 !important;
+  background:transparent !important;
+  backdrop-filter:none !important;
+  box-shadow:none !important;
+  text-align:left;
 }
 
-/* Safe, localized light sweep */
-@keyframes bluvixaMvpSafeShine{
-  0%,72%{
-    transform:translateX(-180%) skewX(-18deg);
+/* Make the customer-entered section headings the real visual headers */
+.preview #previewFeaturedHeading,
+.preview #previewGalleryHeading{
+  display:block !important;
+  margin:0 !important;
+  color:inherit !important;
+  font-size:clamp(38px,6vw,68px) !important;
+  font-weight:1000 !important;
+  line-height:.98 !important;
+  letter-spacing:-.045em !important;
+  text-transform:uppercase;
+  text-shadow:0 3px 18px rgba(0,0,0,.28);
+}
+
+/* Strong accent rule, matching the main header language */
+.preview #previewFeaturedSection .section-label::before,
+.preview #previewGallerySection .section-label::before{
+  content:"";
+  display:block;
+  width:86px;
+  height:5px;
+  margin:0 0 15px;
+  border-radius:999px;
+  background:linear-gradient(90deg,var(--site-theme),transparent);
+  box-shadow:0 0 20px color-mix(in srgb,var(--site-theme) 62%,transparent);
+}
+
+/* Keep an optional description as plain supporting copy, not a card */
+.preview #previewFeaturedDescription,
+.preview #previewGalleryDescription{
+  max-width:760px;
+  margin:12px 0 0 !important;
+  color:inherit !important;
+  opacity:.82;
+  font-size:clamp(15px,2vw,18px) !important;
+  line-height:1.6 !important;
+}
+
+/* Hidden counters remain hidden and cannot recreate a side card */
+.preview #previewPhotoCount,
+.preview #previewGalleryCount{
+  display:none !important;
+}
+
+/* The About section remains unchanged as the one information card section. */
+
+/* ---------- 3. VISIBLE, CONTROLLED GLIMMER ---------- */
+
+@keyframes bluvixaMasterGlimmer{
+  0%{
+    transform:translateX(-220%) skewX(-20deg);
     opacity:0;
   }
-  77%{
-    opacity:.12;
-  }
-  88%{
-    opacity:.22;
+  8%{opacity:.18}
+  18%{opacity:.52}
+  30%{
+    transform:translateX(520%) skewX(-20deg);
+    opacity:0;
   }
   100%{
-    transform:translateX(260%) skewX(-18deg);
+    transform:translateX(520%) skewX(-20deg);
     opacity:0;
   }
 }
 
+/* Limit glimmer to the customer website's premium visual surfaces */
 .preview .site-hero,
 .preview #previewPhotoGrid > .card,
 .preview #previewGalleryGrid > .gallery-card,
@@ -4285,32 +4382,33 @@ main{
   content:"";
   position:absolute;
   z-index:2;
-  top:-30%;
-  bottom:-30%;
-  left:-36%;
-  width:18%;
+  top:-35%;
+  bottom:-35%;
+  left:-35%;
+  width:24%;
   pointer-events:none;
   opacity:0;
   background:linear-gradient(
     90deg,
     transparent 0%,
-    rgba(255,255,255,.05) 20%,
-    rgba(255,255,255,.44) 50%,
-    rgba(210,238,255,.16) 72%,
+    rgba(255,255,255,.04) 12%,
+    rgba(255,255,255,.62) 48%,
+    rgba(190,230,255,.30) 68%,
     transparent 100%
   );
-  transform:translateX(-180%) skewX(-18deg);
-  animation:bluvixaMvpSafeShine 11s ease-in-out infinite;
+  filter:blur(.4px);
+  transform:translateX(-220%) skewX(-20deg);
+  animation:bluvixaMasterGlimmer 7s ease-in-out infinite;
 }
 
-/* Stagger the effect so the page never flashes all at once */
+/* Stagger key surfaces to avoid one large simultaneous flash */
 .preview .site-hero::after{animation-delay:0s}
-.preview .site-call::after{animation-delay:1.4s}
-.preview .hero-cta::after{animation-delay:2.2s}
-.preview #previewPhotoGrid > .card::before{animation-delay:3.2s}
-.preview #previewGalleryGrid > .gallery-card::before{animation-delay:4.6s}
+.preview .site-call::after{animation-delay:.8s}
+.preview .hero-cta::after{animation-delay:1.4s}
+.preview #previewPhotoGrid > .card::before{animation-delay:2.1s}
+.preview #previewGalleryGrid > .gallery-card::before{animation-delay:3.1s}
 
-/* Media remains below shine; text remains above it */
+/* Keep media below and readable content above the glimmer */
 .preview #previewPhotoGrid > .card img,
 .preview #previewPhotoGrid > .card video,
 .preview #previewGalleryGrid > .gallery-card img,
@@ -4327,15 +4425,48 @@ main{
   z-index:3;
 }
 
+/* Mobile proportions remain large and usable */
 @media(max-width:760px){
+  .preview #previewFeaturedSection,
+  .preview #previewGallerySection{
+    padding-left:4.5% !important;
+    padding-right:4.5% !important;
+  }
+
+  .preview #previewPhotoGrid{
+    gap:18px !important;
+  }
+
+  .preview #previewPhotoGrid > .card{
+    aspect-ratio:4 / 5 !important;
+    min-height:520px;
+    border-radius:26px !important;
+  }
+
   .preview #previewGalleryGrid{
     grid-template-columns:repeat(2,minmax(0,1fr)) !important;
-    gap:10px !important;
+    gap:11px !important;
   }
 
   .preview #previewGalleryGrid > .gallery-card{
     aspect-ratio:4 / 5 !important;
+    min-height:285px;
     border-radius:20px !important;
+  }
+
+  .preview #previewFeaturedHeading,
+  .preview #previewGalleryHeading{
+    font-size:clamp(36px,11vw,54px) !important;
+  }
+}
+
+@media(max-width:430px){
+  .preview #previewPhotoGrid > .card{
+    min-height:500px;
+  }
+
+  .preview #previewGalleryGrid > .gallery-card{
+    min-height:250px;
   }
 }
 
