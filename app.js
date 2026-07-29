@@ -1,168 +1,139 @@
-/* =========================================================
-   BLUVIXA — PRODUCTION FRONTEND CONTROLLER
-   Matches the 12-file Bluvixa API backend package.
-   Preserves local builder operation when the API is unavailable.
-   ========================================================= */
+/* BLUVIXA 4.0 — CONSOLIDATED APP
+   Frontend controller for index.html
+   - No secrets belong in this file.
+   - Supabase/Stripe/Vercel privileged work stays in /api.
+*/
 (() => {
   "use strict";
 
-  const STORAGE_KEY = "bluvixa_frontend_workspace_v1";
-  const SESSION_KEY = "bluvixa_session_v1";
+  const APP_VERSION = "2026.07.28";
+  const STORAGE_KEY = "bluvixa.local.workspace.v4";
+  const SESSION_KEY = "bluvixa.local.session.v4";
   const API_BASE = "/api";
 
   const $ = (id) => document.getElementById(id);
   const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
-  const trim = (value) => typeof value === "string" ? value.trim() : "";
-  const now = () => new Date().toISOString();
-  const makeId = () =>
-    globalThis.crypto?.randomUUID?.() ||
-    `bv_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+  const text = (value) => typeof value === "string" ? value.trim() : "";
+  const nowIso = () => new Date().toISOString();
+  const uid = () => globalThis.crypto?.randomUUID?.() || `bv_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+  const clone = (value) => JSON.parse(JSON.stringify(value));
 
-  const DEFAULT_DATA = {
-    businessName: "",
-    businessBio: "",
-    phoneNumber: "",
-    emailAddress: "",
-    businessHours: "",
-    callButtonText: "Call Now",
-    headerTagline: "",
-    headerHeadline: "Your headline appears here.",
-    headerBio: "",
-    headerImage: "",
-    businessLogo: "",
-    aboutHeading: "About Our Business",
-    aboutCover: "",
-    featuredHeading: "Featured Services",
-    featuredDescription: "",
-    featuredCover: "",
-    photos: [],
-    galleryHeading: "Gallery",
-    galleryDescription: "",
-    galleryCover: "",
-    gallery: [],
-    themeColor: "#1769ff",
-    headerColor: "#082b5e",
-    buttonColor: "#1769ff",
-    cardColor: "#ffffff",
-    logoOutlineColor: "#61c7ff",
-    scrollItems: "Home, Services, Gallery, Reviews, Contact",
-    mapHeading: "Find Us",
-    mapCover: "",
-    businessAddress: "",
-    mapEmbedUrl: ""
+  const DEFAULT_PROJECT = {
+    id: "",
+    user_id: "",
+    name: "Untitled Website",
+    slug: "",
+    plan: "starter",
+    status: "draft",
+    published_url: "",
+    custom_domain: "",
+    domain_status: "not_connected",
+    ssl_status: "waiting",
+    owned: false,
+    created_at: "",
+    updated_at: "",
+    published_at: "",
+    data: {
+      businessName: "",
+      businessBio: "",
+      phoneNumber: "",
+      emailAddress: "",
+      businessHours: "",
+      callButtonText: "Call Now",
+      headerTagline: "",
+      headerHeadline: "Your headline appears here.",
+      headerBio: "",
+      headerImage: "",
+      businessLogo: "",
+      aboutHeading: "About Our Business",
+      aboutCover: "",
+      featuredHeading: "",
+      featuredDescription: "",
+      featuredCover: "",
+      photos: [],
+      galleryHeading: "",
+      galleryDescription: "",
+      galleryCover: "",
+      gallery: [],
+      themeColor: "#1769ff",
+      headerColor: "#082b5e",
+      buttonColor: "#1769ff",
+      cardColor: "#ffffff",
+      logoOutlineColor: "#61c7ff",
+      scrollItems: "Home, Services, Gallery, Reviews, Contact",
+      mapHeading: "Find Us",
+      mapCover: "",
+      businessAddress: "",
+      mapEmbedUrl: ""
+    },
+    snapshots: []
   };
 
   const state = {
-    projects: [],
-    activeProjectId: "",
-    draftFilter: "all",
-    saveTimer: null,
-    authMode: "signin",
-    apiOnline: false,
+    supabase: null,
     session: null,
     user: null,
     profile: null,
-    loadingCloud: false
+    projects: [],
+    activeProjectId: "",
+    authMode: "signin",
+    currentDraftFilter: "all",
+    autosaveTimer: null,
+    apiOnline: null,
+    domainRefreshTimer: null,
+    local: loadLocalState()
   };
 
-  const formMap = {
-    businessName: "businessName",
-    businessBio: "businessBio",
-    phoneNumber: "phoneNumber",
-    emailAddress: "emailAddress",
-    businessHours: "businessHours",
-    callButtonText: "callButtonText",
-    headerTagline: "headerTagline",
-    headerHeadline: "headerHeadline",
-    headerBio: "headerBio",
-    aboutHeading: "aboutHeading",
-    featuredHeading: "featuredHeading",
-    featuredDescription: "featuredDescription",
-    galleryHeading: "galleryHeading",
-    galleryDescription: "galleryDescription",
-    themeColor: "themeColor",
-    headerColor: "headerColor",
-    buttonColor: "buttonColor",
-    cardColor: "cardColor",
-    logoOutlineColor: "logoOutlineColor",
-    scrollItems: "scrollItems",
-    mapHeading: "mapHeading",
-    businessAddress: "businessAddress",
-    mapEmbedUrl: "mapEmbedUrl"
-  };
-
-  function clone(value) {
-    return JSON.parse(JSON.stringify(value));
+  function loadLocalState() {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+      return {
+        projects: Array.isArray(parsed.projects) ? parsed.projects : [],
+        activeProjectId: text(parsed.activeProjectId),
+        previewProject: parsed.previewProject || null
+      };
+    } catch {
+      return { projects: [], activeProjectId: "", previewProject: null };
+    }
   }
 
-  function slugify(value) {
-    return trim(value)
-      .toLowerCase()
-      .normalize("NFKD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "")
-      .slice(0, 63) || "my-website";
+  function saveLocalState() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      projects: state.projects,
+      activeProjectId: state.activeProjectId,
+      previewProject: state.local.previewProject || null
+    }));
   }
 
-  function normalizeDomain(value) {
-    return trim(value)
-      .toLowerCase()
-      .replace(/^https?:\/\//, "")
-      .replace(/^www\./, "")
-      .split("/")[0]
-      .replace(/\.+$/, "");
-  }
-
-  function escapeHtml(value) {
-    return String(value ?? "").replace(/[&<>"']/g, (character) => ({
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#039;"
-    })[character]);
-  }
-
-  function formatDate(value) {
-    const date = new Date(value);
-    return Number.isNaN(date.getTime())
-      ? "Just now"
-      : date.toLocaleString([], {
-          month: "short",
-          day: "numeric",
-          year: "numeric",
-          hour: "numeric",
-          minute: "2-digit"
-        });
-  }
-
-  function show(element, visible = true) {
+  function safeShow(element, show = true) {
     if (!element) return;
-    element.hidden = !visible;
-    element.classList.toggle("hidden", !visible);
-    element.style.display = visible ? "" : "none";
+    element.classList.toggle("hidden", !show);
+    if ("hidden" in element) element.hidden = !show;
   }
 
   function toast(message, type = "info") {
     const node = $("toast");
-    if (!node) {
-      console.log(message);
-      return;
-    }
-
+    if (!node) return;
     node.textContent = message;
     node.dataset.type = type;
     node.classList.add("show");
-    clearTimeout(toast.timer);
-    toast.timer = setTimeout(() => node.classList.remove("show"), 3400);
+    clearTimeout(toast._timer);
+    toast._timer = setTimeout(() => node.classList.remove("show"), 3200);
   }
 
-  function setBusy(button, busy, label = "Working…") {
+  function setMessage(id, message, type = "info") {
+    const node = $(id);
+    if (!node) return;
+    node.textContent = message;
+    node.dataset.type = type;
+    safeShow(node, Boolean(message));
+  }
+
+  function setBusy(button, busy, busyText = "Working…") {
     if (!button) return;
     if (busy) {
       button.dataset.originalText = button.textContent;
-      button.textContent = label;
+      button.textContent = busyText;
       button.disabled = true;
     } else {
       button.textContent = button.dataset.originalText || button.textContent;
@@ -170,25 +141,13 @@
     }
   }
 
-  function authMessage(message, type = "info") {
-    const node = $("authMessage");
-    if (!node) return;
-    node.textContent = message;
-    node.dataset.type = type;
-    show(node, Boolean(message));
-  }
-
   async function api(path, options = {}) {
     const headers = new Headers(options.headers || {});
-    const isForm = options.body instanceof FormData;
-
-    if (options.body && !isForm && !headers.has("Content-Type")) {
+    if (!headers.has("Content-Type") && options.body && !(options.body instanceof FormData)) {
       headers.set("Content-Type", "application/json");
     }
-
-    if (state.session?.access_token) {
-      headers.set("Authorization", `Bearer ${state.session.access_token}`);
-    }
+    const token = state.session?.access_token;
+    if (token) headers.set("Authorization", `Bearer ${token}`);
 
     const response = await fetch(`${API_BASE}/${path.replace(/^\/+/, "")}`, {
       ...options,
@@ -196,22 +155,20 @@
       credentials: "same-origin"
     });
 
-    const type = response.headers.get("content-type") || "";
-    const payload = type.includes("application/json")
+    const contentType = response.headers.get("content-type") || "";
+    const payload = contentType.includes("application/json")
       ? await response.json().catch(() => ({}))
       : await response.text();
 
     if (!response.ok) {
-      const message =
-        typeof payload === "string"
-          ? payload
-          : payload.error || payload.message || `Request failed (${response.status})`;
+      const message = typeof payload === "string"
+        ? payload
+        : payload?.error || payload?.message || `Request failed (${response.status})`;
       const error = new Error(message);
       error.status = response.status;
       error.payload = payload;
       throw error;
     }
-
     return payload;
   }
 
@@ -222,1058 +179,790 @@
     } catch {
       state.apiOnline = false;
     }
-    return state.apiOnline;
   }
 
-  function saveSession(session) {
-    state.session = session?.access_token ? session : null;
-    state.user = session?.user || state.user || null;
-
-    if (state.session) {
-      localStorage.setItem(SESSION_KEY, JSON.stringify(state.session));
-    } else {
-      localStorage.removeItem(SESSION_KEY);
-      state.user = null;
-      state.profile = null;
-    }
-
-    renderAuthState();
-  }
-
-  function restoreCachedSession() {
-    try {
-      const cached = JSON.parse(localStorage.getItem(SESSION_KEY) || "null");
-      if (cached?.access_token) {
-        state.session = cached;
-        state.user = cached.user || null;
-      }
-    } catch {
-      localStorage.removeItem(SESSION_KEY);
-    }
-  }
-
-  function newProject(name = "Untitled Website") {
-    const created = now();
-    return {
-      id: makeId(),
-      name,
-      slug: slugify(name),
-      plan: "starter",
-      status: "draft",
-      createdAt: created,
-      updatedAt: created,
-      customDomain: "",
-      custom_domain: "",
-      domain_status: "not_connected",
-      ssl_status: "waiting",
-      published_url: "",
-      published_at: "",
-      owned: false,
-      snapshots: [],
-      data: clone(DEFAULT_DATA)
-    };
+  function createProject(overrides = {}) {
+    const project = clone(DEFAULT_PROJECT);
+    project.id = uid();
+    project.created_at = nowIso();
+    project.updated_at = project.created_at;
+    project.name = overrides.name || "Untitled Website";
+    project.slug = slugify(overrides.slug || project.name);
+    project.plan = overrides.plan || currentSelectedPlan();
+    project.data.businessName = overrides.businessName || "";
+    return Object.assign(project, overrides);
   }
 
   function normalizeProject(project) {
-    const base = newProject();
-    const data = project?.data || project?.project_data || {};
-    const snapshots = project?.snapshots || project?.project_snapshots || [];
-
-    return {
+    const base = createProject();
+    const normalized = {
       ...base,
       ...project,
-      id: project?.id || base.id,
-      createdAt: project?.createdAt || project?.created_at || base.createdAt,
-      updatedAt: project?.updatedAt || project?.updated_at || base.updatedAt,
-      customDomain:
-        project?.customDomain || project?.custom_domain || "",
-      custom_domain:
-        project?.custom_domain || project?.customDomain || "",
-      data: { ...base.data, ...data },
-      snapshots: Array.isArray(snapshots)
-        ? snapshots.map((snapshot) => ({
-            ...snapshot,
-            id: snapshot.id || makeId(),
-            name: snapshot.name || "Snapshot",
-            createdAt: snapshot.createdAt || snapshot.created_at || now(),
-            data: snapshot.data || snapshot.snapshot_data || {}
-          }))
-        : []
+      data: { ...base.data, ...(project?.data || {}) },
+      snapshots: Array.isArray(project?.snapshots) ? project.snapshots : []
     };
-  }
-
-  function loadWorkspace() {
-    try {
-      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-      state.projects = Array.isArray(saved.projects)
-        ? saved.projects.map(normalizeProject)
-        : [];
-      state.activeProjectId = trim(saved.activeProjectId);
-    } catch {
-      state.projects = [];
-      state.activeProjectId = "";
-    }
-
-    if (!state.projects.length) {
-      const project = newProject();
-      state.projects.push(project);
-      state.activeProjectId = project.id;
-    }
-
-    if (!state.projects.some((project) => project.id === state.activeProjectId)) {
-      state.activeProjectId = state.projects[0]?.id || "";
-    }
-
-    saveWorkspace();
-  }
-
-  function saveWorkspace() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({
-      projects: state.projects,
-      activeProjectId: state.activeProjectId
-    }));
-  }
-
-  function activeProject() {
-    return (
-      state.projects.find((project) => project.id === state.activeProjectId) ||
-      state.projects[0] ||
-      null
-    );
-  }
-
-  function replaceProject(project) {
-    const normalized = normalizeProject(project);
-    const index = state.projects.findIndex((item) => item.id === normalized.id);
-
-    if (index >= 0) state.projects[index] = normalized;
-    else state.projects.unshift(normalized);
-
-    state.activeProjectId = normalized.id;
-    saveWorkspace();
+    normalized.photos = undefined;
     return normalized;
   }
 
-  function currentRoute() {
-    const requested = location.hash.replace(/^#/, "").split("?")[0];
-    return $(requested)?.classList.contains("app-page") ? requested : "home";
+  function slugify(value) {
+    return text(value)
+      .toLowerCase()
+      .normalize("NFKD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 63) || "my-website";
   }
 
-  function navigate(page) {
-    const target = page.startsWith("#") ? page : `#${page}`;
+  function activeProject() {
+    return state.projects.find((project) => project.id === state.activeProjectId) || null;
+  }
+
+  function ensureProject() {
+    let project = activeProject();
+    if (!project) {
+      project = createProject();
+      state.projects.unshift(project);
+      state.activeProjectId = project.id;
+      saveLocalState();
+    }
+    return project;
+  }
+
+  function currentSelectedPlan() {
+    return $("planSelect")?.value || state.profile?.plan || "starter";
+  }
+
+  function planLimits(plan) {
+    if (plan === "advanced") return { photos: 20, gallery: 12, galleryEnabled: true, fullDesign: true };
+    if (plan === "professional") return { photos: 15, gallery: 12, galleryEnabled: true, fullDesign: false };
+    return { photos: 10, gallery: 0, galleryEnabled: false, fullDesign: false };
+  }
+
+  function routeName() {
+    const value = location.hash.replace(/^#/, "").split("?")[0];
+    const valid = new Set($$(".app-page").map((page) => page.id));
+    return valid.has(value) ? value : "home";
+  }
+
+  function navigate(route) {
+    const target = route.startsWith("#") ? route : `#${route}`;
     if (location.hash === target) renderRoute();
     else location.hash = target;
   }
 
   function renderRoute() {
-    const current = currentRoute();
+    let route = routeName();
+    const protectedRoutes = new Set(["projects", "drafts", "billing", "domains"]);
+    if (protectedRoutes.has(route) && !state.user) {
+      openAuth("signin");
+      route = "home";
+      history.replaceState(null, "", "#home");
+    }
 
     $$(".app-page").forEach((page) => {
-      const active = page.id === current;
-      page.hidden = !active;
-      page.classList.toggle("route-active", active);
+      const active = page.id === route;
       page.classList.toggle("active", active);
-      page.classList.toggle("hidden", !active);
-      page.style.display = active ? "" : "none";
+      page.hidden = !active;
     });
+    document.body.className = `route-${route}`;
+    closeMobileMenu();
 
-    document.body.className = `${state.user ? "member-authenticated " : ""}route-${current}`;
-    show($("mobileMenu"), false);
-
-    if (current === "builder") {
-      loadProjectIntoBuilder(activeProject());
+    if (route === "projects") renderProjects();
+    if (route === "drafts") renderDrafts();
+    if (route === "builder") {
+      ensureProject();
+      loadProjectIntoForm(activeProject());
       renderPreview();
     }
-    if (current === "projects") renderProjects();
-    if (current === "drafts") renderDrafts();
-    if (current === "billing") renderBilling();
-    if (current === "domains") renderDomainPage();
-
-    window.scrollTo(0, 0);
+    if (route === "billing") renderAccountStatus();
+    if (route === "domains") renderDomainCenter();
   }
 
-  function renderAuthState() {
-    const signedIn = Boolean(state.user);
+  function openMobileMenu() {
+    safeShow($("mobileMenu"), true);
+    $("mobileMenuButton")?.setAttribute("aria-expanded", "true");
+  }
 
-    show($("publicNav"), !signedIn);
-    show($("memberNav"), signedIn);
-    show($("mobileMenuPublic"), !signedIn);
-    show($("mobileMenuMember"), signedIn);
-    show($("signInBtn"), !signedIn);
-    show($("startTrialBtn"), !signedIn);
-    show($("accountNavLink"), signedIn);
-    show($("signOutBtn"), signedIn);
-    show($("mobileSignOutBtn"), signedIn);
-
-    $$(".backend-only").forEach((element) => show(element, signedIn));
-
-    const email = state.user?.email || "Your account";
-    if ($("sidebarMemberEmail")) $("sidebarMemberEmail").textContent = email;
-    if ($("draftsMemberEmail")) $("draftsMemberEmail").textContent = email;
-    if ($("accountNavLink")) {
-      $("accountNavLink").textContent = email.charAt(0).toUpperCase() || "B";
-    }
-
-    if ($("projectsGreeting")) {
-      $("projectsGreeting").textContent = signedIn
-        ? `Welcome, ${email.split("@")[0]}`
-        : "Welcome home";
-    }
-
-    show($("sessionLoadingScreen"), false);
-    renderBilling();
+  function closeMobileMenu() {
+    safeShow($("mobileMenu"), false);
+    $("mobileMenuButton")?.setAttribute("aria-expanded", "false");
   }
 
   function openAuth(mode = "signin") {
     state.authMode = mode;
-    const signingUp = mode === "signup";
-
-    show($("authModal"), true);
-    show($("fullNameGroup"), signingUp);
-
-    if ($("authTitle")) {
-      $("authTitle").textContent = signingUp
-        ? "Create your Bluvixa account"
-        : "Sign in to Bluvixa";
-    }
-
-    if ($("authSubmitBtn")) {
-      $("authSubmitBtn").textContent = signingUp ? "Create Account" : "Sign In";
-    }
-
-    $("showSignInTab")?.classList.toggle("active", !signingUp);
-    $("showSignUpTab")?.classList.toggle("active", signingUp);
-    authMessage("");
-    setTimeout(() => $("authEmail")?.focus(), 20);
+    const signup = mode === "signup";
+    safeShow($("authModal"), true);
+    $("authTitle").textContent = signup ? "Create your Bluvixa account" : "Sign in to Bluvixa";
+    $("authSubmitBtn").textContent = signup ? "Create Account" : "Sign In";
+    safeShow($("fullNameGroup"), signup);
+    $("showSignInTab")?.classList.toggle("active", !signup);
+    $("showSignUpTab")?.classList.toggle("active", signup);
+    setMessage("authMessage", "");
+    setTimeout(() => $("authEmail")?.focus(), 0);
   }
 
   function closeAuth() {
-    show($("authModal"), false);
+    safeShow($("authModal"), false);
   }
 
   async function submitAuth(event) {
     event.preventDefault();
-
-    const email = trim($("authEmail")?.value).toLowerCase();
+    const email = text($("authEmail")?.value).toLowerCase();
     const password = $("authPassword")?.value || "";
-    const fullName = trim($("authFullName")?.value);
+    const fullName = text($("authFullName")?.value);
 
-    if (!email.includes("@")) return authMessage("Enter a valid email address.", "error");
-    if (password.length < 8) {
-      return authMessage("Password must contain at least 8 characters.", "error");
-    }
-    if (state.authMode === "signup" && !fullName) {
-      return authMessage("Enter your full name.", "error");
-    }
-    if (!state.apiOnline) {
-      return authMessage("The API is not running. Start the project with npx vercel dev.", "error");
-    }
+    if (!email || !email.includes("@")) return setMessage("authMessage", "Enter a valid email address.", "error");
+    if (password.length < 8) return setMessage("authMessage", "Password must contain at least 8 characters.", "error");
+    if (state.authMode === "signup" && !fullName) return setMessage("authMessage", "Enter your full name.", "error");
 
     const button = $("authSubmitBtn");
-    setBusy(button, true, state.authMode === "signup" ? "Creating Account…" : "Signing In…");
+    setBusy(button, true, state.authMode === "signup" ? "Creating account…" : "Signing in…");
 
     try {
-      const result = await api(
-        `auth?action=${state.authMode === "signup" ? "signup" : "signin"}`,
-        {
-          method: "POST",
-          body: JSON.stringify({
-            email,
-            password,
-            full_name: fullName
-          })
-        }
-      );
-
-      if (result.session) {
-        saveSession(result.session);
-        closeAuth();
-        await loadProfile();
-        await loadCloudProjects();
-        toast(state.authMode === "signup" ? "Account created." : "Signed in.", "success");
-        navigate("projects");
-      } else if (result.requires_email_confirmation) {
-        authMessage("Account created. Check your email to confirm it, then sign in.", "success");
-      }
+      if (!state.apiOnline) throw new Error("The authentication backend has not been installed yet.");
+      const result = await api(`auth?action=${state.authMode === "signup" ? "signup" : "signin"}`, {
+        method: "POST",
+        body: JSON.stringify({ email, password, full_name: fullName })
+      });
+      applySession(result.session || result);
+      closeAuth();
+      toast(state.authMode === "signup" ? "Account created." : "Signed in.", "success");
+      navigate("projects");
     } catch (error) {
-      authMessage(error.message, "error");
+      setMessage("authMessage", error.message, "error");
     } finally {
       setBusy(button, false);
     }
   }
 
-  async function forgotPassword() {
-    const email = trim($("authEmail")?.value).toLowerCase();
-    if (!email.includes("@")) return authMessage("Enter your email first.", "error");
-    if (!state.apiOnline) return authMessage("The API is not running.", "error");
+  function applySession(session) {
+    state.session = session?.access_token ? session : null;
+    state.user = session?.user || null;
+    if (state.session) sessionStorage.setItem(SESSION_KEY, JSON.stringify(state.session));
+    else sessionStorage.removeItem(SESSION_KEY);
+    renderAuthState();
+  }
 
+  async function restoreSession() {
     try {
-      await api("auth?action=reset-password", {
-        method: "POST",
-        body: JSON.stringify({
-          email,
-          redirect_to: `${location.origin}/#home`
-        })
-      });
-      authMessage("Password reset email sent.", "success");
-    } catch (error) {
-      authMessage(error.message, "error");
+      const cached = JSON.parse(sessionStorage.getItem(SESSION_KEY) || "null");
+      if (cached?.access_token) {
+        state.session = cached;
+        state.user = cached.user || null;
+      }
+    } catch {}
+    if (state.apiOnline) {
+      try {
+        const result = await api("auth?action=session");
+        if (result?.session) applySession(result.session);
+      } catch {}
     }
+    renderAuthState();
   }
 
   async function signOut() {
-    saveSession(null);
-    toast("Signed out.", "success");
+    try {
+      if (state.apiOnline && state.session) await api("auth?action=signout", { method: "POST" });
+    } catch {}
+    applySession(null);
+    state.profile = null;
+    toast("Signed out.");
     navigate("home");
+  }
+
+  async function forgotPassword() {
+    const email = text($("authEmail")?.value).toLowerCase();
+    if (!email || !email.includes("@")) return setMessage("authMessage", "Enter your email first.", "error");
+    try {
+      if (!state.apiOnline) throw new Error("The authentication backend has not been installed yet.");
+      await api("auth?action=reset-password", {
+        method: "POST",
+        body: JSON.stringify({ email, redirect_to: `${location.origin}/#home` })
+      });
+      setMessage("authMessage", "Password reset email sent.", "success");
+    } catch (error) {
+      setMessage("authMessage", error.message, "error");
+    }
+  }
+
+  function renderAuthState() {
+    const signedIn = Boolean(state.user);
+    safeShow($("publicNav"), !signedIn);
+    safeShow($("memberNav"), signedIn);
+    safeShow($("mobileMenuPublic"), !signedIn);
+    safeShow($("mobileMenuMember"), signedIn);
+    ["signInBtn", "startTrialBtn"].forEach((id) => safeShow($(id), !signedIn));
+    ["accountNavLink", "signOutBtn", "mobileSignOutBtn"].forEach((id) => safeShow($(id), signedIn));
+    $$(".backend-only").forEach((node) => safeShow(node, signedIn));
+
+    const email = state.user?.email || "Your account";
+    ["sidebarMemberEmail", "draftsMemberEmail"].forEach((id) => {
+      if ($(id)) $(id).textContent = email;
+    });
+    if ($("accountNavLink")) $("accountNavLink").textContent = email.charAt(0).toUpperCase() || "B";
+    if ($("projectsGreeting")) $("projectsGreeting").textContent = signedIn ? `Welcome, ${email.split("@")[0]}` : "Welcome home";
+    safeShow($("sessionLoadingScreen"), false);
+    renderAccountStatus();
+  }
+
+  function renderAccountStatus() {
+    const plan = state.profile?.plan || "No active plan";
+    const status = state.profile?.subscription_status || "Not subscribed";
+    const planLabel = plan === "No active plan" ? plan : capitalize(plan);
+
+    [
+      "accountPlan", "dashboardSubscriptionPlan", "mobileMemberPlan"
+    ].forEach((id) => { if ($(id)) $(id).textContent = planLabel; });
+
+    [
+      "accountBillingStatus", "dashboardSubscriptionStatus", "mobileMemberStatus"
+    ].forEach((id) => { if ($(id)) $(id).textContent = capitalize(status.replaceAll("_", " ")); });
+
+    if ($("trialHomeTitle")) $("trialHomeTitle").textContent =
+      status === "trialing" ? "Your free trial is active" :
+      status === "active" ? `${planLabel} membership active` :
+      "Choose a membership to publish";
+    if ($("trialHomeMessage")) $("trialHomeMessage").textContent =
+      status === "trialing" ? "Build, save, and test your website during your trial." :
+      status === "active" ? "Your account has access to the Bluvixa workspace." :
+      "You can preview the builder now. A membership is required for cloud publishing.";
   }
 
   async function loadProfile() {
     if (!state.user || !state.apiOnline) return;
-
     try {
       const result = await api("auth?action=profile");
-      state.profile = result.profile || null;
-      renderBilling();
-    } catch (error) {
-      if (error.status === 401) saveSession(null);
-    }
+      state.profile = result.profile || result;
+      renderAccountStatus();
+    } catch {}
   }
 
-  async function loadCloudProjects() {
-    if (!state.user || !state.apiOnline || state.loadingCloud) return;
-    state.loadingCloud = true;
-
-    try {
-      const result = await api("projects?action=list");
-      const cloudProjects = (result.projects || []).map(normalizeProject);
-
-      if (cloudProjects.length) {
-        state.projects = cloudProjects;
-        if (!state.projects.some((project) => project.id === state.activeProjectId)) {
-          state.activeProjectId = state.projects[0].id;
-        }
-      } else {
-        const local = activeProject();
-        if (local) {
-          const created = await api("projects?action=create", {
-            method: "POST",
-            body: JSON.stringify({ project: local })
-          });
-          state.projects = [normalizeProject(created.project)];
-          state.activeProjectId = state.projects[0].id;
-        }
-      }
-
-      saveWorkspace();
-      renderProjects();
-      renderDrafts();
-    } catch (error) {
-      toast(`Cloud projects unavailable: ${error.message}`, "error");
-    } finally {
-      state.loadingCloud = false;
-    }
-  }
-
-  async function createProject() {
-    const local = newProject();
-    state.projects.unshift(local);
-    state.activeProjectId = local.id;
-    saveWorkspace();
-
+  async function loadProjects() {
     if (state.user && state.apiOnline) {
       try {
-        const result = await api("projects?action=create", {
-          method: "POST",
-          body: JSON.stringify({ project: local })
-        });
-        replaceProject(result.project);
+        const result = await api("projects?action=list");
+        state.projects = (result.projects || result || []).map(normalizeProject);
+        state.activeProjectId = state.activeProjectId || state.projects[0]?.id || "";
+        saveLocalState();
+        return;
       } catch (error) {
-        toast(`Created locally. Cloud create failed: ${error.message}`, "error");
+        toast(`Cloud projects unavailable: ${error.message}`, "error");
       }
     }
+    state.projects = (state.local.projects || []).map(normalizeProject);
+    state.activeProjectId = state.local.activeProjectId || state.projects[0]?.id || "";
+  }
 
-    navigate("builder");
-    toast("New website created.", "success");
+  function projectCard(project) {
+    const data = project.data || {};
+    const cover = data.headerImage || data.featuredCover || data.aboutCover || "";
+    const url = project.published_url || "";
+    const card = document.createElement("article");
+    card.className = "website-library-card";
+    card.dataset.projectId = project.id;
+    card.innerHTML = `
+      <div class="website-card-preview"${cover ? ` style="background-image:url('${escapeAttr(cover)}')"` : ""}>
+        ${cover ? "" : `<span>${escapeHtml((data.businessName || project.name || "Website").charAt(0).toUpperCase())}</span>`}
+        <small>${escapeHtml(capitalize(project.status || "draft"))}</small>
+      </div>
+      <div class="website-card-body">
+        <div><small>${escapeHtml(capitalize(project.plan || "starter"))}</small><h3>${escapeHtml(data.businessName || project.name || "Untitled Website")}</h3></div>
+        <p>Updated ${escapeHtml(formatDate(project.updated_at))}</p>
+        ${url ? `<a href="${escapeAttr(url)}" target="_blank" rel="noopener">${escapeHtml(url)}</a>` : ""}
+        <div class="website-card-actions">
+          <button class="btn btn-primary btn-small" data-project-action="edit">Edit</button>
+          <button class="btn btn-secondary btn-small" data-project-action="duplicate">Duplicate</button>
+          <button class="btn btn-danger btn-small" data-project-action="delete">Delete</button>
+        </div>
+      </div>`;
+    return card;
   }
 
   function renderProjects() {
     const grid = $("websiteLibraryGrid");
     if (!grid) return;
-
-    const query = trim($("projectSearchInput")?.value).toLowerCase();
+    const query = text($("projectSearchInput")?.value).toLowerCase();
     const filtered = state.projects.filter((project) => {
-      const searchable =
-        `${project.name} ${project.slug} ${project.data.businessName}`.toLowerCase();
-      return !query || searchable.includes(query);
+      const haystack = `${project.name} ${project.slug} ${project.data?.businessName || ""}`.toLowerCase();
+      return !query || haystack.includes(query);
     });
-
-    grid.innerHTML = filtered.map((project) => {
-      const title = project.data.businessName || project.name;
-      const cover = project.data.headerImage || project.data.featuredCover || "";
-      return `
-        <article class="website-library-card" data-project-id="${escapeHtml(project.id)}">
-          <div class="website-card-preview"${cover ? ` style="background-image:url('${cover}')"` : ""}>
-            ${cover ? "" : `<span>${escapeHtml(title.charAt(0).toUpperCase())}</span>`}
-            <small>${escapeHtml(project.status || "draft")}</small>
-          </div>
-          <div class="website-card-body">
-            <small>${escapeHtml((project.plan || "starter").toUpperCase())}</small>
-            <h3>${escapeHtml(title)}</h3>
-            <p>Updated ${escapeHtml(formatDate(project.updatedAt))}</p>
-            ${project.published_url ? `<a href="${escapeHtml(project.published_url)}" target="_blank" rel="noopener">View website</a>` : ""}
-            <div class="website-card-actions">
-              <button class="btn btn-primary btn-small" data-project-action="edit">Edit</button>
-              <button class="btn btn-secondary btn-small" data-project-action="duplicate">Duplicate</button>
-              <button class="btn btn-danger btn-small" data-project-action="delete">Delete</button>
-            </div>
-          </div>
-        </article>`;
-    }).join("");
-
-    if (!filtered.length) {
-      grid.innerHTML = `<div class="empty-state">No websites found.</div>`;
-    }
-
+    grid.replaceChildren(...filtered.map(projectCard));
+    if (!filtered.length) grid.innerHTML = `<div class="empty-state">No websites found. Select Create New Website to begin.</div>`;
     if ($("projectCount")) $("projectCount").textContent = state.projects.length;
-    if ($("publishedProjectCount")) {
-      $("publishedProjectCount").textContent =
-        state.projects.filter((project) => project.status === "published").length;
+    if ($("publishedProjectCount")) $("publishedProjectCount").textContent = state.projects.filter((p) => p.status === "published").length;
+    if ($("draftProjectCount")) $("draftProjectCount").textContent = state.projects.filter((p) => p.status !== "published").length;
+  }
+
+  async function newProject() {
+    const project = createProject({ plan: state.profile?.plan || "starter" });
+    state.projects.unshift(project);
+    state.activeProjectId = project.id;
+    saveLocalState();
+    if (state.user && state.apiOnline) {
+      try {
+        const result = await api("projects?action=create", {
+          method: "POST",
+          body: JSON.stringify({ project })
+        });
+        const saved = normalizeProject(result.project || result);
+        state.projects[0] = saved;
+        state.activeProjectId = saved.id;
+        saveLocalState();
+      } catch (error) {
+        toast(`Created locally. Cloud save failed: ${error.message}`, "error");
+      }
     }
-    if ($("draftProjectCount")) {
-      $("draftProjectCount").textContent =
-        state.projects.filter((project) => project.status !== "published").length;
-    }
+    navigate("builder");
   }
 
   async function handleProjectAction(event) {
     const button = event.target.closest("[data-project-action]");
     if (!button) return;
-
     const card = button.closest("[data-project-id]");
     const project = state.projects.find((item) => item.id === card?.dataset.projectId);
     if (!project) return;
+    const action = button.dataset.projectAction;
 
-    const actionName = button.dataset.projectAction;
-
-    if (actionName === "edit") {
+    if (action === "edit") {
       state.activeProjectId = project.id;
-      saveWorkspace();
+      saveLocalState();
       navigate("builder");
       return;
     }
-
-    if (actionName === "duplicate") {
+    if (action === "duplicate") {
       const copy = normalizeProject(clone(project));
-      copy.id = makeId();
-      copy.name = `${project.name} Copy`;
+      copy.id = uid();
+      copy.name = `${project.name || "Website"} Copy`;
       copy.slug = `${slugify(copy.name)}-${Math.random().toString(36).slice(2, 6)}`;
       copy.status = "draft";
       copy.published_url = "";
-      copy.customDomain = "";
       copy.custom_domain = "";
       copy.owned = false;
-      copy.createdAt = now();
-      copy.updatedAt = copy.createdAt;
-
+      copy.created_at = nowIso();
+      copy.updated_at = copy.created_at;
       state.projects.unshift(copy);
-      saveWorkspace();
-
-      if (state.user && state.apiOnline) {
-        try {
-          const result = await api("projects?action=create", {
-            method: "POST",
-            body: JSON.stringify({ project: copy })
-          });
-          replaceProject(result.project);
-        } catch (error) {
-          toast(`Duplicated locally. Cloud copy failed: ${error.message}`, "error");
-        }
-      }
-
+      saveLocalState();
       renderProjects();
       toast("Website duplicated.", "success");
       return;
     }
-
-    if (actionName === "delete") {
-      if (!confirm(`Delete "${project.data.businessName || project.name}"?`)) return;
-
-      if (state.user && state.apiOnline && !String(project.id).startsWith("bv_")) {
+    if (action === "delete") {
+      if (!confirm(`Delete "${project.data?.businessName || project.name}"? This cannot be undone.`)) return;
+      if (state.user && state.apiOnline) {
         try {
-          await api(`projects?action=delete&id=${encodeURIComponent(project.id)}`, {
-            method: "DELETE"
-          });
+          await api(`projects?action=delete&id=${encodeURIComponent(project.id)}`, { method: "DELETE" });
         } catch (error) {
           return toast(error.message, "error");
         }
       }
-
       state.projects = state.projects.filter((item) => item.id !== project.id);
-      if (!state.projects.length) state.projects.push(newProject());
-      if (state.activeProjectId === project.id) {
-        state.activeProjectId = state.projects[0].id;
-      }
-
-      saveWorkspace();
+      if (state.activeProjectId === project.id) state.activeProjectId = state.projects[0]?.id || "";
+      saveLocalState();
       renderProjects();
-      toast("Website deleted.", "success");
+      toast("Website deleted.");
     }
   }
 
-  function loadProjectIntoBuilder(project) {
-    if (!project) return;
-
-    Object.entries(formMap).forEach(([key, id]) => {
-      if ($(id)) $(id).value = project.data[key] ?? "";
+  function readFormIntoProject(project = ensureProject()) {
+    const d = project.data;
+    const mappings = {
+      businessName: "businessName", businessBio: "businessBio", phoneNumber: "phoneNumber",
+      emailAddress: "emailAddress", businessHours: "businessHours", callButtonText: "callButtonText",
+      headerTagline: "headerTagline", headerHeadline: "headerHeadline", headerBio: "headerBio",
+      aboutHeading: "aboutHeading", featuredHeading: "featuredHeading",
+      featuredDescription: "featuredDescription", galleryHeading: "galleryHeading",
+      galleryDescription: "galleryDescription", themeColor: "themeColor",
+      headerColor: "headerColor", buttonColor: "buttonColor", cardColor: "cardColor",
+      logoOutlineColor: "logoOutlineColor", scrollItems: "scrollItems",
+      mapHeading: "mapHeading", businessAddress: "businessAddress", mapEmbedUrl: "mapEmbedUrl"
+    };
+    Object.entries(mappings).forEach(([key, id]) => {
+      if ($(id)) d[key] = $(id).value;
     });
+    project.plan = currentSelectedPlan();
+    project.name = text(d.businessName) || project.name || "Untitled Website";
+    project.slug = slugify($("projectSlug")?.value || project.slug || project.name);
+    project.custom_domain = normalizeDomain($("customDomain")?.value || project.custom_domain);
+    project.updated_at = nowIso();
+    return project;
+  }
 
+  function loadProjectIntoForm(project) {
+    if (!project) return;
+    const d = project.data || {};
+    const mappings = {
+      businessName: "businessName", businessBio: "businessBio", phoneNumber: "phoneNumber",
+      emailAddress: "emailAddress", businessHours: "businessHours", callButtonText: "callButtonText",
+      headerTagline: "headerTagline", headerHeadline: "headerHeadline", headerBio: "headerBio",
+      aboutHeading: "aboutHeading", featuredHeading: "featuredHeading",
+      featuredDescription: "featuredDescription", galleryHeading: "galleryHeading",
+      galleryDescription: "galleryDescription", themeColor: "themeColor",
+      headerColor: "headerColor", buttonColor: "buttonColor", cardColor: "cardColor",
+      logoOutlineColor: "logoOutlineColor", scrollItems: "scrollItems",
+      mapHeading: "mapHeading", businessAddress: "businessAddress", mapEmbedUrl: "mapEmbedUrl"
+    };
+    Object.entries(mappings).forEach(([key, id]) => { if ($(id)) $(id).value = d[key] ?? ""; });
     if ($("planSelect")) {
-      const desired = project.plan || "starter";
-      const option = Array.from($("planSelect").options).find((item) => item.value === desired);
-      if (option) $("planSelect").value = desired;
+      $("planSelect").innerHTML = `<option value="${escapeAttr(project.plan || "starter")}">${escapeHtml(capitalize(project.plan || "starter"))}</option>`;
+      $("planSelect").value = project.plan || "starter";
     }
-
     if ($("projectSlug")) $("projectSlug").value = project.slug || slugify(project.name);
-    if ($("customDomain")) {
-      $("customDomain").value = project.customDomain || project.custom_domain || "";
-    }
-    if ($("builderProjectTitle")) {
-      $("builderProjectTitle").textContent = project.data.businessName || project.name;
-    }
-
+    if ($("customDomain")) $("customDomain").value = project.custom_domain || "";
+    if ($("builderProjectTitle")) $("builderProjectTitle").textContent = d.businessName || project.name || "Build your website";
     updateColorLabels();
     renderUploadEditors();
-    updateAddressPreview();
+    updateDomainPreview();
   }
 
-  function readBuilderIntoProject() {
-    const project = activeProject();
-    if (!project) return null;
-
-    Object.entries(formMap).forEach(([key, id]) => {
-      if ($(id)) project.data[key] = $(id).value;
-    });
-
-    project.name = trim(project.data.businessName) || project.name || "Untitled Website";
-    project.slug = slugify($("projectSlug")?.value || project.slug || project.name);
-    project.customDomain = normalizeDomain(
-      $("customDomain")?.value || project.customDomain || project.custom_domain
-    );
-    project.custom_domain = project.customDomain;
-    project.updatedAt = now();
-    project.updated_at = project.updatedAt;
-
-    return project;
-  }
-
-  async function saveProject(showToast = true) {
-    const project = readBuilderIntoProject();
-    if (!project) return null;
-
-    saveWorkspace();
-    renderProjects();
-    if ($("saveStatus")) $("saveStatus").textContent = "Saved on this device";
-
-    if (state.user && state.apiOnline) {
-      try {
-        const result = await api("projects?action=save", {
-          method: "POST",
-          body: JSON.stringify({ project })
-        });
-        const saved = replaceProject(result.project);
-        if ($("saveStatus")) $("saveStatus").textContent = "Saved to cloud";
-        if (showToast) toast("Website saved to your account.", "success");
-        return saved;
-      } catch (error) {
-        if ($("saveStatus")) $("saveStatus").textContent = "Saved locally; cloud failed";
-        if (showToast) toast(error.message, "error");
-        return project;
-      }
-    }
-
-    if (showToast) {
-      toast(
-        state.apiOnline
-          ? "Website saved locally. Sign in to save it to your account."
-          : "Website saved on this device.",
-        "success"
-      );
-    }
-
-    return project;
-  }
-
-  function queueSave() {
-    clearTimeout(state.saveTimer);
-    if ($("saveStatus")) $("saveStatus").textContent = "Saving…";
-
-    state.saveTimer = setTimeout(async () => {
-      await saveProject(false);
+  function queueAutosave() {
+    clearTimeout(state.autosaveTimer);
+    if ($("saveStatus")) $("saveStatus").textContent = "Saving changes…";
+    state.autosaveTimer = setTimeout(async () => {
+      readFormIntoProject();
+      saveLocalState();
+      if ($("saveStatus")) $("saveStatus").textContent = "Saved locally";
       renderPreview();
+      if (state.user && state.apiOnline) {
+        try {
+          await saveProject({ silent: true });
+          if ($("saveStatus")) $("saveStatus").textContent = "Saved to cloud";
+        } catch {
+          if ($("saveStatus")) $("saveStatus").textContent = "Saved locally; cloud unavailable";
+        }
+      }
     }, 650);
   }
 
-  async function saveSnapshot() {
-    let project = readBuilderIntoProject();
-    if (!project) return;
+  async function saveProject({ silent = false } = {}) {
+    const project = readFormIntoProject();
+    saveLocalState();
+    if (state.user && state.apiOnline) {
+      const result = await api("projects?action=save", {
+        method: "POST",
+        body: JSON.stringify({ project })
+      });
+      const saved = normalizeProject(result.project || result);
+      const index = state.projects.findIndex((item) => item.id === project.id);
+      if (index >= 0) state.projects[index] = saved;
+      state.activeProjectId = saved.id;
+      saveLocalState();
+    }
+    if (!silent) toast(state.user && state.apiOnline ? "Website saved to your account." : "Website saved on this device.", "success");
+    renderProjects();
+    return project;
+  }
 
+  async function saveSnapshot() {
+    const project = readFormIntoProject();
     const snapshot = {
-      id: makeId(),
+      id: uid(),
+      project_id: project.id,
       name: `${project.data.businessName || project.name} — ${new Date().toLocaleString()}`,
-      createdAt: now(),
+      type: "snapshot",
+      created_at: nowIso(),
       data: clone(project.data)
     };
-
     project.snapshots.unshift(snapshot);
-    saveWorkspace();
-
+    saveLocalState();
     if (state.user && state.apiOnline) {
       try {
-        if (String(project.id).startsWith("bv_")) {
-          project = await saveProject(false);
-        }
-
-        const result = await api("projects?action=snapshot", {
+        await api("projects?action=snapshot", {
           method: "POST",
-          body: JSON.stringify({
-            project_id: project.id,
-            snapshot
-          })
+          body: JSON.stringify({ project_id: project.id, snapshot })
         });
-
-        project.snapshots[0] = {
-          ...snapshot,
-          ...(result.snapshot || {}),
-          data: result.snapshot?.data || snapshot.data
-        };
-        saveWorkspace();
       } catch (error) {
-        toast(`Snapshot saved locally. Cloud snapshot failed: ${error.message}`, "error");
+        toast(`Snapshot saved locally. Cloud save failed: ${error.message}`, "error");
+        return;
       }
     }
-
-    renderDrafts();
     toast("Snapshot saved.", "success");
+    renderDrafts();
   }
 
   function renderDrafts() {
     const grid = $("savedDraftsGrid");
     if (!grid) return;
-
-    const query = trim($("draftSearchInput")?.value).toLowerCase();
+    const query = text($("draftSearchInput")?.value).toLowerCase();
     const items = [];
-
     state.projects.forEach((project) => {
-      items.push({
-        id: project.id,
-        projectId: project.id,
-        type: "project",
-        name: project.data.businessName || project.name,
-        date: project.updatedAt,
-        owned: project.owned
-      });
-
-      project.snapshots.forEach((snapshot) => {
-        items.push({
-          id: snapshot.id,
-          projectId: project.id,
-          type: "snapshot",
-          name: snapshot.name,
-          date: snapshot.createdAt
-        });
-      });
+      items.push({ ...project, itemType: "project", projectId: project.id });
+      (project.snapshots || []).forEach((snapshot) => items.push({
+        ...snapshot,
+        plan: project.plan,
+        status: "snapshot",
+        itemType: "snapshot",
+        projectId: project.id
+      }));
     });
-
     const filtered = items.filter((item) => {
-      if (
-        state.draftFilter !== "all" &&
-        state.draftFilter !== "incomplete" &&
-        item.type !== state.draftFilter
-      ) {
-        return false;
-      }
-      return !query || item.name.toLowerCase().includes(query);
+      if (state.currentDraftFilter === "project" && item.itemType !== "project") return false;
+      if (state.currentDraftFilter === "snapshot" && item.itemType !== "snapshot") return false;
+      if (state.currentDraftFilter === "incomplete" && item.status === "published") return false;
+      const haystack = `${item.name || ""} ${item.data?.businessName || ""}`.toLowerCase();
+      return !query || haystack.includes(query);
     });
 
     grid.innerHTML = filtered.map((item) => `
-      <article class="saved-draft-card"
-        data-project-id="${escapeHtml(item.projectId)}"
-        data-item-id="${escapeHtml(item.id)}"
-        data-item-type="${escapeHtml(item.type)}">
-        <div>
-          <small>${item.type === "snapshot" ? "SNAPSHOT" : "WEBSITE"}</small>
-          <h3>${escapeHtml(item.name)}</h3>
-          <p>${escapeHtml(formatDate(item.date))}</p>
-        </div>
+      <article class="saved-draft-card" data-item-type="${item.itemType}" data-project-id="${escapeAttr(item.projectId)}" data-item-id="${escapeAttr(item.id)}">
+        <div><small>${item.itemType === "snapshot" ? "SNAPSHOT" : "WEBSITE"}</small>
+        <h3>${escapeHtml(item.data?.businessName || item.name || "Untitled Website")}</h3>
+        <p>${escapeHtml(formatDate(item.updated_at || item.created_at))}</p></div>
         <div class="saved-draft-actions">
           <button class="btn btn-primary btn-small" data-draft-action="load">Load</button>
-          ${item.type === "project" ? `<button class="btn btn-secondary btn-small" data-draft-action="buyout">Buy Out</button>` : ""}
-          ${item.type === "project" && item.owned ? `<button class="btn btn-secondary btn-small" data-draft-action="export">Download ZIP</button>` : ""}
+          ${item.itemType === "project" ? `<button class="btn btn-secondary btn-small" data-draft-action="buyout">Buy Out</button>` : ""}
+          ${item.itemType === "project" && item.owned ? `<button class="btn btn-secondary btn-small" data-draft-action="export">Download ZIP</button>` : ""}
         </div>
-      </article>
-    `).join("");
-
-    if (!filtered.length) {
-      grid.innerHTML = `<div class="empty-state">No saved drafts match this view.</div>`;
-    }
-
+      </article>`).join("");
+    if (!filtered.length) grid.innerHTML = `<div class="empty-state">No saved drafts match this view.</div>`;
     if ($("savedDraftCount")) $("savedDraftCount").textContent = filtered.length;
   }
 
-  async function handleDraftAction(event) {
+  function handleDraftAction(event) {
     const button = event.target.closest("[data-draft-action]");
     if (!button) return;
-
     const card = button.closest("[data-project-id]");
-    const project = state.projects.find((item) => item.id === card?.dataset.projectId);
+    const project = state.projects.find((p) => p.id === card?.dataset.projectId);
     if (!project) return;
-
-    const actionName = button.dataset.draftAction;
-
-    if (actionName === "load") {
+    const action = button.dataset.draftAction;
+    if (action === "load") {
       if (card.dataset.itemType === "snapshot") {
-        const snapshot = project.snapshots.find((item) => item.id === card.dataset.itemId);
+        const snapshot = project.snapshots.find((s) => s.id === card.dataset.itemId);
         if (snapshot) project.data = clone(snapshot.data);
       }
       state.activeProjectId = project.id;
-      saveWorkspace();
+      saveLocalState();
       navigate("builder");
-      toast("Draft loaded.", "success");
-      return;
+    } else if (action === "buyout") {
+      startCheckout(project.plan, "buyout", project.id);
+    } else if (action === "export") {
+      exportProject(project.id);
     }
+  }
 
-    if (actionName === "buyout") {
-      return startCheckout(project.plan || "starter", "buyout", project.id);
-    }
-
-    if (actionName === "export") {
-      return exportProject(project.id);
-    }
+  function updateColorLabels() {
+    ["themeColor", "headerColor", "buttonColor", "cardColor", "logoOutlineColor"].forEach((id) => {
+      const label = $(`${id}Value`);
+      if (label && $(id)) label.textContent = $(id).value;
+    });
   }
 
   function renderPreview() {
-    const project = readBuilderIntoProject();
-    if (!project) return;
-
-    const data = project.data;
+    const project = readFormIntoProject();
+    const d = project.data;
     const preview = $("preview");
     if (!preview) return;
 
-    setText("previewBusinessName", data.businessName || "YOUR BUSINESS");
-    setText("previewTagline", data.headerTagline);
-    setText("previewHeadline", data.headerHeadline || "Your headline appears here.");
-    setText("previewBusinessBio", data.businessBio);
-    setText("previewPhone", data.phoneNumber);
-    setText("previewEmail", data.emailAddress);
-    setText("previewHours", data.businessHours);
-    setText("previewAddress", data.businessAddress);
-    setText("previewAboutHeading", data.aboutHeading || "About Our Business");
-    setText("previewFeaturedHeading", data.featuredHeading);
-    setText("previewFeaturedDescription", data.featuredDescription);
-    setText("previewGalleryHeading", data.galleryHeading);
-    setText("previewGalleryDescription", data.galleryDescription);
-    setText("previewMapHeading", data.mapHeading || "Find Us");
-    setText("previewMapAddress", data.businessAddress);
-    setText("previewFooter", data.businessName || "Your Business");
+    setText("previewBusinessName", d.businessName || "YOUR BUSINESS");
+    setText("previewTagline", d.headerTagline);
+    setText("previewHeadline", d.headerHeadline || "Your headline appears here.");
+    setText("previewBusinessBio", d.businessBio);
+    setText("previewPhone", d.phoneNumber);
+    setText("previewEmail", d.emailAddress);
+    setText("previewHours", d.businessHours);
+    setText("previewAddress", d.businessAddress);
+    setText("previewAboutHeading", d.aboutHeading || "About Our Business");
+    setText("previewFeaturedHeading", d.featuredHeading);
+    setText("previewFeaturedDescription", d.featuredDescription);
+    setText("previewGalleryHeading", d.galleryHeading);
+    setText("previewGalleryDescription", d.galleryDescription);
+    setText("previewMapHeading", d.mapHeading || "Find Us");
+    setText("previewMapAddress", d.businessAddress);
+    setText("previewFooter", d.businessName || "Your Business");
 
-    const callText = trim(data.callButtonText) || "Call Now";
-    const phone = String(data.phoneNumber || "").replace(/[^\d+]/g, "");
+    const callText = d.callButtonText || "Call Now";
+    const tel = `tel:${String(d.phoneNumber || "").replace(/[^\d+]/g, "")}`;
     ["previewCallButton", "previewHeroCall", "previewMapCall"].forEach((id) => {
-      if ($(id)) {
-        $(id).textContent = callText;
-        $(id).href = phone ? `tel:${phone}` : "#";
-      }
+      const node = $(id);
+      if (node) { node.textContent = callText; node.href = tel; }
     });
 
-    if ($("previewHeaderBios")) {
-      $("previewHeaderBios").innerHTML = data.headerBio
-        ? `<p class="hero-bio">${escapeHtml(data.headerBio)}</p>`
-        : "";
-    }
+    const bios = $("previewHeaderBios");
+    if (bios) bios.innerHTML = d.headerBio ? `<p>${escapeHtml(d.headerBio)}</p>` : "";
 
-    setBackground($("previewHero"), data.headerImage);
-    setBackground($("previewAboutSection"), data.aboutCover);
-    setBackground($("previewFeaturedSection"), data.featuredCover);
-    setBackground($("previewGallerySection"), data.galleryCover);
-    setBackground($("previewMapSection"), data.mapCover);
-
-    if ($("previewFeaturedCover")) {
-      $("previewFeaturedCover").style.backgroundImage =
-        data.featuredCover ? `url("${data.featuredCover}")` : "";
-    }
-    if ($("previewGalleryCover")) {
-      $("previewGalleryCover").style.backgroundImage =
-        data.galleryCover ? `url("${data.galleryCover}")` : "";
-    }
+    applyBackground($("previewHero"), d.headerImage);
+    applyBackground($("previewAboutSection"), d.aboutCover);
+    applyBackground($("previewFeaturedSection"), d.featuredCover);
+    applyBackground($("previewGallerySection"), d.galleryCover);
+    applyBackground($("previewMapSection"), d.mapCover);
 
     const logo = $("previewLogoImage");
-    const frame = $("previewLogoFrame");
+    const placeholder = $("previewLogoPlaceholder");
     if (logo) {
-      logo.src = data.businessLogo || "";
-      show(logo, Boolean(data.businessLogo));
+      logo.src = d.businessLogo || "";
+      safeShow(logo, Boolean(d.businessLogo));
     }
-    show($("previewLogoPlaceholder"), !data.businessLogo);
-    frame?.classList.toggle("has-logo", Boolean(data.businessLogo));
+    safeShow(placeholder, !d.businessLogo);
 
-    preview.style.setProperty("--theme-color", data.themeColor);
-    preview.style.setProperty("--header-color", data.headerColor);
-    preview.style.setProperty("--button-color", data.buttonColor);
-    preview.style.setProperty("--card-color", data.cardColor);
-    preview.style.setProperty("--logo-outline-color", data.logoOutlineColor);
+    preview.style.setProperty("--theme-color", d.themeColor);
+    preview.style.setProperty("--header-color", d.headerColor);
+    preview.style.setProperty("--button-color", d.buttonColor);
+    preview.style.setProperty("--card-color", d.cardColor);
+    preview.style.setProperty("--logo-outline-color", d.logoOutlineColor);
 
-    if (frame) frame.style.borderColor = data.logoOutlineColor;
+    const header = preview.querySelector(".site-header");
+    const footer = preview.querySelector(".site-footer");
+    if (header) header.style.backgroundColor = d.headerColor;
+    if (footer) footer.style.backgroundColor = d.headerColor;
+    preview.querySelectorAll(".site-call,.hero-cta").forEach((button) => button.style.backgroundColor = d.buttonColor);
+    preview.querySelectorAll(".card,.gallery-card").forEach((card) => card.style.backgroundColor = d.cardColor);
+    if ($("previewLogoFrame")) $("previewLogoFrame").style.borderColor = d.logoOutlineColor;
 
-    if ($("previewScroll")) {
-      $("previewScroll").innerHTML = String(data.scrollItems || "")
-        .split(",")
-        .map(trim)
-        .filter(Boolean)
-        .map((item) => `<span>${escapeHtml(item)}</span>`)
-        .join("");
-    }
+    const scroll = $("previewScroll");
+    if (scroll) scroll.innerHTML = text(d.scrollItems).split(",").map((item) => text(item)).filter(Boolean)
+      .map((item) => `<span>${escapeHtml(item)}</span>`).join("");
 
-    renderMedia("previewPhotoGrid", data.photos);
-    renderMedia("previewGalleryGrid", data.gallery);
-    setText("previewPhotoCount", `${data.photos.length} uploads`);
-    setText("previewGalleryCount", `${data.gallery.length} uploads`);
+    renderMediaGrid("previewPhotoGrid", d.photos, "card");
+    renderMediaGrid("previewGalleryGrid", d.gallery, "gallery-card");
+    if ($("previewPhotoCount")) $("previewPhotoCount").textContent = `${d.photos.length} uploads`;
+    if ($("previewGalleryCount")) $("previewGalleryCount").textContent = `${d.gallery.length} uploads`;
 
-    if ($("previewMapFrame")) {
-      const mapValue = trim(data.mapEmbedUrl) || trim(data.businessAddress);
-      $("previewMapFrame").src = mapValue
-        ? `https://www.google.com/maps?q=${encodeURIComponent(mapValue)}&output=embed`
-        : "about:blank";
-    }
+    const locationValue = text(d.mapEmbedUrl) || text(d.businessAddress);
+    const frame = $("previewMapFrame");
+    if (frame) frame.src = locationValue
+      ? `https://www.google.com/maps?q=${encodeURIComponent(locationValue)}&output=embed`
+      : "about:blank";
 
-    if ($("builderProjectTitle")) {
-      $("builderProjectTitle").textContent = data.businessName || project.name;
-    }
-
-    updateAddressPreview();
+    if ($("builderProjectTitle")) $("builderProjectTitle").textContent = d.businessName || project.name;
+    updateDomainPreview();
   }
 
   function setText(id, value) {
-    if ($(id)) $(id).textContent = value || "";
+    const node = $(id);
+    if (node) node.textContent = value || "";
   }
 
-  function setBackground(element, url) {
-    if (!element) return;
-    element.style.backgroundImage = url
-      ? `linear-gradient(rgba(0,0,0,.42),rgba(0,0,0,.42)),url("${url}")`
+  function applyBackground(node, url) {
+    if (!node) return;
+    node.style.backgroundImage = url
+      ? `linear-gradient(rgba(0,0,0,.42),rgba(0,0,0,.42)),url("${String(url).replaceAll('"', '\\"')}")`
       : "";
-    element.classList.toggle("has-cover", Boolean(url));
+    node.classList.toggle("has-cover", Boolean(url));
   }
 
-  function renderMedia(id, items = []) {
+  function renderMediaGrid(id, items = [], cardClass) {
     const grid = $(id);
     if (!grid) return;
-
     grid.innerHTML = items.map((item) => {
-      const source = item.url || item.public_url || "";
-      const media = String(item.type || item.mime_type || "").startsWith("video/")
-        ? `<video src="${source}" controls preload="metadata"></video>`
-        : `<img src="${source}" alt="${escapeHtml(item.description || "Website upload")}">`;
-
-      return `
-        <article class="${id === "previewGalleryGrid" ? "gallery-item" : "content-card"}">
-          ${media}
-          ${item.description ? `<div class="content-body"><p>${escapeHtml(item.description)}</p></div>` : ""}
-        </article>`;
+      const media = item.type?.startsWith("video")
+        ? `<video src="${escapeAttr(item.url)}" controls preload="metadata"></video>`
+        : `<img src="${escapeAttr(item.url)}" alt="${escapeAttr(item.description || "Website upload")}">`;
+      return `<article class="${cardClass}">${media}${item.description ? `<p>${escapeHtml(item.description)}</p>` : ""}</article>`;
     }).join("");
   }
 
-  function fileToDataUrl(file) {
+  async function fileToDataUrl(file) {
+    if (!file) return "";
+    const max = file.type.startsWith("video/") ? 25 * 1024 * 1024 : 8 * 1024 * 1024;
+    if (file.size > max) throw new Error(`File is too large. Maximum size is ${Math.round(max / 1024 / 1024)} MB.`);
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => resolve(String(reader.result || ""));
-      reader.onerror = () => reject(new Error("The selected file could not be read."));
+      reader.onerror = () => reject(new Error("Could not read the selected file."));
       reader.readAsDataURL(file);
     });
   }
 
-  async function uploadFile(file, project) {
-    const dataUrl = await fileToDataUrl(file);
-
-    if (!state.user || !state.apiOnline) {
-      return {
-        id: makeId(),
-        url: dataUrl,
-        type: file.type || "image/*",
-        name: file.name,
-        local: true
-      };
-    }
-
-    if (String(project.id).startsWith("bv_")) {
-      project = await saveProject(false);
-    }
-
-    const extension = file.name.includes(".")
-      ? file.name.split(".").pop()
-      : (file.type.split("/")[1] || "bin");
-
-    const result = await api("media?action=upload", {
-      method: "POST",
-      body: JSON.stringify({
-        project_id: project.id,
-        filename: file.name,
-        extension,
-        data_url: dataUrl
-      })
-    });
-
-    return {
-      id: result.id || makeId(),
-      url: result.url,
-      type: result.mime_type || file.type,
-      name: file.name,
-      storage_path: result.path,
-      local: false
-    };
-  }
-
-  async function setSingleImage(inputId, key) {
+  async function setSingleImage(inputId, dataKey) {
     const input = $(inputId);
     const file = input?.files?.[0];
     if (!file) return;
-
-    const maxSize = file.type.startsWith("video/") ? 25 : 8;
-    if (file.size > maxSize * 1024 * 1024) {
-      toast(`Please choose a file smaller than ${maxSize} MB.`, "error");
-      input.value = "";
-      return;
-    }
-
     try {
-      const uploaded = await uploadFile(file, activeProject());
-      activeProject().data[key] = uploaded.url;
-      input.value = "";
-      await saveProject(false);
+      const url = await fileToDataUrl(file);
+      ensureProject().data[dataKey] = url;
+      saveLocalState();
       renderPreview();
-      toast("Image added.", "success");
+      queueAutosave();
+      input.value = "";
     } catch (error) {
       toast(error.message, "error");
     }
   }
 
-  async function removeImage(key) {
-    activeProject().data[key] = "";
-    await saveProject(false);
+  function removeSingleImage(dataKey) {
+    ensureProject().data[dataKey] = "";
+    saveLocalState();
     renderPreview();
-    toast("Image removed.", "success");
+    queueAutosave();
   }
 
-  async function addMedia(collection, fileInputId, descriptionInputId) {
+  async function addMedia(collectionKey, fileInputId, descriptionInputId) {
+    const project = ensureProject();
     const fileInput = $(fileInputId);
     const file = fileInput?.files?.[0];
-
+    const description = text($(descriptionInputId)?.value);
     if (!file) return toast("Choose a photo or video first.", "error");
 
-    const maxSize = file.type.startsWith("video/") ? 25 : 8;
-    if (file.size > maxSize * 1024 * 1024) {
-      return toast(`Please choose a file smaller than ${maxSize} MB.`, "error");
-    }
+    const limits = planLimits(project.plan);
+    const limit = collectionKey === "gallery" ? limits.gallery : limits.photos;
+    if (collectionKey === "gallery" && !limits.galleryEnabled) return toast("Gallery uploads require the Professional or Advanced plan.", "error");
+    if (project.data[collectionKey].length >= limit) return toast(`Your ${capitalize(project.plan)} plan allows ${limit} uploads in this section.`, "error");
 
     try {
-      const uploaded = await uploadFile(file, activeProject());
-      activeProject().data[collection].push({
-        ...uploaded,
-        description: trim($(descriptionInputId)?.value)
+      const url = await fileToDataUrl(file);
+      project.data[collectionKey].push({
+        id: uid(), url, type: file.type || "image/*", name: file.name, description, created_at: nowIso()
       });
-
       fileInput.value = "";
       if ($(descriptionInputId)) $(descriptionInputId).value = "";
-
-      await saveProject(false);
+      saveLocalState();
       renderUploadEditors();
       renderPreview();
-      toast("Upload added.", "success");
+      queueAutosave();
     } catch (error) {
       toast(error.message, "error");
     }
   }
 
   function renderUploadEditors() {
-    renderEditorList("photoEditorList", "photos");
-    renderEditorList("galleryEditorList", "gallery");
+    const project = ensureProject();
+    const render = (id, collection) => {
+      const root = $(id);
+      if (!root) return;
+      root.innerHTML = project.data[collection].map((item) => `
+        <div class="editor-list-item" data-media-id="${escapeAttr(item.id)}" data-collection="${collection}">
+          <span>${item.type.startsWith("video") ? "Video" : "Photo"}</span>
+          <p>${escapeHtml(item.description || item.name || "Upload")}</p>
+          <button class="btn btn-danger btn-small" type="button" data-remove-media>Remove</button>
+        </div>`).join("");
+    };
+    render("photoEditorList", "photos");
+    render("galleryEditorList", "gallery");
   }
 
-  function renderEditorList(id, collection) {
-    const list = $(id);
-    if (!list) return;
-
-    list.innerHTML = activeProject().data[collection].map((item) => `
-      <div class="editor-list-item"
-        data-collection="${collection}"
-        data-media-id="${escapeHtml(item.id)}">
-        <span>${String(item.type || "").startsWith("video/") ? "Video" : "Photo"}</span>
-        <p>${escapeHtml(item.description || item.name || "Upload")}</p>
-        <button class="btn btn-danger btn-small" type="button" data-remove-media>Remove</button>
-      </div>
-    `).join("");
-  }
-
-  async function removeMedia(event) {
+  function removeMedia(event) {
     const button = event.target.closest("[data-remove-media]");
     if (!button) return;
-
     const row = button.closest("[data-media-id]");
+    const project = ensureProject();
     const collection = row.dataset.collection;
-    const item = activeProject().data[collection]
-      .find((media) => media.id === row.dataset.mediaId);
-
-    if (item && state.user && state.apiOnline && !item.local && item.id) {
-      try {
-        await api(`media?action=delete&id=${encodeURIComponent(item.id)}`, {
-          method: "DELETE"
-        });
-      } catch {
-        // Continue removing it from the website even if storage cleanup fails.
-      }
-    }
-
-    activeProject().data[collection] = activeProject().data[collection]
-      .filter((media) => media.id !== row.dataset.mediaId);
-
-    await saveProject(false);
+    project.data[collection] = project.data[collection].filter((item) => item.id !== row.dataset.mediaId);
+    saveLocalState();
     renderUploadEditors();
     renderPreview();
-    toast("Upload removed.", "success");
-  }
-
-  function updateColorLabels() {
-    ["themeColor", "headerColor", "buttonColor", "cardColor", "logoOutlineColor"]
-      .forEach((id) => {
-        if ($(`${id}Value`) && $(id)) {
-          $(`${id}Value`).textContent = $(id).value;
-        }
-      });
+    queueAutosave();
   }
 
   function setupTabs() {
-    $$("#tabs .tab").forEach((tab) => {
-      tab.addEventListener("click", () => {
-        $$("#tabs .tab").forEach((item) => item.classList.toggle("active", item === tab));
-        $$(".sidebar .panel").forEach((panel) => {
-          const active = panel.dataset.panel === tab.dataset.tab;
-          panel.classList.toggle("active", active);
-          panel.hidden = !active;
-          panel.style.display = active ? "" : "none";
-        });
-      });
-    });
+    $$("#tabs .tab").forEach((tab) => tab.addEventListener("click", () => {
+      $$("#tabs .tab").forEach((node) => node.classList.toggle("active", node === tab));
+      $$(".sidebar .panel").forEach((panel) => panel.classList.toggle("active", panel.dataset.panel === tab.dataset.tab));
+    }));
   }
 
   function setupDevices() {
-    $$(".device").forEach((button) => {
-      button.addEventListener("click", () => {
-        $$(".device").forEach((item) => item.classList.toggle("active", item === button));
-        $("preview")?.classList.remove("desktop", "tablet", "mobile");
-        $("preview")?.classList.add(button.dataset.device);
-      });
-    });
+    $$(".device").forEach((button) => button.addEventListener("click", () => {
+      $$(".device").forEach((node) => node.classList.toggle("active", node === button));
+      const workspace = $("preview")?.parentElement;
+      if (!workspace) return;
+      workspace.dataset.device = button.dataset.device;
+      $("preview").classList.remove("desktop", "tablet", "mobile");
+      $("preview").classList.add(button.dataset.device);
+    }));
   }
 
-  function setupThemes() {
+  function setupThemePresets() {
     const presets = {
       blue: ["#1769ff", "#082b5e", "#1769ff", "#ffffff", "#61c7ff"],
       purple: ["#7c3aed", "#2e1065", "#7c3aed", "#ffffff", "#c4b5fd"],
@@ -1281,147 +970,146 @@
       green: ["#059669", "#022c22", "#059669", "#ffffff", "#6ee7b7"],
       orange: ["#ea580c", "#431407", "#ea580c", "#ffffff", "#fdba74"]
     };
-
-    $$(".theme-preset").forEach((button) => {
-      button.addEventListener("click", () => {
-        const colors = presets[button.dataset.theme];
-        if (!colors) return;
-
-        ["themeColor", "headerColor", "buttonColor", "cardColor", "logoOutlineColor"]
-          .forEach((id, index) => {
-            if ($(id)) $(id).value = colors[index];
-          });
-
-        $$(".theme-preset").forEach((item) =>
-          item.classList.toggle("active", item === button)
-        );
-
-        updateColorLabels();
-        renderPreview();
-        queueSave();
+    $$(".theme-preset").forEach((button) => button.addEventListener("click", () => {
+      const values = presets[button.dataset.theme];
+      if (!values) return;
+      ["themeColor", "headerColor", "buttonColor", "cardColor", "logoOutlineColor"].forEach((id, index) => {
+        if ($(id)) $(id).value = values[index];
       });
-    });
+      $$(".theme-preset").forEach((node) => node.classList.toggle("active", node === button));
+      updateColorLabels();
+      queueAutosave();
+    }));
   }
 
-  function setupPreviewNavigation() {
-    $("previewMenuToggle")?.addEventListener("click", () => {
-      $("previewSiteNav")?.classList.toggle("open");
-    });
-
-    $$("[data-preview-target]").forEach((button) => {
-      button.addEventListener("click", () => {
-        $(button.dataset.previewTarget)?.scrollIntoView({
-          behavior: "smooth",
-          block: "start"
-        });
-        $("previewSiteNav")?.classList.remove("open");
-      });
-    });
-  }
-
-  function updateAddressPreview() {
+  function updateDomainPreview() {
     const project = activeProject();
     if (!project) return;
-
     const slug = slugify($("projectSlug")?.value || project.slug || project.name);
-    const address = `${location.origin}/public-site.html?slug=${encodeURIComponent(slug)}`;
-
-    if ($("projectSlug")) $("projectSlug").value = slug;
-    if ($("subdomainPreview")) $("subdomainPreview").textContent = address;
-    if ($("publishedAddress")) {
-      $("publishedAddress").textContent =
-        project.customDomain || project.custom_domain
-          ? `https://${project.customDomain || project.custom_domain}`
-          : address;
-    }
+    const base = `${location.origin}/site/${slug}`;
+    if ($("subdomainPreview")) $("subdomainPreview").textContent = base;
+    if ($("publishedAddress")) $("publishedAddress").textContent = project.custom_domain ? `https://${project.custom_domain}` : base;
   }
 
-  async function checkAddress() {
-    const slug = slugify($("projectSlug")?.value || $("dmSlugInput")?.value);
+  function normalizeDomain(value) {
+    return text(value).toLowerCase()
+      .replace(/^https?:\/\//, "")
+      .replace(/^www\./, "")
+      .split("/")[0]
+      .replace(/\.+$/, "");
+  }
 
+  async function checkSlug() {
+    const slug = slugify($("projectSlug")?.value);
     if ($("projectSlug")) $("projectSlug").value = slug;
-    if ($("dmSlugInput")) $("dmSlugInput").value = slug;
-
-    activeProject().slug = slug;
-    saveWorkspace();
-    updateAddressPreview();
-
-    if (!state.apiOnline) {
-      return toast("Address format is valid locally.", "success");
-    }
-
+    updateDomainPreview();
+    if (!state.apiOnline) return toast("Address format is valid. Backend availability checking will activate after the API is installed.", "success");
     try {
-      const result = await api(
-        `domains?action=check-slug&slug=${encodeURIComponent(slug)}`
-      );
-      toast(
-        result.available ? "Address is available." : "That address is already in use.",
-        result.available ? "success" : "error"
-      );
+      const result = await api(`domains?action=check-slug&slug=${encodeURIComponent(slug)}`);
+      toast(result.available ? "Address is available." : "That address is already reserved.", result.available ? "success" : "error");
     } catch (error) {
       toast(error.message, "error");
     }
   }
 
   async function connectDomain() {
-    const project = await saveProject(false);
-    const domain = normalizeDomain($("customDomain")?.value || $("dmDomainInput")?.value);
-
-    if (!domain.includes(".")) {
-      return toast("Enter a valid domain such as example.com.", "error");
-    }
+    const project = readFormIntoProject();
+    const domain = normalizeDomain($("customDomain")?.value);
+    if (!domain || !domain.includes(".")) return toast("Enter a valid domain such as example.com.", "error");
     if (!state.user) return openAuth("signin");
-    if (!state.apiOnline) return toast("The API is not running.", "error");
-
+    if (!state.apiOnline) return toast("The domain backend has not been installed yet.", "error");
+    const button = $("connectDomainBtn") || $("dmConnectBtn");
+    setBusy(button, true, "Connecting…");
     try {
       const result = await api("domains?action=connect", {
         method: "POST",
-        body: JSON.stringify({
-          project_id: project.id,
-          domain
-        })
+        body: JSON.stringify({ project_id: project.id, domain })
       });
-
-      replaceProject({
-        ...project,
-        ...(result.project || {}),
-        customDomain: domain,
-        custom_domain: domain
-      });
-
-      if ($("customDomain")) $("customDomain").value = domain;
-      if ($("dmDomainInput")) $("dmDomainInput").value = domain;
-
-      renderDomainPage();
-      toast("Domain connected. Add the displayed DNS records.", "success");
+      Object.assign(project, result.project || { custom_domain: domain, domain_status: result.status || "pending" });
+      saveLocalState();
+      renderDomainCenter();
+      toast("Domain added. Complete the DNS records shown.", "success");
     } catch (error) {
       toast(error.message, "error");
+    } finally {
+      setBusy(button, false);
     }
+  }
+
+  function renderDomainCenter() {
+    const project = activeProject() || state.projects[0];
+    const selects = [$("dmProjectSelect"), $("publishingCenterProjectSelect")].filter(Boolean);
+    selects.forEach((select) => {
+      const previous = select.value;
+      select.innerHTML = state.projects.map((p) => `<option value="${escapeAttr(p.id)}">${escapeHtml(p.data?.businessName || p.name)}</option>`).join("");
+      select.value = project?.id || previous;
+    });
+    if (!project) return;
+
+    const slug = project.slug || slugify(project.name);
+    const bluvixaUrl = `${location.origin}/site/${slug}`;
+    if ($("dmSlugInput")) $("dmSlugInput").value = slug;
+    if ($("dmDomainInput")) $("dmDomainInput").value = project.custom_domain || "";
+    setLink("dmBluvixaAddress", bluvixaUrl, bluvixaUrl);
+    setText("dmOverviewBluvixa", slug ? "Reserved" : "Not reserved");
+    setText("dmOverviewBluvixaDetail", bluvixaUrl);
+    setText("dmOverviewDomain", project.custom_domain || "Not connected");
+    setText("dmOverviewDomainDetail", capitalize((project.domain_status || "not_connected").replaceAll("_", " ")));
+    setText("dmOverviewSsl", capitalize(project.ssl_status || "waiting"));
+    setText("dmSideDomain", project.custom_domain || "No custom domain");
+    setText("dmDetailBluvixa", bluvixaUrl);
+    setText("dmDetailDomainStatus", capitalize((project.domain_status || "not_connected").replaceAll("_", " ")));
+    setText("dmDetailDnsStatus", project.domain_status === "verified" ? "Yes" : "No");
+    setText("dmDetailSslStatus", capitalize(project.ssl_status || "waiting"));
+    setText("dmDetailVerifiedAt", project.domain_verified_at ? formatDate(project.domain_verified_at) : "—");
+    setText("dmDetailLastChecked", project.domain_checked_at ? formatDate(project.domain_checked_at) : "—");
+    setText("publishingCenterProjectName", project.data?.businessName || project.name);
+    setText("publishingMetricStatus", capitalize(project.status));
+    setText("publishingMetricDate", project.published_at ? formatDate(project.published_at) : "Never");
+    setText("publishingMetricDomain", project.custom_domain || "Bluvixa address");
+    setText("publishingMetricDomainDetail", project.custom_domain ? capitalize(project.domain_status) : bluvixaUrl);
+    setText("publishingMetricSsl", capitalize(project.ssl_status || "waiting"));
+    setText("publishingStatusText", capitalize(project.status));
+    setText("publishingCenterMessage", project.status === "published" ? "This website is live." : "This website has not been published yet.");
+
+    const liveUrl = project.published_url || (project.status === "published" ? bluvixaUrl : "");
+    setLink("publishingLiveUrl", liveUrl || "#", liveUrl || "Not published");
+    if ($("publishingShareUrl")) $("publishingShareUrl").value = liveUrl || "Publish the website to create a public link";
+    safeShow($("publishingViewLiveBtn"), Boolean(liveUrl));
+    if ($("publishingViewLiveBtn")) $("publishingViewLiveBtn").href = liveUrl || "#";
+    if ($("publishingPrimaryBtn")) $("publishingPrimaryBtn").textContent = project.status === "published" ? "Publish Updates" : "Publish Now";
+    renderVersionHistory(project);
+  }
+
+  function setLink(id, href, label) {
+    const node = $(id);
+    if (!node) return;
+    node.href = href || "#";
+    node.textContent = label || href || "";
+  }
+
+  function renderVersionHistory(project) {
+    const root = $("publishingVersionHistory");
+    if (!root) return;
+    const snapshots = project.snapshots || [];
+    root.innerHTML = snapshots.length ? snapshots.slice(0, 8).map((snapshot) => `
+      <div class="publishing-version-row"><div><strong>${escapeHtml(snapshot.name)}</strong><small>${escapeHtml(formatDate(snapshot.created_at))}</small></div></div>`
+    ).join("") : `<div class="empty-state">No saved versions yet.</div>`;
   }
 
   async function verifyDomain() {
     const project = activeProject();
-    if (!project?.customDomain && !project?.custom_domain) {
-      return toast("Connect a custom domain first.", "error");
-    }
-    if (!state.apiOnline) return toast("The API is not running.", "error");
-
+    if (!project?.custom_domain) return toast("Connect a custom domain first.", "error");
+    if (!state.apiOnline) return toast("The domain verification backend has not been installed yet.", "error");
     try {
       const result = await api("domains?action=verify", {
         method: "POST",
         body: JSON.stringify({ project_id: project.id })
       });
-
-      replaceProject({
-        ...project,
-        ...(result.project || {})
-      });
-      renderDomainPage();
-
-      toast(
-        result.verified ? "Domain verified." : "DNS is still propagating.",
-        result.verified ? "success" : "info"
-      );
+      Object.assign(project, result.project || result);
+      saveLocalState();
+      renderDomainCenter();
+      toast(project.domain_status === "verified" ? "Domain verified." : "DNS is still propagating.", project.domain_status === "verified" ? "success" : "info");
     } catch (error) {
       toast(error.message, "error");
     }
@@ -1429,9 +1117,9 @@
 
   async function removeDomain() {
     const project = activeProject();
-    if (!project) return;
-
-    if (state.user && state.apiOnline && !String(project.id).startsWith("bv_")) {
+    if (!project?.custom_domain) return;
+    if (!confirm(`Remove ${project.custom_domain} from this website?`)) return;
+    if (state.apiOnline && state.user) {
       try {
         await api("domains?action=remove", {
           method: "POST",
@@ -1441,127 +1129,63 @@
         return toast(error.message, "error");
       }
     }
-
-    project.customDomain = "";
     project.custom_domain = "";
     project.domain_status = "not_connected";
     project.ssl_status = "waiting";
-    saveWorkspace();
-    renderDomainPage();
-    toast("Custom domain removed.", "success");
+    saveLocalState();
+    renderDomainCenter();
   }
 
-  function renderDomainPage() {
-    const project = activeProject();
-    if (!project) return;
-
-    const selects = [
-      $("dmProjectSelect"),
-      $("publishingCenterProjectSelect")
-    ].filter(Boolean);
-
-    selects.forEach((select) => {
-      select.innerHTML = state.projects.map((item) => `
-        <option value="${escapeHtml(item.id)}">
-          ${escapeHtml(item.data.businessName || item.name)}
-        </option>
-      `).join("");
-      select.value = project.id;
-    });
-
-    const publicAddress =
-      project.published_url ||
-      `${location.origin}/public-site.html?slug=${encodeURIComponent(project.slug)}`;
-    const domain = project.customDomain || project.custom_domain || "";
-
-    if ($("dmSlugInput")) $("dmSlugInput").value = project.slug;
-    if ($("dmDomainInput")) $("dmDomainInput").value = domain;
-
-    setText("dmOverviewBluvixa", project.slug ? "Reserved" : "Not reserved");
-    setText("dmOverviewBluvixaDetail", publicAddress);
-    setText("dmOverviewDomain", domain || "Not connected");
-    setText(
-      "dmOverviewDomainDetail",
-      domain
-        ? String(project.domain_status || "pending").replaceAll("_", " ")
-        : "No custom domain"
-    );
-    setText("dmOverviewSsl", project.ssl_status || "waiting");
-    setText("dmSideDomain", domain || "No custom domain");
-    setText("dmDetailBluvixa", publicAddress);
-    setText(
-      "dmDetailDomainStatus",
-      String(project.domain_status || "not_connected").replaceAll("_", " ")
-    );
-    setText("dmDetailDnsStatus", project.domain_status === "verified" ? "Verified" : "Pending");
-    setText("dmDetailSslStatus", project.ssl_status || "waiting");
-    setText("dmDetailVerifiedAt", project.domain_verified_at ? formatDate(project.domain_verified_at) : "—");
-    setText("dmDetailLastChecked", project.domain_checked_at ? formatDate(project.domain_checked_at) : "—");
-
-    if ($("dmBluvixaAddress")) {
-      $("dmBluvixaAddress").textContent = publicAddress;
-      $("dmBluvixaAddress").href = publicAddress;
-    }
-
-    setText("publishingCenterProjectName", project.data.businessName || project.name);
-    setText("publishingStatusText", project.status || "draft");
-    setText(
-      "publishingCenterMessage",
-      project.status === "published"
-        ? "This website is live."
-        : "This website has not been published yet."
-    );
-    setText("publishingMetricStatus", project.status || "draft");
-    setText(
-      "publishingMetricDate",
-      project.published_at ? formatDate(project.published_at) : "Not published"
-    );
-    setText("publishingMetricDomain", domain || "Bluvixa address");
-    setText("publishingMetricDomainDetail", domain || publicAddress);
-    setText("publishingMetricSsl", project.ssl_status || "waiting");
-
-    if ($("publishingShareUrl")) {
-      $("publishingShareUrl").value =
-        project.published_url || "Publish the website to create a public link";
-    }
-    if ($("publishingLiveUrl")) {
-      $("publishingLiveUrl").textContent = project.published_url || "Not published";
-      $("publishingLiveUrl").href = project.published_url || "#";
-    }
-    if ($("publishingViewLiveBtn")) {
-      show($("publishingViewLiveBtn"), Boolean(project.published_url));
-      $("publishingViewLiveBtn").href = project.published_url || "#";
-    }
-    if ($("publishingPrimaryBtn")) {
-      $("publishingPrimaryBtn").textContent =
-        project.status === "published" ? "Publish Updates" : "Publish Now";
-    }
-  }
-
-  function renderBilling() {
-    const plan = state.profile?.plan || "starter";
-    const status = state.profile?.subscription_status || "inactive";
-
-    ["accountPlan", "dashboardSubscriptionPlan", "mobileMemberPlan"].forEach((id) => {
-      if ($(id)) $(id).textContent = plan.charAt(0).toUpperCase() + plan.slice(1);
-    });
-
-    ["accountBillingStatus", "dashboardSubscriptionStatus", "mobileMemberStatus"]
-      .forEach((id) => {
-        if ($(id)) $(id).textContent = status.replaceAll("_", " ");
+  async function publishProject() {
+    const project = await saveProject({ silent: true });
+    if (!state.user) return openAuth("signin");
+    if (!state.apiOnline) return toast("The publishing backend has not been installed yet.", "error");
+    const button = $("publishingPrimaryBtn") || $("publishBtn");
+    setBusy(button, true, "Publishing…");
+    updatePublishProgress(10, "save", "Complete");
+    try {
+      updatePublishProgress(35, "media", "Checking");
+      const result = await api("publish?action=publish", {
+        method: "POST",
+        body: JSON.stringify({ project_id: project.id })
       });
+      updatePublishProgress(75, "build", "Complete");
+      Object.assign(project, result.project || result);
+      project.status = "published";
+      project.published_at = project.published_at || nowIso();
+      updatePublishProgress(100, "deploy", "Complete");
+      saveLocalState();
+      renderDomainCenter();
+      toast("Website published successfully.", "success");
+    } catch (error) {
+      toast(error.message, "error");
+      updatePublishProgress(0);
+    } finally {
+      setBusy(button, false);
+    }
+  }
 
-    if ($("trialHomeTitle")) {
-      $("trialHomeTitle").textContent =
-        status === "active"
-          ? `${plan.charAt(0).toUpperCase() + plan.slice(1)} membership active`
-          : "Choose a membership to publish";
+  function updatePublishProgress(percent, step, label) {
+    if ($("publishingProgressPercent")) $("publishingProgressPercent").textContent = `${percent}%`;
+    if ($("publishingProgressBar")) $("publishingProgressBar").style.width = `${percent}%`;
+    if (step) {
+      const row = document.querySelector(`[data-publish-step="${step}"]`);
+      if (row) {
+        row.classList.add("complete");
+        const small = row.querySelector("small");
+        if (small) small.textContent = label || "Complete";
+      }
     }
   }
 
   async function startCheckout(plan, type = "subscription", projectId = "") {
-    if (!state.user) return openAuth("signin");
-    if (!state.apiOnline) return toast("The API is not running.", "error");
+    const normalizedPlan = String(plan || "starter").trim().toLowerCase();
+    const allowedPlans = new Set(["starter", "professional", "advanced"]);
+    const selectedPlan = allowedPlans.has(normalizedPlan) ? normalizedPlan : "starter";
+
+    if (type === "buyout" && !state.user) {
+      return openAuth("signin");
+    }
 
     try {
       const result = await api(
@@ -1569,399 +1193,284 @@
         {
           method: "POST",
           body: JSON.stringify({
-            plan,
+            plan: selectedPlan,
             project_id: projectId || undefined,
             success_url: `${location.origin}/#${type === "buyout" ? "drafts" : "billing"}?checkout=success`,
-            cancel_url: `${location.origin}/#billing?checkout=canceled`
+            cancel_url: `${location.origin}/#pricing?checkout=canceled`
           })
         }
       );
 
-      if (!result.url) throw new Error("Stripe did not return a checkout URL.");
-      location.assign(result.url);
+      if (!result.url) {
+        throw new Error("Stripe did not return a checkout URL.");
+      }
+
+      state.apiOnline = true;
+      window.location.href = result.url;
     } catch (error) {
-      toast(error.message, "error");
+      toast(error.message || "Stripe checkout could not be opened.", "error");
     }
   }
 
   async function manageBilling() {
     if (!state.user) return openAuth("signin");
-    if (!state.apiOnline) return toast("The API is not running.", "error");
-
+    if (!state.apiOnline) return toast("The Stripe backend has not been installed yet.", "error");
     try {
       const result = await api("billing?action=portal", {
         method: "POST",
-        body: JSON.stringify({
-          return_url: `${location.origin}/#billing`
-        })
+        body: JSON.stringify({ return_url: `${location.origin}/#billing` })
       });
+      if (!result.url) throw new Error("Stripe did not return a billing portal URL.");
       location.assign(result.url);
     } catch (error) {
       toast(error.message, "error");
     }
   }
 
-  async function publishProject() {
-    const project = await saveProject(false);
-
-    if (!state.user) return openAuth("signin");
-    if (!state.apiOnline) return toast("The API is not running.", "error");
-
-    const button = $("publishingPrimaryBtn") || $("publishBtn");
-    setBusy(button, true, "Publishing…");
-
-    try {
-      const result = await api("publish?action=publish", {
-        method: "POST",
-        body: JSON.stringify({ project_id: project.id })
-      });
-
-      replaceProject(result.project || {
-        ...project,
-        status: "published",
-        published_url: result.url,
-        published_at: now()
-      });
-
-      renderDomainPage();
-      toast("Website published successfully.", "success");
-    } catch (error) {
-      toast(error.message, "error");
-    } finally {
-      setBusy(button, false);
-    }
-  }
-
   async function exportProject(projectId) {
-    if (!state.user) return openAuth("signin");
-    if (!state.apiOnline) return toast("The API is not running.", "error");
-
+    const project = state.projects.find((item) => item.id === projectId);
+    if (!project?.owned) return toast("This website must be bought out before ZIP export is unlocked.", "error");
+    if (!state.apiOnline) return toast("The secure ZIP export backend has not been installed yet.", "error");
     try {
-      const response = await fetch(
-        `${API_BASE}/export?project_id=${encodeURIComponent(projectId)}`,
-        {
-          headers: {
-            Authorization: `Bearer ${state.session.access_token}`
-          }
-        }
-      );
-
-      if (!response.ok) {
-        const payload = await response.json().catch(() => ({}));
-        throw new Error(payload.error || "Export failed.");
-      }
-
+      const response = await fetch(`${API_BASE}/export?action=download&project_id=${encodeURIComponent(projectId)}`, {
+        headers: state.session?.access_token ? { Authorization: `Bearer ${state.session.access_token}` } : {}
+      });
+      if (!response.ok) throw new Error((await response.json().catch(() => ({}))).error || "Export failed.");
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `${slugify(activeProject()?.name || "website")}.zip`;
-      link.click();
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${slugify(project.data?.businessName || project.name)}.zip`;
+      a.click();
       URL.revokeObjectURL(url);
     } catch (error) {
       toast(error.message, "error");
     }
   }
 
-  function copyPublishedLink() {
-    const url = activeProject()?.published_url;
-    if (!url) return toast("Publish this website first.", "error");
-
-    navigator.clipboard
-      ?.writeText(url)
-      .then(() => toast("Website link copied.", "success"))
-      .catch(() => toast("Copy failed.", "error"));
+  function copyText(value, success = "Copied.") {
+    navigator.clipboard?.writeText(value).then(() => toast(success, "success")).catch(() => toast("Copy failed.", "error"));
   }
 
-  async function sharePublishedSite() {
+  function sharePublished() {
     const project = activeProject();
     const url = project?.published_url;
     if (!url) return toast("Publish this website first.", "error");
+    if (navigator.share) navigator.share({ title: project.data?.businessName || project.name, url }).catch(() => {});
+    else copyText(url, "Website link copied.");
+  }
 
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: project.data.businessName || project.name,
-          url
-        });
-      } catch {}
-    } else {
-      copyPublishedLink();
-    }
+  function setupPreviewNavigation() {
+    $("previewMenuToggle")?.addEventListener("click", () => {
+      const nav = $("previewSiteNav");
+      nav?.classList.toggle("open");
+      $("previewMenuToggle").setAttribute("aria-expanded", nav?.classList.contains("open") ? "true" : "false");
+    });
+    $$("[data-preview-target]").forEach((button) => button.addEventListener("click", () => {
+      $(button.dataset.previewTarget)?.scrollIntoView({ behavior: "smooth", block: "start" });
+      $("previewSiteNav")?.classList.remove("open");
+    }));
   }
 
   function resetBuilder() {
     if (!confirm("Reset this website to a blank design?")) return;
-
-    const project = activeProject();
-    project.data = clone(DEFAULT_DATA);
-    project.name = "Untitled Website";
-    project.slug = "my-website";
-    project.customDomain = "";
-    project.custom_domain = "";
-    project.updatedAt = now();
-
-    saveWorkspace();
-    loadProjectIntoBuilder(project);
+    const current = activeProject();
+    const replacement = createProject({ id: current?.id || uid(), plan: current?.plan || "starter", name: current?.name || "Untitled Website" });
+    const index = state.projects.findIndex((p) => p.id === replacement.id);
+    if (index >= 0) state.projects[index] = replacement;
+    else state.projects.unshift(replacement);
+    state.activeProjectId = replacement.id;
+    saveLocalState();
+    loadProjectIntoForm(replacement);
     renderPreview();
-    queueSave();
-    toast("Builder reset.", "success");
+    toast("Builder reset.");
   }
 
   function setupEvents() {
     window.addEventListener("hashchange", renderRoute);
-
-    $("mobileMenuButton")?.addEventListener("click", () => {
-      const menu = $("mobileMenu");
-      show(menu, menu?.classList.contains("hidden"));
+    document.addEventListener("click", (event) => {
+      const modal = event.target.closest(".modal");
+      if (modal && event.target === modal) safeShow(modal, false);
     });
 
-    ["signInBtn", "mobileSignInBtn"].forEach((id) => {
-      $(id)?.addEventListener("click", () => openAuth("signin"));
-    });
-
+    $("mobileMenuButton")?.addEventListener("click", () => $("mobileMenu")?.classList.contains("hidden") ? openMobileMenu() : closeMobileMenu());
+    ["signInBtn", "mobileSignInBtn"].forEach((id) => $(id)?.addEventListener("click", () => openAuth("signin")));
     ["startTrialBtn", "mobileStartTrialBtn", "landingStartBtn"].forEach((id) => {
-      $(id)?.addEventListener("click", () => openAuth("signup"));
-    });
+      $(id)?.addEventListener("click", (event) => {
+        event.preventDefault();
+        navigate("pricing");
 
+        requestAnimationFrame(() => {
+          const pricingSection = $("pricing");
+          pricingSection?.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+          });
+        });
+      });
+    });
     $("closeAuthBtn")?.addEventListener("click", closeAuth);
     $("showSignInTab")?.addEventListener("click", () => openAuth("signin"));
     $("showSignUpTab")?.addEventListener("click", () => openAuth("signup"));
     $("authForm")?.addEventListener("submit", submitAuth);
     $("forgotPasswordBtn")?.addEventListener("click", forgotPassword);
-
-    $("authModal")?.addEventListener("click", (event) => {
-      if (event.target === $("authModal")) closeAuth();
-    });
-
-    ["signOutBtn", "mobileSignOutBtn", "accountSignOutBtn"].forEach((id) => {
-      $(id)?.addEventListener("click", signOut);
-    });
-
+    ["signOutBtn", "mobileSignOutBtn", "accountSignOutBtn"].forEach((id) => $(id)?.addEventListener("click", signOut));
     $("accountNavLink")?.addEventListener("click", () => navigate("projects"));
 
-    ["createWebsiteBtn", "createWebsiteFromDraftsBtn"].forEach((id) => {
-      $(id)?.addEventListener("click", createProject);
-    });
-
+    ["createWebsiteBtn", "createWebsiteFromDraftsBtn"].forEach((id) => $(id)?.addEventListener("click", newProject));
     $("websiteLibraryGrid")?.addEventListener("click", handleProjectAction);
     $("projectSearchInput")?.addEventListener("input", renderProjects);
-
-    $("savedDraftsGrid")?.addEventListener("click", handleDraftAction);
     $("draftSearchInput")?.addEventListener("input", renderDrafts);
+    $("savedDraftsGrid")?.addEventListener("click", handleDraftAction);
+    $$("[data-draft-filter]").forEach((button) => button.addEventListener("click", () => {
+      state.currentDraftFilter = button.dataset.draftFilter;
+      $$("[data-draft-filter]").forEach((node) => node.classList.toggle("active", node === button));
+      renderDrafts();
+    }));
 
-    $$("[data-draft-filter]").forEach((button) => {
-      button.addEventListener("click", () => {
-        state.draftFilter = button.dataset.draftFilter;
-        $$("[data-draft-filter]").forEach((item) =>
-          item.classList.toggle("active", item === button)
-        );
-        renderDrafts();
-      });
-    });
-
-    ["saveWebsiteProjectBtn", "saveBtn"].forEach((id) => {
-      $(id)?.addEventListener("click", () => saveProject(true));
-    });
-
-    ["saveSnapshotTopBtn", "saveCurrentDraftBtn"].forEach((id) => {
-      $(id)?.addEventListener("click", saveSnapshot);
-    });
-
+    ["saveWebsiteProjectBtn", "saveBtn"].forEach((id) => $(id)?.addEventListener("click", () => saveProject()));
+    ["saveSnapshotTopBtn", "saveCurrentDraftBtn"].forEach((id) => $(id)?.addEventListener("click", saveSnapshot));
     $("loadDraftBtn")?.addEventListener("click", () => navigate("drafts"));
     $("resetBtn")?.addEventListener("click", resetBuilder);
 
-    Object.values(formMap).forEach((id) => {
-      $(id)?.addEventListener("input", () => {
-        updateColorLabels();
-        renderPreview();
-        queueSave();
-      });
-      $(id)?.addEventListener("change", () => {
-        updateColorLabels();
-        renderPreview();
-        queueSave();
-      });
+    const formIds = [
+      "businessName","businessBio","phoneNumber","emailAddress","businessHours","callButtonText",
+      "headerTagline","headerHeadline","headerBio","aboutHeading","featuredHeading","featuredDescription",
+      "galleryHeading","galleryDescription","themeColor","headerColor","buttonColor","cardColor",
+      "logoOutlineColor","scrollItems","mapHeading","businessAddress","mapEmbedUrl","projectSlug","customDomain"
+    ];
+    formIds.forEach((id) => {
+      $(id)?.addEventListener("input", () => { updateColorLabels(); renderPreview(); queueAutosave(); });
+      $(id)?.addEventListener("change", () => { updateColorLabels(); renderPreview(); queueAutosave(); });
     });
 
-    $("projectSlug")?.addEventListener("input", updateAddressPreview);
-
-    [
-      ["headerImage", "headerImage"],
-      ["businessLogo", "businessLogo"],
-      ["aboutCoverFile", "aboutCover"],
-      ["featuredCoverFile", "featuredCover"],
-      ["galleryCoverFile", "galleryCover"],
-      ["mapCoverFile", "mapCover"]
-    ].forEach(([input, key]) => {
-      $(input)?.addEventListener("change", () => setSingleImage(input, key));
-    });
-
-    $("removeLogoBtn")?.addEventListener("click", () => removeImage("businessLogo"));
-    $("removeAboutCoverBtn")?.addEventListener("click", () => removeImage("aboutCover"));
-    $("removeFeaturedCoverBtn")?.addEventListener("click", () => removeImage("featuredCover"));
-    $("removeGalleryCoverBtn")?.addEventListener("click", () => removeImage("galleryCover"));
-    $("removeMapCoverBtn")?.addEventListener("click", () => removeImage("mapCover"));
-
-    $("addPhotoBtn")?.addEventListener("click", () => {
-      addMedia("photos", "photoFile", "photoDescription");
-    });
-
-    $("addGalleryBtn")?.addEventListener("click", () => {
-      addMedia("gallery", "galleryFile", "galleryUploadDescription");
-    });
-
+    const imageBindings = [
+      ["headerImage", "headerImage"], ["businessLogo", "businessLogo"], ["aboutCoverFile", "aboutCover"],
+      ["featuredCoverFile", "featuredCover"], ["galleryCoverFile", "galleryCover"], ["mapCoverFile", "mapCover"]
+    ];
+    imageBindings.forEach(([id, key]) => $(id)?.addEventListener("change", () => setSingleImage(id, key)));
+    $("removeLogoBtn")?.addEventListener("click", () => removeSingleImage("businessLogo"));
+    $("removeAboutCoverBtn")?.addEventListener("click", () => removeSingleImage("aboutCover"));
+    $("removeFeaturedCoverBtn")?.addEventListener("click", () => removeSingleImage("featuredCover"));
+    $("removeGalleryCoverBtn")?.addEventListener("click", () => removeSingleImage("galleryCover"));
+    $("removeMapCoverBtn")?.addEventListener("click", () => removeSingleImage("mapCover"));
+    $("addPhotoBtn")?.addEventListener("click", () => addMedia("photos", "photoFile", "photoDescription"));
+    $("addGalleryBtn")?.addEventListener("click", () => addMedia("gallery", "galleryFile", "galleryUploadDescription"));
     $("photoEditorList")?.addEventListener("click", removeMedia);
     $("galleryEditorList")?.addEventListener("click", removeMedia);
 
     $("domainModeSubdomain")?.addEventListener("change", () => {
-      show($("subdomainSettings"), true);
-      show($("customDomainSettings"), false);
+      safeShow($("subdomainSettings"), true); safeShow($("customDomainSettings"), false);
     });
-
     $("domainModeCustom")?.addEventListener("change", () => {
-      show($("subdomainSettings"), false);
-      show($("customDomainSettings"), true);
+      safeShow($("subdomainSettings"), false); safeShow($("customDomainSettings"), true);
     });
-
-    ["checkSubdomainBtn", "dmCheckSlugBtn", "dmReserveSlugBtn"].forEach((id) => {
-      $(id)?.addEventListener("click", checkAddress);
-    });
-
-    ["connectDomainBtn", "dmConnectBtn"].forEach((id) => {
-      $(id)?.addEventListener("click", connectDomain);
-    });
-
-    ["verifyDomainBtn", "dmVerifyBtn", "dmRetryBtn", "dmRefreshAllBtn"].forEach((id) => {
-      $(id)?.addEventListener("click", verifyDomain);
-    });
-
+    ["checkSubdomainBtn", "dmCheckSlugBtn"].forEach((id) => $(id)?.addEventListener("click", checkSlug));
+    ["connectDomainBtn", "dmConnectBtn"].forEach((id) => $(id)?.addEventListener("click", connectDomain));
+    ["verifyDomainBtn", "dmVerifyBtn", "dmRetryBtn"].forEach((id) => $(id)?.addEventListener("click", verifyDomain));
     $("dmRemoveBtn")?.addEventListener("click", removeDomain);
-
-    ["dmProjectSelect", "publishingCenterProjectSelect"].forEach((id) => {
-      $(id)?.addEventListener("change", (event) => {
-        state.activeProjectId = event.target.value;
-        saveWorkspace();
-        renderDomainPage();
-      });
+    $("dmRefreshAllBtn")?.addEventListener("click", verifyDomain);
+    $("dmProjectSelect")?.addEventListener("change", (event) => {
+      state.activeProjectId = event.target.value; saveLocalState(); renderDomainCenter();
+    });
+    $("publishingCenterProjectSelect")?.addEventListener("change", (event) => {
+      state.activeProjectId = event.target.value; saveLocalState(); renderDomainCenter();
     });
 
-    $$(".pricingTrial,.memberPlanCheckout").forEach((button) => {
-      button.addEventListener("click", () =>
-        startCheckout(button.dataset.plan || "starter", "subscription")
-      );
+    ["publishBtn", "publishingPrimaryBtn"].forEach((id) => $(id)?.addEventListener("click", publishProject));
+    $("copyPublishedLinkBtn")?.addEventListener("click", () => {
+      const url = activeProject()?.published_url;
+      if (url) copyText(url, "Website link copied.");
+      else toast("Publish this website first.", "error");
     });
-
-    $("annualCheckoutBtn")?.addEventListener("click", () =>
-      startCheckout($("planSelect")?.value || "starter", "subscription")
-    );
-
-    $("buyoutBtn")?.addEventListener("click", () =>
-      startCheckout(
-        $("planSelect")?.value || activeProject()?.plan || "starter",
-        "buyout",
-        activeProject()?.id
-      )
-    );
-
-    $("manageBillingBtn")?.addEventListener("click", manageBilling);
-
-    ["publishBtn", "publishingPrimaryBtn"].forEach((id) => {
-      $(id)?.addEventListener("click", publishProject);
-    });
-
-    $("copyPublishedLinkBtn")?.addEventListener("click", copyPublishedLink);
-    $("sharePublishedSiteBtn")?.addEventListener("click", sharePublishedSite);
+    $("sharePublishedSiteBtn")?.addEventListener("click", sharePublished);
     $("openDomainForPublishingBtn")?.addEventListener("click", () => navigate("domains"));
 
-    $("refreshJsonBtn")?.addEventListener("click", () => {
-      if ($("backendJson")) {
-        $("backendJson").textContent = JSON.stringify({
-          apiOnline: state.apiOnline,
-          signedIn: Boolean(state.user),
-          user: state.user?.email || null,
-          plan: state.profile?.plan || null,
-          projectCount: state.projects.length,
-          activeProjectId: state.activeProjectId
-        }, null, 2);
-      }
-    });
+    $$(".pricingTrial,.memberPlanCheckout").forEach((button) => button.addEventListener("click", () => startCheckout(button.dataset.plan, "subscription")));
+    $("annualCheckoutBtn")?.addEventListener("click", () => startCheckout(currentSelectedPlan(), "subscription"));
+    $("buyoutBtn")?.addEventListener("click", () => startCheckout(currentSelectedPlan(), "buyout", activeProject()?.id));
+    $("manageBillingBtn")?.addEventListener("click", manageBilling);
 
-    $("closeBackendBtn")?.addEventListener("click", () =>
-      show($("backendModal"), false)
-    );
+    $$("[data-copy-target]").forEach((button) => button.addEventListener("click", () => {
+      copyText($(button.dataset.copyTarget)?.textContent || "");
+    }));
+
+    $("closeBackendBtn")?.addEventListener("click", () => safeShow($("backendModal"), false));
+    $("refreshJsonBtn")?.addEventListener("click", () => {
+      if ($("backendJson")) $("backendJson").textContent = JSON.stringify({
+        version: APP_VERSION,
+        apiOnline: state.apiOnline,
+        signedIn: Boolean(state.user),
+        projectCount: state.projects.length,
+        activeProjectId: state.activeProjectId
+      }, null, 2);
+    });
 
     setupTabs();
     setupDevices();
-    setupThemes();
+    setupThemePresets();
     setupPreviewNavigation();
   }
 
-  async function init() {
-    try {
-      restoreCachedSession();
-      loadWorkspace();
-      setupEvents();
-
-      show($("sessionLoadingScreen"), false);
-      renderAuthState();
-      renderProjects();
-      renderDrafts();
-      loadProjectIntoBuilder(activeProject());
-      renderPreview();
-      renderDomainPage();
-      renderRoute();
-
-      await detectApi();
-
-      if (state.session?.access_token && state.apiOnline) {
-        try {
-          const sessionResult = await api("auth?action=session");
-          state.user = sessionResult.user || state.user;
-          renderAuthState();
-          await loadProfile();
-          await loadCloudProjects();
-        } catch {
-          saveSession(null);
-        }
-      }
-
-      const parameters = new URLSearchParams(
-        location.hash.includes("?")
-          ? location.hash.split("?")[1]
-          : location.search
-      );
-
-      if (parameters.get("checkout") === "success") {
-        toast("Payment completed. Refreshing your account status.", "success");
-        await loadProfile();
-        await loadCloudProjects();
-      }
-    } catch (error) {
-      console.error("Bluvixa startup error:", error);
-      show($("sessionLoadingScreen"), false);
-      renderRoute();
-      toast(`Startup error: ${error.message}`, "error");
-    }
+  function formatDate(value) {
+    if (!value) return "Unknown";
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? "Unknown" : new Intl.DateTimeFormat("en-US", {
+      month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit"
+    }).format(date);
   }
 
+  function capitalize(value) {
+    return text(value).replace(/\b\w/g, (letter) => letter.toUpperCase());
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? "").replace(/[&<>"']/g, (char) => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
+    })[char]);
+  }
+
+  function escapeAttr(value) {
+    return escapeHtml(value).replace(/`/g, "&#096;");
+  }
+
+  async function init() {
+    setupEvents();
+    await detectApi();
+    await restoreSession();
+    await loadProfile();
+    await loadProjects();
+    if (!state.projects.length) {
+      const project = createProject();
+      state.projects.push(project);
+      state.activeProjectId = project.id;
+      saveLocalState();
+    }
+    renderAuthState();
+    renderProjects();
+    renderDrafts();
+    renderRoute();
+    loadProjectIntoForm(activeProject());
+    renderPreview();
+
+    const params = new URLSearchParams(location.hash.split("?")[1] || location.search);
+    if (params.get("checkout") === "success") toast("Payment confirmed. Your account is refreshing.", "success");
+  }
+
+  document.readyState === "loading"
+    ? document.addEventListener("DOMContentLoaded", init, { once: true })
+    : init();
+
   window.Bluvixa = {
-    api,
-    saveProject,
-    publishProject,
-    loadCloudProjects,
+    version: APP_VERSION,
     getState: () => clone({
-      apiOnline: state.apiOnline,
       user: state.user,
       profile: state.profile,
       projects: state.projects,
-      activeProjectId: state.activeProjectId
-    })
+      activeProjectId: state.activeProjectId,
+      apiOnline: state.apiOnline
+    }),
+    save: saveProject,
+    publish: publishProject
   };
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", init, { once: true });
-  } else {
-    init();
-  }
 })();
