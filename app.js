@@ -236,6 +236,11 @@
     return $("planSelect")?.value || state.profile?.plan || "starter";
   }
 
+  function hasSubscriberAccess() {
+    const status = text(state.profile?.subscription_status).toLowerCase();
+    return status === "trialing" || status === "active";
+  }
+
   function planLimits(plan) {
     if (plan === "advanced") return { photos: 20, gallery: 12, galleryEnabled: true, fullDesign: true };
     if (plan === "professional") return { photos: 15, gallery: 12, galleryEnabled: true, fullDesign: false };
@@ -256,11 +261,16 @@
 
   function renderRoute() {
     let route = routeName();
-    const protectedRoutes = new Set(["projects", "drafts", "billing", "domains"]);
+    const protectedRoutes = new Set(["projects", "drafts", "builder", "billing", "domains"]);
+
     if (protectedRoutes.has(route) && !state.user) {
       openAuth("signin");
       route = "home";
       history.replaceState(null, "", "#home");
+    } else if (protectedRoutes.has(route) && !hasSubscriberAccess()) {
+      route = "pricing";
+      history.replaceState(null, "", "#pricing");
+      toast("Start your free trial to unlock the Bluvixa workspace.", "info");
     }
 
     $$(".app-page").forEach((page) => {
@@ -389,6 +399,7 @@
       closeAuth();
       toast(state.authMode === "signup" ? "Account created." : "Signed in.", "success");
 
+      await loadProfile();
       const checkoutStarted = await continuePendingCheckout();
       if (!checkoutStarted) {
         navigate("projects");
@@ -452,13 +463,14 @@
 
   function renderAuthState() {
     const signedIn = Boolean(state.user);
-    safeShow($("publicNav"), !signedIn);
-    safeShow($("memberNav"), signedIn);
-    safeShow($("mobileMenuPublic"), !signedIn);
-    safeShow($("mobileMenuMember"), signedIn);
+    const subscriberAccess = signedIn && hasSubscriberAccess();
+    safeShow($("publicNav"), !subscriberAccess);
+    safeShow($("memberNav"), subscriberAccess);
+    safeShow($("mobileMenuPublic"), !subscriberAccess);
+    safeShow($("mobileMenuMember"), subscriberAccess);
     ["signInBtn", "startTrialBtn"].forEach((id) => safeShow($(id), !signedIn));
     ["accountNavLink", "signOutBtn", "mobileSignOutBtn"].forEach((id) => safeShow($(id), signedIn));
-    $$(".backend-only").forEach((node) => safeShow(node, signedIn));
+    $$(".backend-only").forEach((node) => safeShow(node, subscriberAccess));
 
     const email = state.user?.email || "Your account";
     ["sidebarMemberEmail", "draftsMemberEmail"].forEach((id) => {
@@ -498,7 +510,7 @@
     try {
       const result = await api("auth?action=profile");
       state.profile = result.profile || result;
-      renderAccountStatus();
+      renderAuthState();
     } catch {}
   }
 
