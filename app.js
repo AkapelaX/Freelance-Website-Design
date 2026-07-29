@@ -34,7 +34,6 @@
     created_at: "",
     updated_at: "",
     published_at: "",
-    thumbnail: "",
     data: {
       businessName: "",
       businessBio: "",
@@ -100,12 +99,90 @@
     }
   }
 
+  function removeLegacyThumbnails(project) {
+    if (!project || typeof project !== "object") return project;
+    delete project.thumbnail;
+    if (project.data && typeof project.data === "object") {
+      delete project.data.dashboardThumbnail;
+    }
+    return project;
+  }
+
   function saveLocalState() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+    state.projects.forEach(removeLegacyThumbnails);
+
+    const payload = {
       projects: state.projects,
       activeProjectId: state.activeProjectId,
       previewProject: state.local.previewProject || null
-    }));
+    };
+
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+    } catch (error) {
+      if (error?.name !== "QuotaExceededError") throw error;
+
+      state.projects.forEach(removeLegacyThumbnails);
+      if (payload.previewProject) removeLegacyThumbnails(payload.previewProject);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+    }
+  }
+
+  const THUMBNAIL_DB_NAME = "bluvixa.preview.thumbnails.v1";
+  const THUMBNAIL_STORE_NAME = "thumbnails";
+  let thumbnailDbPromise = null;
+
+  function openThumbnailDb() {
+    if (!globalThis.indexedDB) return Promise.resolve(null);
+    if (thumbnailDbPromise) return thumbnailDbPromise;
+
+    thumbnailDbPromise = new Promise((resolve, reject) => {
+      const request = indexedDB.open(THUMBNAIL_DB_NAME, 1);
+      request.onupgradeneeded = () => {
+        const db = request.result;
+        if (!db.objectStoreNames.contains(THUMBNAIL_STORE_NAME)) {
+          db.createObjectStore(THUMBNAIL_STORE_NAME);
+        }
+      };
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error || new Error("Thumbnail storage could not be opened."));
+    });
+
+    return thumbnailDbPromise;
+  }
+
+  async function saveThumbnailBlob(projectId, blob) {
+    const db = await openThumbnailDb();
+    if (!db || !projectId || !blob) return;
+    await new Promise((resolve, reject) => {
+      const transaction = db.transaction(THUMBNAIL_STORE_NAME, "readwrite");
+      transaction.objectStore(THUMBNAIL_STORE_NAME).put(blob, projectId);
+      transaction.oncomplete = () => resolve();
+      transaction.onerror = () => reject(transaction.error || new Error("Thumbnail could not be stored."));
+    });
+  }
+
+  async function getThumbnailBlob(projectId) {
+    const db = await openThumbnailDb();
+    if (!db || !projectId) return null;
+    return new Promise((resolve, reject) => {
+      const request = db.transaction(THUMBNAIL_STORE_NAME, "readonly")
+        .objectStore(THUMBNAIL_STORE_NAME)
+        .get(projectId);
+      request.onsuccess = () => resolve(request.result || null);
+      request.onerror = () => reject(request.error || new Error("Thumbnail could not be loaded."));
+    });
+  }
+
+  async function deleteThumbnailBlob(projectId) {
+    const db = await openThumbnailDb();
+    if (!db || !projectId) return;
+    await new Promise((resolve, reject) => {
+      const transaction = db.transaction(THUMBNAIL_STORE_NAME, "readwrite");
+      transaction.objectStore(THUMBNAIL_STORE_NAME).delete(projectId);
+      transaction.oncomplete = () => resolve();
+      transaction.onerror = () => reject(transaction.error || new Error("Thumbnail could not be deleted."));
+    });
   }
 
   function safeShow(element, show = true) {
@@ -205,6 +282,7 @@
       snapshots: Array.isArray(project?.snapshots) ? project.snapshots : []
     };
     normalized.photos = undefined;
+    removeLegacyThumbnails(normalized);
     return normalized;
   }
 
@@ -538,17 +616,15 @@
 
   function projectCard(project) {
     const data = project.data || {};
-    const thumbnail = project.thumbnail || data.dashboardThumbnail || "";
     const cover = data.headerImage || data.featuredCover || data.aboutCover || "";
     const url = project.published_url || "";
     const card = document.createElement("article");
     card.className = "website-library-card";
     card.dataset.projectId = project.id;
 
-    const previewImage = thumbnail || cover;
-    const previewContent = previewImage
-      ? `<div class="website-card-cover" style="background-image:url('${escapeAttr(previewImage)}')"></div>`
-      : `<span>${escapeHtml((data.businessName || project.name || "Website").charAt(0).toUpperCase())}</span>`;
+    const previewContent = cover
+      ? `<div class="website-card-cover" data-thumbnail-target style="background-image:url('${escapeAttr(cover)}')"></div>`
+      : `<div class="website-card-cover" data-thumbnail-target><span>${escapeHtml((data.businessName || project.name || "Website").charAt(0).toUpperCase())}</span></div>`;
 
     card.innerHTML = `
       <div class="website-card-preview">
@@ -568,6 +644,22 @@
     return card;
   }
 
+  async function hydrateProjectThumbnail(project, card) {
+    const target = card?.querySelector("[data-thumbnail-target]");
+    if (!target) return;
+
+    try {
+      const blob = await getThumbnailBlob(project.id);
+      if (!blob || !card.isConnected) return;
+      const objectUrl = URL.createObjectURL(blob);
+      target.style.backgroundImage = `url("${objectUrl}")`;
+      target.replaceChildren();
+      card.addEventListener("DOMNodeRemoved", () => URL.revokeObjectURL(objectUrl), { once: true });
+    } catch (error) {
+      console.warn("Bluvixa thumbnail load skipped:", error);
+    }
+  }
+
   function renderProjects() {
     const grid = $("websiteLibraryGrid");
     if (!grid) return;
@@ -576,7 +668,9 @@
       const haystack = `${project.name} ${project.slug} ${project.data?.businessName || ""}`.toLowerCase();
       return !query || haystack.includes(query);
     });
-    grid.replaceChildren(...filtered.map(projectCard));
+    const cards = filtered.map(projectCard);
+    grid.replaceChildren(...cards);
+    filtered.forEach((project, index) => hydrateProjectThumbnail(project, cards[index]));
     if (!filtered.length) grid.innerHTML = `<div class="empty-state">No websites found. Select Create New Website to begin.</div>`;
     if ($("projectCount")) $("projectCount").textContent = state.projects.length;
     if ($("publishedProjectCount")) $("publishedProjectCount").textContent = state.projects.filter((p) => p.status === "published").length;
@@ -645,6 +739,7 @@
           return toast(error.message, "error");
         }
       }
+      await deleteThumbnailBlob(project.id).catch(() => {});
       state.projects = state.projects.filter((item) => item.id !== project.id);
       if (state.activeProjectId === project.id) state.activeProjectId = state.projects[0]?.id || "";
       saveLocalState();
@@ -706,7 +801,7 @@
 
   async function captureProjectThumbnail(project = activeProject()) {
     const preview = $("preview");
-    if (!project || !preview || typeof window.html2canvas !== "function") return "";
+    if (!project || !preview || typeof window.html2canvas !== "function") return false;
 
     try {
       await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
@@ -714,7 +809,7 @@
       const captureHeight = Math.min(Math.max(preview.clientHeight || 0, 520), 900);
       const canvas = await window.html2canvas(preview, {
         backgroundColor: null,
-        scale: 0.45,
+        scale: 0.38,
         useCORS: true,
         allowTaint: false,
         logging: false,
@@ -725,14 +820,14 @@
         ignoreElements: (element) => element.tagName === "IFRAME" || element.tagName === "VIDEO"
       });
 
-      const thumbnail = canvas.toDataURL("image/jpeg", 0.72);
-      project.thumbnail = thumbnail;
-      project.data = project.data || {};
-      project.data.dashboardThumbnail = thumbnail;
-      return thumbnail;
+      const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.66));
+      if (!blob) return false;
+      await saveThumbnailBlob(project.id, blob);
+      removeLegacyThumbnails(project);
+      return true;
     } catch (error) {
       console.warn("Bluvixa thumbnail capture skipped:", error);
-      return "";
+      return false;
     }
   }
 
@@ -742,8 +837,8 @@
     state.autosaveTimer = setTimeout(async () => {
       const project = readFormIntoProject();
       renderPreview();
-      await captureProjectThumbnail(project);
       saveLocalState();
+      await captureProjectThumbnail(project);
       if ($("saveStatus")) $("saveStatus").textContent = "Saved locally";
       if (state.user && state.apiOnline) {
         try {
@@ -759,8 +854,9 @@
   async function saveProject({ silent = false, captureThumbnail = true } = {}) {
     const project = readFormIntoProject();
     renderPreview();
-    if (captureThumbnail) await captureProjectThumbnail(project);
+    removeLegacyThumbnails(project);
     saveLocalState();
+    if (captureThumbnail) await captureProjectThumbnail(project);
 
     let savedProject = project;
 
