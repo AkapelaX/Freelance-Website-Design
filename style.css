@@ -3807,3 +3807,189 @@ main{
     border-radius:19px;
   }
 }
+
+/* =========================================================
+   BLUVIXA — FINAL MATCHING DYNAMIC UPLOAD TILES
+   The app creates .card and .gallery-card elements.
+   Both sections now use the same rounded image-tile layout.
+   ========================================================= */
+
+.preview #previewPhotoGrid,
+.preview #previewGalleryGrid{
+  display:grid !important;
+  grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+  gap:12px !important;
+}
+
+/* Match Featured uploads to the Gallery layout */
+.preview #previewPhotoGrid > .card,
+.preview #previewGalleryGrid > .gallery-card{
+  position:relative;
+  min-width:0;
+  aspect-ratio:1 / 1;
+  overflow:hidden;
+  padding:0 !important;
+  border:1px solid color-mix(in srgb,var(--site-theme) 48%,rgba(255,255,255,.72)) !important;
+  border-radius:24px !important;
+  background:#07152c !important;
+  color:#fff !important;
+  box-shadow:
+    0 16px 34px rgba(0,0,0,.24),
+    0 0 0 1px rgba(255,255,255,.12),
+    inset 0 1px 0 rgba(255,255,255,.24) !important;
+  isolation:isolate;
+}
+
+/* Rounded uploads in both sections */
+.preview #previewPhotoGrid > .card img,
+.preview #previewPhotoGrid > .card video,
+.preview #previewGalleryGrid > .gallery-card img,
+.preview #previewGalleryGrid > .gallery-card video{
+  position:absolute;
+  inset:0;
+  width:100% !important;
+  height:100% !important;
+  min-height:0 !important;
+  aspect-ratio:auto !important;
+  object-fit:cover !important;
+  border-radius:inherit !important;
+  display:block;
+  background:#07152c;
+  transition:transform .35s ease,filter .35s ease;
+}
+
+/* Clean caption overlay instead of the large white text box */
+.preview #previewPhotoGrid > .card p,
+.preview #previewGalleryGrid > .gallery-card p{
+  position:absolute;
+  z-index:2;
+  left:0;
+  right:0;
+  bottom:0;
+  margin:0 !important;
+  padding:28px 12px 11px !important;
+  border:0 !important;
+  border-radius:0 0 23px 23px !important;
+  color:#fff !important;
+  background:linear-gradient(
+    transparent,
+    rgba(0,0,0,.38) 28%,
+    rgba(0,0,0,.86)
+  ) !important;
+  font-size:12px !important;
+  font-weight:850;
+  line-height:1.3;
+  text-shadow:0 1px 3px rgba(0,0,0,.8);
+  white-space:normal;
+  overflow-wrap:anywhere;
+}
+
+/* No caption means a completely clean image tile */
+.preview #previewPhotoGrid > .card:not(:has(p))::after,
+.preview #previewGalleryGrid > .gallery-card:not(:has(p))::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  border-radius:inherit;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);
+}
+
+.preview #previewPhotoGrid > .card:hover img,
+.preview #previewPhotoGrid > .card:hover video,
+.preview #previewGalleryGrid > .gallery-card:hover img,
+.preview #previewGalleryGrid > .gallery-card:hover video{
+  transform:scale(1.035);
+  filter:saturate(1.05) contrast(1.03);
+}
+
+@media(max-width:760px){
+  .preview #previewPhotoGrid,
+  .preview #previewGalleryGrid{
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    gap:9px !important;
+  }
+
+  .preview #previewPhotoGrid > .card,
+  .preview #previewGalleryGrid > .gallery-card{
+    border-radius:18px !important;
+  }
+
+  .preview #previewPhotoGrid > .card p,
+  .preview #previewGalleryGrid > .gallery-card p{
+    padding:24px 9px 8px !important;
+    border-radius:0 0 17px 17px !important;
+    font-size:10px !important;
+  }
+}
+
+
+/* ===== FINAL COVER + UPLOAD MATCHING FIXES ===== */
+
+/* Force every editable cover image to stay centered */
+.site-hero,
+.section-cover,
+#previewFeaturedCover,
+#previewGalleryCover,
+#previewAboutCover,
+#previewMapCover{
+  background-position:center center !important;
+  background-size:cover !important;
+  background-repeat:no-repeat !important;
+}
+
+/* Full background sections */
+.business.cover-background,
+.map-section.cover-background,
+.content-section.cover-background,
+.gallery-section.cover-background{
+  background-position:center center !important;
+  background-size:cover !important;
+}
+
+/* Dynamic uploads */
+.preview #previewPhotoGrid,
+.preview #previewGalleryGrid{
+  display:grid !important;
+  grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+  gap:12px !important;
+}
+
+.preview #previewPhotoGrid>*,
+.preview #previewGalleryGrid>*{
+  overflow:hidden !important;
+  border-radius:22px !important;
+  aspect-ratio:1/1 !important;
+  position:relative;
+}
+
+.preview #previewPhotoGrid img,
+.preview #previewGalleryGrid img,
+.preview #previewPhotoGrid video,
+.preview #previewGalleryGrid video{
+  width:100% !important;
+  height:100% !important;
+  object-fit:cover !important;
+  border-radius:inherit !important;
+}
+
+.preview #previewPhotoGrid p,
+.preview #previewGalleryGrid p{
+  position:absolute;
+  left:0;right:0;bottom:0;
+  margin:0;
+  padding:26px 10px 10px;
+  color:#fff !important;
+  background:linear-gradient(transparent,rgba(0,0,0,.82));
+  font-size:11px;
+  font-weight:800;
+  border:0 !important;
+}
+
+@media (max-width:760px){
+  .preview #previewPhotoGrid,
+  .preview #previewGalleryGrid{
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    gap:10px !important;
+  }
+}
