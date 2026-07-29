@@ -13,7 +13,7 @@
 <style>
   [hidden]{display:none!important}
   html{scroll-behavior:smooth}
-  body.public-site-body{margin:0;min-width:0;overflow-x:hidden}
+  body.public-site-body{margin:0;min-width:0;overflow-x:hidden;padding-top:0!important;background:#fff}
   .public-site-status{min-height:100vh;display:grid;place-items:center;padding:30px;background:#041023;color:#fff;text-align:center;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
   .public-site-status strong{display:block;font-size:clamp(1.8rem,5vw,3rem);margin-bottom:10px}
   .public-site-status p{margin:0;opacity:.8;font-size:1.05rem}
@@ -201,7 +201,7 @@
 
   function getProjectData(project) {
     project = project || {};
-    const candidate = project.data || project.state || project.builder_state || project.website_state || project.site_state || {};
+    const candidate = project.state || project.builder_state || project.website_state || project.site_state || project.data || {};
     const nestedBusiness = candidate.business || {};
     const nestedHeader = candidate.header || project.header || {};
     const nestedDesign = candidate.design || project.site_settings || project.design || {};
@@ -301,23 +301,18 @@
       $("previewLogoFrame").classList.remove("has-logo");
     }
 
-    preview.style.setProperty("--theme-color", d.themeColor);
-    preview.style.setProperty("--header-color", d.headerColor);
-    preview.style.setProperty("--button-color", d.buttonColor);
-    preview.style.setProperty("--card-color", d.cardColor);
-    preview.style.setProperty("--logo-outline-color", d.logoOutlineColor);
-
-    const header = preview.querySelector(".site-header");
-    const footer = preview.querySelector(".site-footer");
-    if (header) header.style.backgroundColor = d.headerColor;
-    if (footer) footer.style.backgroundColor = d.headerColor;
-    preview.querySelectorAll(".site-call,.hero-cta").forEach(button => button.style.backgroundColor = d.buttonColor);
-    $("previewLogoFrame").style.borderColor = d.logoOutlineColor;
+    preview.style.setProperty("--site-theme", d.themeColor);
+    preview.style.setProperty("--site-header", d.headerColor);
+    preview.style.setProperty("--site-header-dark", d.headerColor);
+    preview.style.setProperty("--site-button", d.buttonColor);
+    preview.style.setProperty("--site-button-dark", d.buttonColor);
+    preview.style.setProperty("--site-card", d.cardColor);
+    preview.style.setProperty("--site-logo-outline", d.logoOutlineColor);
 
     const scrollItems = Array.isArray(d.scrollItems)
       ? d.scrollItems
       : String(d.scrollItems || "").split(",");
-    $("previewScroll").innerHTML = scrollItems.map(text).filter(Boolean).map(item => `<span>${escapeHtml(item)}</span>`).join("");
+    $("previewScroll").innerHTML = scrollItems.map(text).filter(Boolean).map(item => `<span class="scroll-chip">${escapeHtml(item)}</span>`).join("");
     $("previewScroll").closest(".scroll-wrap").hidden = !$("previewScroll").children.length;
 
     renderMediaGrid("previewPhotoGrid", d.photos, "card");
