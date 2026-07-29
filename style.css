@@ -3465,3 +3465,23 @@ main{
     font-size:11px;
   }
 }
+
+/* =========================================================
+   BLUVIXA — WEBSITE LIBRARY CARD WRAPPER FIX
+   Restores the card around each website preview and controls.
+   ========================================================= */
+.website-library-card{
+  overflow:hidden;
+  border-radius:18px;
+  background:#0d192b;
+  border:1px solid #243853;
+  box-shadow:0 18px 48px rgba(0,0,0,.28);
+}
+
+.website-library-card .website-card-preview{
+  border-bottom:1px solid #243853;
+}
+
+.website-library-card .website-card-body{
+  background:#0d192b;
+}
