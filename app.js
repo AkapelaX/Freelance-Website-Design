@@ -9,6 +9,7 @@
   const APP_VERSION = "2026.07.28";
   const STORAGE_KEY = "bluvixa.local.workspace.v4";
   const SESSION_KEY = "bluvixa.local.session.v4";
+  const PENDING_CHECKOUT_KEY = "bluvixa.pending.checkout.v4";
   const API_BASE = "/api";
 
   const $ = (id) => document.getElementById(id);
@@ -81,6 +82,7 @@
     autosaveTimer: null,
     apiOnline: null,
     domainRefreshTimer: null,
+    pendingCheckout: null,
     local: loadLocalState()
   };
 
@@ -307,6 +309,53 @@
     safeShow($("authModal"), false);
   }
 
+  function savePendingCheckout(checkout) {
+    state.pendingCheckout = checkout || null;
+
+    if (state.pendingCheckout) {
+      sessionStorage.setItem(
+        PENDING_CHECKOUT_KEY,
+        JSON.stringify(state.pendingCheckout)
+      );
+    } else {
+      sessionStorage.removeItem(PENDING_CHECKOUT_KEY);
+    }
+  }
+
+  function restorePendingCheckout() {
+    try {
+      const saved = JSON.parse(
+        sessionStorage.getItem(PENDING_CHECKOUT_KEY) || "null"
+      );
+
+      state.pendingCheckout =
+        saved &&
+        saved.type === "subscription" &&
+        ["starter", "professional", "advanced"].includes(saved.plan)
+          ? saved
+          : null;
+    } catch {
+      savePendingCheckout(null);
+    }
+  }
+
+  async function continuePendingCheckout() {
+    const pending = state.pendingCheckout;
+
+    if (!pending || !state.user) {
+      return false;
+    }
+
+    savePendingCheckout(null);
+    await startCheckout(
+      pending.plan,
+      pending.type,
+      pending.projectId || ""
+    );
+
+    return true;
+  }
+
   async function submitAuth(event) {
     event.preventDefault();
     const email = text($("authEmail")?.value).toLowerCase();
@@ -327,9 +376,23 @@
         body: JSON.stringify({ email, password, full_name: fullName })
       });
       applySession(result.session || result);
+
+      if (!state.user) {
+        setMessage(
+          "authMessage",
+          "Check your email to confirm the account, then sign in. Your selected plan will remain saved.",
+          "success"
+        );
+        return;
+      }
+
       closeAuth();
       toast(state.authMode === "signup" ? "Account created." : "Signed in.", "success");
-      navigate("projects");
+
+      const checkoutStarted = await continuePendingCheckout();
+      if (!checkoutStarted) {
+        navigate("projects");
+      }
     } catch (error) {
       setMessage("authMessage", error.message, "error");
     } finally {
@@ -1180,11 +1243,24 @@
 
   async function startCheckout(plan, type = "subscription", projectId = "") {
     const normalizedPlan = String(plan || "starter").trim().toLowerCase();
-    const allowedPlans = new Set(["starter", "professional", "advanced"]);
-    const selectedPlan = allowedPlans.has(normalizedPlan) ? normalizedPlan : "starter";
+    const selectedPlan = ["starter", "professional", "advanced"].includes(normalizedPlan)
+      ? normalizedPlan
+      : "starter";
 
-    if (type === "buyout" && !state.user) {
-      return openAuth("signin");
+    if (!state.user) {
+      savePendingCheckout({
+        plan: selectedPlan,
+        type: "subscription",
+        projectId: projectId || ""
+      });
+
+      openAuth("signup");
+      setMessage(
+        "authMessage",
+        `Create an account or sign in to start the ${selectedPlan} 7-day free trial.`,
+        "info"
+      );
+      return;
     }
 
     try {
@@ -1195,7 +1271,7 @@
           body: JSON.stringify({
             plan: selectedPlan,
             project_id: projectId || undefined,
-            success_url: `${location.origin}/#${type === "buyout" ? "drafts" : "billing"}?checkout=success`,
+            success_url: `${location.origin}/#${type === "buyout" ? "drafts" : "projects"}?checkout=success`,
             cancel_url: `${location.origin}/#pricing?checkout=canceled`
           })
         }
@@ -1205,7 +1281,6 @@
         throw new Error("Stripe did not return a checkout URL.");
       }
 
-      state.apiOnline = true;
       window.location.href = result.url;
     } catch (error) {
       toast(error.message || "Stripe checkout could not be opened.", "error");
@@ -1299,14 +1374,6 @@
       $(id)?.addEventListener("click", (event) => {
         event.preventDefault();
         navigate("pricing");
-
-        requestAnimationFrame(() => {
-          const pricingSection = $("pricing");
-          pricingSection?.scrollIntoView({
-            behavior: "smooth",
-            block: "start"
-          });
-        });
       });
     });
     $("closeAuthBtn")?.addEventListener("click", closeAuth);
@@ -1435,6 +1502,7 @@
   }
 
   async function init() {
+    restorePendingCheckout();
     setupEvents();
     await detectApi();
     await restoreSession();
@@ -1449,7 +1517,11 @@
     renderAuthState();
     renderProjects();
     renderDrafts();
-    renderRoute();
+
+    const checkoutStarted = await continuePendingCheckout();
+    if (!checkoutStarted) {
+      renderRoute();
+    }
     loadProjectIntoForm(activeProject());
     renderPreview();
 
