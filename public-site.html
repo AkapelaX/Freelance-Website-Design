@@ -798,7 +798,7 @@ footer small{opacity:.55}
     setText("mapHeading",design.mapHeading||"Find Us");
     setText("footerText",`© ${new Date().getFullYear()} ${businessName}`);
 
-    const logo=firstValue(design.logo,business.logo,s.logo);
+    const logo=firstValue(s.businessLogo,design.logo,business.logo,s.logo);
     const logoImage=byId("logoImage");
     const logoFallback=byId("logoFallback");
 

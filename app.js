@@ -1059,30 +1059,164 @@
     }).join("");
   }
 
-  async function fileToDataUrl(file) {
-    if (!file) return "";
-    const max = file.type.startsWith("video/") ? 25 * 1024 * 1024 : 8 * 1024 * 1024;
-    if (file.size > max) throw new Error(`File is too large. Maximum size is ${Math.round(max / 1024 / 1024)} MB.`);
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(String(reader.result || ""));
-      reader.onerror = () => reject(new Error("Could not read the selected file."));
-      reader.readAsDataURL(file);
+  async function compressImage(file, purpose = "content") {
+    if (!file?.type?.startsWith("image/")) return file;
+
+    const settings = purpose === "businessLogo"
+      ? { maxWidth: 1200, maxHeight: 1200, quality: 0.86 }
+      : purpose.toLowerCase().includes("cover") || purpose === "headerImage"
+        ? { maxWidth: 1920, maxHeight: 1920, quality: 0.82 }
+        : { maxWidth: 1600, maxHeight: 1600, quality: 0.80 };
+
+    let bitmap;
+    try {
+      bitmap = await createImageBitmap(file);
+    } catch {
+      bitmap = await new Promise((resolve, reject) => {
+        const image = new Image();
+        const objectUrl = URL.createObjectURL(file);
+        image.onload = () => {
+          URL.revokeObjectURL(objectUrl);
+          resolve(image);
+        };
+        image.onerror = () => {
+          URL.revokeObjectURL(objectUrl);
+          reject(new Error("The selected image could not be opened."));
+        };
+        image.src = objectUrl;
+      });
+    }
+
+    const sourceWidth = bitmap.width || bitmap.naturalWidth;
+    const sourceHeight = bitmap.height || bitmap.naturalHeight;
+    const scale = Math.min(
+      1,
+      settings.maxWidth / sourceWidth,
+      settings.maxHeight / sourceHeight
+    );
+
+    const width = Math.max(1, Math.round(sourceWidth * scale));
+    const height = Math.max(1, Math.round(sourceHeight * scale));
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+
+    const context = canvas.getContext("2d", { alpha: true });
+    if (!context) throw new Error("Image optimization is not supported on this device.");
+
+    context.drawImage(bitmap, 0, 0, width, height);
+    if (typeof bitmap.close === "function") bitmap.close();
+
+    const preserveTransparency =
+      purpose === "businessLogo" &&
+      (file.type === "image/png" || file.type === "image/webp");
+
+    const outputType = preserveTransparency ? "image/png" : "image/webp";
+    const extension = preserveTransparency ? "png" : "webp";
+    const baseName = (file.name || "upload").replace(/\.[^.]+$/, "");
+
+    const blob = await new Promise((resolve) => {
+      canvas.toBlob(resolve, outputType, settings.quality);
     });
+
+    if (!blob) throw new Error("The image could not be optimized.");
+
+    // Never replace the original with a larger optimized file.
+    if (blob.size >= file.size && scale === 1) return file;
+
+    return new File([blob], `${baseName}.${extension}`, {
+      type: outputType,
+      lastModified: Date.now()
+    });
+  }
+
+  async function ensureCloudProject(project) {
+    if (!state.user) throw new Error("Sign in before uploading media.");
+    if (!state.apiOnline) throw new Error("The media backend is unavailable.");
+    if (project.user_id) return project;
+
+    const saved = await saveProject({ silent: true });
+    if (!saved?.id) throw new Error("The website must be saved before media can upload.");
+    return saved;
+  }
+
+  function uploadedMediaUrl(result) {
+    return text(
+      result?.url ||
+      result?.public_url ||
+      result?.publicUrl ||
+      result?.asset?.url ||
+      result?.asset?.public_url ||
+      result?.media?.url ||
+      result?.media_asset?.url
+    );
+  }
+
+  async function uploadMediaFile(file, project, purpose = "content") {
+    const cloudProject = await ensureCloudProject(project);
+    const optimizedFile = file.type.startsWith("image/")
+      ? await compressImage(file, purpose)
+      : file;
+
+    const formData = new FormData();
+    formData.append("file", optimizedFile, optimizedFile.name);
+    formData.append("project_id", cloudProject.id);
+    formData.append("purpose", purpose);
+
+    const result = await api("media?action=upload", {
+      method: "POST",
+      body: formData
+    });
+
+    const url = uploadedMediaUrl(result);
+    if (!url) throw new Error("The media upload completed without returning a public URL.");
+
+    return {
+      url,
+      type: optimizedFile.type || file.type || "application/octet-stream",
+      name: optimizedFile.name || file.name || "Upload",
+      size: optimizedFile.size
+    };
   }
 
   async function setSingleImage(inputId, dataKey) {
     const input = $(inputId);
     const file = input?.files?.[0];
     if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      input.value = "";
+      return toast("Choose an image file.", "error");
+    }
+
+    if (!state.user) {
+      input.value = "";
+      openAuth("signin");
+      return toast("Sign in before uploading images.", "info");
+    }
+
     try {
-      const url = await fileToDataUrl(file);
-      ensureProject().data[dataKey] = url;
-      saveLocalState();
+      if ($("saveStatus")) $("saveStatus").textContent = "Optimizing image…";
+
+      let project = ensureProject();
+      const uploaded = await uploadMediaFile(file, project, dataKey);
+
+      // ensureCloudProject may replace the local project with the cloud record.
+      project = activeProject() || project;
+      project.data[dataKey] = uploaded.url;
+      project.updated_at = nowIso();
+
       renderPreview();
-      queueAutosave();
+      saveLocalState();
+
+      if ($("saveStatus")) $("saveStatus").textContent = "Saving to cloud…";
+      await saveProject({ silent: true });
+
+      if ($("saveStatus")) $("saveStatus").textContent = "Saved to cloud";
+      toast("Image uploaded and saved.", "success");
       input.value = "";
     } catch (error) {
+      if ($("saveStatus")) $("saveStatus").textContent = "Upload failed";
       toast(error.message, "error");
     }
   }
@@ -1095,7 +1229,7 @@
   }
 
   async function addMedia(collectionKey, fileInputId, descriptionInputId) {
-    const project = ensureProject();
+    let project = ensureProject();
     const fileInput = $(fileInputId);
     const file = fileInput?.files?.[0];
     const description = text($(descriptionInputId)?.value);
@@ -1103,21 +1237,51 @@
 
     const limits = planLimits(project.plan);
     const limit = collectionKey === "gallery" ? limits.gallery : limits.photos;
-    if (collectionKey === "gallery" && !limits.galleryEnabled) return toast("Gallery uploads require the Professional or Advanced plan.", "error");
-    if (project.data[collectionKey].length >= limit) return toast(`Your ${capitalize(project.plan)} plan allows ${limit} uploads in this section.`, "error");
+    if (collectionKey === "gallery" && !limits.galleryEnabled) {
+      return toast("Gallery uploads require the Professional or Advanced plan.", "error");
+    }
+    if (project.data[collectionKey].length >= limit) {
+      return toast(`Your ${capitalize(project.plan)} plan allows ${limit} uploads in this section.`, "error");
+    }
+    if (!state.user) {
+      openAuth("signin");
+      return toast("Sign in before uploading media.", "info");
+    }
 
     try {
-      const url = await fileToDataUrl(file);
+      if ($("saveStatus")) {
+        $("saveStatus").textContent = file.type.startsWith("image/")
+          ? "Optimizing image…"
+          : "Uploading media…";
+      }
+
+      const uploaded = await uploadMediaFile(file, project, collectionKey);
+      project = activeProject() || project;
+
       project.data[collectionKey].push({
-        id: uid(), url, type: file.type || "image/*", name: file.name, description, created_at: nowIso()
+        id: uid(),
+        url: uploaded.url,
+        type: uploaded.type,
+        name: uploaded.name,
+        description,
+        created_at: nowIso()
       });
+      project.updated_at = nowIso();
+
       fileInput.value = "";
       if ($(descriptionInputId)) $(descriptionInputId).value = "";
-      saveLocalState();
+
       renderUploadEditors();
       renderPreview();
-      queueAutosave();
+      saveLocalState();
+
+      if ($("saveStatus")) $("saveStatus").textContent = "Saving to cloud…";
+      await saveProject({ silent: true });
+
+      if ($("saveStatus")) $("saveStatus").textContent = "Saved to cloud";
+      toast("Media uploaded and saved.", "success");
     } catch (error) {
+      if ($("saveStatus")) $("saveStatus").textContent = "Upload failed";
       toast(error.message, "error");
     }
   }
