@@ -40,6 +40,35 @@ async function vercelRequest(path, options = {}) {
   return payload;
 }
 
+async function nextAvailableSlug(supabase, requestedSlug, excludeProjectId = "") {
+  const baseSlug = slugify(requestedSlug) || "my-website";
+  let candidate = baseSlug;
+  let number = 2;
+
+  while (true) {
+    let query = supabase
+      .from("projects")
+      .select("id")
+      .eq("slug", candidate)
+      .limit(1);
+
+    if (excludeProjectId) {
+      query = query.neq("id", excludeProjectId);
+    }
+
+    const { data, error } = await query;
+    if (error) throw error;
+
+    if (!data || data.length === 0) {
+      return candidate;
+    }
+
+    const suffix = `-${number}`;
+    candidate = `${baseSlug.slice(0, 63 - suffix.length)}${suffix}`;
+    number += 1;
+  }
+}
+
 module.exports = async function handler(req, res) {
   try {
     const name = action(req, "check-slug");
@@ -50,22 +79,12 @@ module.exports = async function handler(req, res) {
       method(req, ["GET"]);
       const slug = slugify(req.query.slug);
       const projectId = text(req.query.project_id, 80);
-
-      let query = supabase
-        .from("projects")
-        .select("id", { count: "exact", head: true })
-        .eq("slug", slug);
-
-      if (projectId) {
-        query = query.neq("id", projectId);
-      }
-
-      const { count, error } = await query;
-      if (error) throw error;
+      const availableSlug = await nextAvailableSlug(supabase, slug, projectId);
 
       return ok(res, {
         slug,
-        available: Number(count || 0) === 0
+        available: availableSlug === slug,
+        suggested_slug: availableSlug
       });
     }
 

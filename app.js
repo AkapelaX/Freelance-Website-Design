@@ -519,7 +519,12 @@
       try {
         const result = await api("projects?action=list");
         state.projects = (result.projects || result || []).map(normalizeProject);
-        state.activeProjectId = state.activeProjectId || state.projects[0]?.id || "";
+        const activeProjectStillExists = state.projects.some(
+          (project) => project.id === state.activeProjectId
+        );
+        state.activeProjectId = activeProjectStillExists
+          ? state.activeProjectId
+          : state.projects[0]?.id || "";
         saveLocalState();
         return;
       } catch (error) {
@@ -713,24 +718,55 @@
   async function saveProject({ silent = false } = {}) {
     const project = readFormIntoProject();
     saveLocalState();
+
+    let savedProject = project;
+
     if (state.user && state.apiOnline) {
-      const result = await api("projects?action=save", {
-        method: "POST",
-        body: JSON.stringify({ project })
-      });
-      const saved = normalizeProject(result.project || result);
+      const isCloudProject = Boolean(project.user_id);
+      const result = await api(
+        `projects?action=${isCloudProject ? "save" : "create"}`,
+        {
+          method: "POST",
+          body: JSON.stringify({ project })
+        }
+      );
+
+      savedProject = normalizeProject(result.project || result);
       const index = state.projects.findIndex((item) => item.id === project.id);
-      if (index >= 0) state.projects[index] = saved;
-      state.activeProjectId = saved.id;
+
+      if (index >= 0) state.projects[index] = savedProject;
+      else state.projects.unshift(savedProject);
+
+      state.activeProjectId = savedProject.id;
       saveLocalState();
     }
-    if (!silent) toast(state.user && state.apiOnline ? "Website saved to your account." : "Website saved on this device.", "success");
+
+    if (!silent) {
+      toast(
+        state.user && state.apiOnline
+          ? "Website saved to your account."
+          : "Website saved on this device.",
+        "success"
+      );
+    }
+
     renderProjects();
-    return project;
+    return savedProject;
   }
 
   async function saveSnapshot() {
-    const project = readFormIntoProject();
+    let project = readFormIntoProject();
+    saveLocalState();
+
+    if (state.user && state.apiOnline) {
+      try {
+        project = await saveProject({ silent: true });
+      } catch (error) {
+        toast(`Snapshot could not be saved: ${error.message}`, "error");
+        return;
+      }
+    }
+
     const snapshot = {
       id: uid(),
       project_id: project.id,
@@ -739,21 +775,36 @@
       created_at: nowIso(),
       data: clone(project.data)
     };
-    project.snapshots.unshift(snapshot);
-    saveLocalState();
+
     if (state.user && state.apiOnline) {
       try {
-        await api("projects?action=snapshot", {
+        const result = await api("projects?action=snapshot", {
           method: "POST",
           body: JSON.stringify({ project_id: project.id, snapshot })
         });
+
+        const savedSnapshot = {
+          ...(result.snapshot || snapshot),
+          data: (result.snapshot || snapshot).data ||
+            (result.snapshot || snapshot).snapshot_data ||
+            snapshot.data
+        };
+
+        project.snapshots.unshift(savedSnapshot);
       } catch (error) {
         toast(`Snapshot saved locally. Cloud save failed: ${error.message}`, "error");
+        project.snapshots.unshift(snapshot);
+        saveLocalState();
+        renderDrafts();
         return;
       }
+    } else {
+      project.snapshots.unshift(snapshot);
     }
-    toast("Snapshot saved.", "success");
+
+    saveLocalState();
     renderDrafts();
+    toast("Snapshot saved.", "success");
   }
 
   function renderDrafts() {
@@ -1084,7 +1135,12 @@
       const result = await api(
         `domains?action=check-slug&slug=${encodeURIComponent(slug)}&project_id=${encodeURIComponent(projectId)}`
       );
-      toast(result.available ? "Address is available." : "That address is already reserved.", result.available ? "success" : "error");
+      toast(
+        result.available
+          ? "Address is available."
+          : `That address is already reserved.${result.suggested_slug ? ` Try ${result.suggested_slug}.` : ""}`,
+        result.available ? "success" : "error"
+      );
     } catch (error) {
       toast(error.message, "error");
     }
