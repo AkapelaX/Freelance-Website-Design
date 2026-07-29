@@ -3099,7 +3099,6 @@ body.member-authenticated .landing-page{display:none!important}
 .app-page.route-active{display:block!important}
 .app-page[hidden]{display:none!important}
 .backend-only{visibility:visible}
-body:not(.member-authenticated) .backend-only.app-page{display:none!important}
 body.member-authenticated .landing-page.route-active{display:none!important}
 .session-loading-screen.ready{display:none!important}
 .modal:not(.hidden){display:grid!important}
