@@ -119,12 +119,65 @@
 
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+      return true;
     } catch (error) {
-      if (error?.name !== "QuotaExceededError") throw error;
+      if (error?.name !== "QuotaExceededError") {
+        console.warn("Bluvixa local save skipped:", error);
+        return false;
+      }
 
-      state.projects.forEach(removeLegacyThumbnails);
-      if (payload.previewProject) removeLegacyThumbnails(payload.previewProject);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+      // Large uploaded images can exceed Safari's localStorage limit.
+      // Keep the complete project in memory for cloud saving, but store a
+      // lightweight local copy containing only remote URLs and text data.
+      const keepRemoteUrl = (value) => {
+        const url = text(value);
+        return /^https?:\/\//i.test(url) ? url : "";
+      };
+
+      const compactProject = (project) => {
+        const copy = clone(project);
+        removeLegacyThumbnails(copy);
+
+        if (!copy.data || typeof copy.data !== "object") return copy;
+
+        [
+          "headerImage",
+          "businessLogo",
+          "aboutCover",
+          "featuredCover",
+          "galleryCover",
+          "mapCover"
+        ].forEach((key) => {
+          copy.data[key] = keepRemoteUrl(copy.data[key]);
+        });
+
+        ["photos", "gallery"].forEach((key) => {
+          copy.data[key] = Array.isArray(copy.data[key])
+            ? copy.data[key]
+                .filter((item) => keepRemoteUrl(item?.url))
+                .map((item) => ({ ...item, url: keepRemoteUrl(item.url) }))
+            : [];
+        });
+
+        return copy;
+      };
+
+      const compactPayload = {
+        projects: state.projects.map(compactProject),
+        activeProjectId: state.activeProjectId,
+        previewProject: payload.previewProject
+          ? compactProject(payload.previewProject)
+          : null
+      };
+
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(compactPayload));
+        return true;
+      } catch (compactError) {
+        console.warn("Bluvixa local storage is full; cloud save will continue:", compactError);
+        return false;
+      }
     }
   }
 
