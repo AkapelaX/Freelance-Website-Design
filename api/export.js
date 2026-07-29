@@ -1,54 +1,49 @@
 "use strict";
 
+const fs = require("fs");
+const path = require("path");
 const JSZip = require("jszip");
 const { requireUser, requireProjectOwner } = require("./_auth");
 const { method, text, safeFilename, handleError } = require("./_utils");
 
-function escapeHtml(value) {
-  return String(value || "").replace(/[&<>"']/g, (character) => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#039;"
-  })[character]);
+function serializeForScript(value) {
+  return JSON.stringify(value)
+    .replace(/</g, "\\u003c")
+    .replace(/>/g, "\\u003e")
+    .replace(/&/g, "\\u0026")
+    .replace(/\u2028/g, "\\u2028")
+    .replace(/\u2029/g, "\\u2029");
+}
+
+function loadPublicSiteTemplate() {
+  const templatePath = path.join(__dirname, "..", "public-site.html");
+  return fs.readFileSync(templatePath, "utf8");
 }
 
 function buildHtml(project) {
-  const data = project.project_data || {};
-  return `<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${escapeHtml(data.businessName || project.name)}</title>
-<link rel="stylesheet" href="style.css">
-</head>
-<body>
-<header><strong>${escapeHtml(data.businessName || project.name)}</strong>
-<a href="tel:${escapeHtml(data.phoneNumber || "")}">${escapeHtml(data.callButtonText || "Call Now")}</a></header>
-<main>
-<section class="hero"><p>${escapeHtml(data.headerTagline || "")}</p><h1>${escapeHtml(data.headerHeadline || "")}</h1><p>${escapeHtml(data.headerBio || "")}</p></section>
-<section><h2>${escapeHtml(data.aboutHeading || "About")}</h2><p>${escapeHtml(data.businessBio || "")}</p></section>
-<section><h2>${escapeHtml(data.featuredHeading || "Services")}</h2><p>${escapeHtml(data.featuredDescription || "")}</p></section>
-<section><h2>${escapeHtml(data.galleryHeading || "Gallery")}</h2><p>${escapeHtml(data.galleryDescription || "")}</p></section>
-<section><h2>${escapeHtml(data.mapHeading || "Find Us")}</h2><p>${escapeHtml(data.businessAddress || "")}</p></section>
-</main>
-<footer>${escapeHtml(data.businessName || project.name)} — Exported from Bluvixa</footer>
-</body>
-</html>`;
-}
+  const template = loadPublicSiteTemplate();
+  const exportedWebsite = {
+    project_id: project.id,
+    slug: project.slug || "",
+    custom_domain: project.custom_domain || "",
+    plan: project.plan || "",
+    published_at: project.published_at || "",
+    name: project.name || "Website",
+    data: project.project_data || {}
+  };
 
-function buildCss(project) {
-  const data = project.project_data || {};
-  return `:root{--theme:${data.themeColor || "#1769ff"};--header:${data.headerColor || "#082b5e"};--button:${data.buttonColor || "#1769ff"};--card:${data.cardColor || "#ffffff"}}
-*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;color:#0f172a;background:#f8fafc}
-header{display:flex;justify-content:space-between;align-items:center;padding:20px 7%;color:white;background:var(--header)}
-header a{padding:10px 16px;border-radius:10px;color:white;background:var(--button);text-decoration:none}
-main section{padding:64px 7%;border-bottom:1px solid #e2e8f0}main section:nth-child(even){background:#eef5ff}
-.hero{min-height:480px;display:flex;flex-direction:column;justify-content:center;color:white;background:#07152d}
-h1{font-size:clamp(42px,7vw,82px);max-width:900px}h2{font-size:38px;color:var(--theme)}
-footer{padding:26px 7%;color:white;background:var(--header)}`;
+  const startupMarker = "  start();";
+
+  if (!template.includes(startupMarker)) {
+    const error = new Error("The public-site.html startup marker could not be found");
+    error.status = 500;
+    throw error;
+  }
+
+  return template.replace(
+    startupMarker,
+    `  const exportedWebsite=${serializeForScript(exportedWebsite)};\n  applyWebsite(exportedWebsite);`
+  );
 }
 
 module.exports = async function handler(req, res) {
@@ -66,17 +61,22 @@ module.exports = async function handler(req, res) {
 
     const zip = new JSZip();
     zip.file("index.html", buildHtml(project));
-    zip.file("style.css", buildCss(project));
     zip.file("README.txt", [
       "Bluvixa website export",
       "",
       "Open index.html in a browser or upload this folder to a static host.",
+      "The exported website uses the same renderer as public-site.html.",
       "This export contains no Bluvixa subscription lock.",
+      "Saved images and videos continue to use their existing hosted URLs.",
       "Domain registration and third-party service costs remain separate."
     ].join("\n"));
 
-    const archive = await zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE" });
-    const filename = `${safeFilename(project.name)}.zip`;
+    const archive = await zip.generateAsync({
+      type: "nodebuffer",
+      compression: "DEFLATE"
+    });
+
+    const filename = `${safeFilename(project.name || "bluvixa-website")}.zip`;
 
     res.status(200);
     res.setHeader("Content-Type", "application/zip");
