@@ -1067,11 +1067,13 @@
   async function compressImage(file, purpose = "content") {
     if (!file?.type?.startsWith("image/")) return file;
 
-    const settings = purpose === "businessLogo"
-      ? { maxWidth: 1200, maxHeight: 1200, quality: 0.86 }
-      : purpose.toLowerCase().includes("cover") || purpose === "headerImage"
-        ? { maxWidth: 1920, maxHeight: 1920, quality: 0.82 }
-        : { maxWidth: 1600, maxHeight: 1600, quality: 0.80 };
+    // Keep logos in their original file format. Re-drawing transparent logos
+    // through canvas can produce a blank image on some browsers/devices.
+    if (purpose === "businessLogo") return file;
+
+    const settings = purpose.toLowerCase().includes("cover") || purpose === "headerImage"
+      ? { maxWidth: 1920, maxHeight: 1920, quality: 0.82 }
+      : { maxWidth: 1600, maxHeight: 1600, quality: 0.80 };
 
     let bitmap;
     try {
