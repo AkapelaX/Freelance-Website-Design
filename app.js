@@ -1079,6 +1079,14 @@
 
   function setupTabs() {
     $$("#tabs .tab").forEach((tab) => tab.addEventListener("click", () => {
+      const project = activeProject();
+      const limits = planLimits(project?.plan || "starter");
+
+      if (text(tab.dataset.tab).toLowerCase() === "gallery" && !limits.galleryEnabled) {
+        toast("Gallery requires the Professional or Advanced plan.", "info");
+        return;
+      }
+
       $$("#tabs .tab").forEach((node) => node.classList.toggle("active", node === tab));
       $$(".sidebar .panel").forEach((panel) => panel.classList.toggle("active", panel.dataset.panel === tab.dataset.tab));
     }));
