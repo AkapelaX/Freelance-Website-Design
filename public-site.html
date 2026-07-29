@@ -986,11 +986,13 @@ footer small{opacity:.55}
         throw new Error(data.error||"Website unavailable.");
       }
 
-      if(!data.website){
+      const website=data.site||data.website;
+
+      if(!website){
         throw new Error("This website could not be found.");
       }
 
-      applyWebsite(data.website);
+      applyWebsite(website);
     }catch(error){
       showUnavailable(error&&error.message?error.message:"This website is not published.");
     }
