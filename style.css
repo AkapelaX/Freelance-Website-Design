@@ -3993,3 +3993,243 @@ main{
     gap:10px !important;
   }
 }
+
+
+/* =========================================================
+   BLUVIXA — FEATURED SHOWCASE + COMPACT GALLERY
+   Final authoritative preview layout.
+   - Featured uploads: one polished image per row.
+   - Gallery uploads: compact grid, two per row on mobile.
+   - About text remains readable over dark cover images.
+   - All editable background covers are centered.
+   ========================================================= */
+
+/* Center the actual elements that receive background images from app.js. */
+.preview .preview-cover-section,
+.preview #previewHero,
+.preview #previewAboutSection,
+.preview #previewFeaturedSection,
+.preview #previewGallerySection,
+.preview #previewMapSection{
+  background-position:50% 50% !important;
+  background-size:cover !important;
+  background-repeat:no-repeat !important;
+}
+
+/* Keep About text readable without hiding the chosen cover image. */
+.preview #previewAboutSection.has-cover > div:first-child{
+  align-self:center;
+  padding:22px 24px;
+  border:1px solid rgba(255,255,255,.28);
+  border-radius:24px;
+  background:linear-gradient(
+    145deg,
+    rgba(2,12,28,.82),
+    rgba(2,12,28,.64)
+  );
+  box-shadow:
+    0 18px 42px rgba(0,0,0,.24),
+    inset 0 1px 0 rgba(255,255,255,.18);
+  backdrop-filter:blur(14px) saturate(120%);
+}
+
+.preview #previewAboutSection.has-cover #previewAboutHeading,
+.preview #previewAboutSection.has-cover #previewBusinessBio{
+  color:#fff !important;
+  text-shadow:0 2px 8px rgba(0,0,0,.72);
+}
+
+.preview #previewAboutSection.has-cover #previewBusinessBio{
+  margin-bottom:0;
+  color:rgba(255,255,255,.86) !important;
+}
+
+/* ---------------------------------------------------------
+   FEATURED UPLOADS — ONE SHOWCASE IMAGE PER ROW
+   --------------------------------------------------------- */
+.preview #previewPhotoGrid{
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) !important;
+  gap:18px !important;
+  width:100%;
+  max-width:900px;
+  margin-inline:auto;
+}
+
+.preview #previewPhotoGrid > .card{
+  position:relative;
+  width:100%;
+  min-width:0;
+  aspect-ratio:16 / 10 !important;
+  overflow:hidden !important;
+  padding:0 !important;
+  border:1px solid color-mix(
+    in srgb,
+    var(--site-theme) 54%,
+    rgba(255,255,255,.72)
+  ) !important;
+  border-radius:30px !important;
+  background:#07152c !important;
+  color:#fff !important;
+  box-shadow:
+    0 20px 48px rgba(0,0,0,.24),
+    0 0 0 1px rgba(255,255,255,.12),
+    inset 0 1px 0 rgba(255,255,255,.22) !important;
+  isolation:isolate;
+}
+
+.preview #previewPhotoGrid > .card img,
+.preview #previewPhotoGrid > .card video{
+  position:absolute;
+  inset:0;
+  width:100% !important;
+  height:100% !important;
+  min-height:0 !important;
+  aspect-ratio:auto !important;
+  object-fit:cover !important;
+  object-position:center center !important;
+  border-radius:inherit !important;
+  display:block;
+  background:#07152c;
+}
+
+.preview #previewPhotoGrid > .card p{
+  position:absolute;
+  z-index:2;
+  left:5%;
+  right:5%;
+  bottom:5%;
+  margin:0 !important;
+  padding:15px 18px !important;
+  border:1px solid rgba(255,255,255,.18) !important;
+  border-radius:18px !important;
+  color:#fff !important;
+  background:linear-gradient(
+    145deg,
+    rgba(2,12,28,.88),
+    rgba(2,12,28,.72)
+  ) !important;
+  box-shadow:
+    0 12px 30px rgba(0,0,0,.30),
+    inset 0 1px 0 rgba(255,255,255,.16);
+  backdrop-filter:blur(10px);
+  font-size:clamp(13px,1.7vw,18px) !important;
+  font-weight:850;
+  line-height:1.35;
+  text-align:center;
+  text-shadow:0 1px 4px rgba(0,0,0,.72);
+  white-space:normal;
+  overflow-wrap:anywhere;
+}
+
+/* ---------------------------------------------------------
+   GALLERY — KEEP THE COMPACT GRID
+   --------------------------------------------------------- */
+.preview #previewGalleryGrid{
+  display:grid !important;
+  grid-template-columns:repeat(4,minmax(0,1fr)) !important;
+  gap:12px !important;
+}
+
+.preview #previewGalleryGrid > .gallery-card{
+  position:relative;
+  min-width:0;
+  aspect-ratio:1 / 1 !important;
+  overflow:hidden !important;
+  padding:0 !important;
+  border:1px solid color-mix(
+    in srgb,
+    var(--site-theme) 48%,
+    rgba(255,255,255,.72)
+  ) !important;
+  border-radius:22px !important;
+  background:#07152c !important;
+  color:#fff !important;
+  box-shadow:
+    0 14px 32px rgba(0,0,0,.20),
+    inset 0 1px 0 rgba(255,255,255,.16) !important;
+}
+
+.preview #previewGalleryGrid > .gallery-card img,
+.preview #previewGalleryGrid > .gallery-card video{
+  position:absolute;
+  inset:0;
+  width:100% !important;
+  height:100% !important;
+  min-height:0 !important;
+  aspect-ratio:auto !important;
+  object-fit:cover !important;
+  object-position:center center !important;
+  border-radius:inherit !important;
+  display:block;
+  background:#07152c;
+}
+
+.preview #previewGalleryGrid > .gallery-card p{
+  position:absolute;
+  z-index:2;
+  left:0;
+  right:0;
+  bottom:0;
+  margin:0 !important;
+  padding:26px 10px 9px !important;
+  border:0 !important;
+  border-radius:0 0 21px 21px !important;
+  color:#fff !important;
+  background:linear-gradient(
+    transparent,
+    rgba(0,0,0,.38) 28%,
+    rgba(0,0,0,.86)
+  ) !important;
+  font-size:10px !important;
+  font-weight:800;
+  line-height:1.3;
+  text-shadow:0 1px 3px rgba(0,0,0,.8);
+  white-space:normal;
+  overflow-wrap:anywhere;
+}
+
+@media(max-width:900px){
+  .preview #previewGalleryGrid{
+    grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+  }
+}
+
+@media(max-width:760px){
+  .preview #previewAboutSection.has-cover > div:first-child{
+    padding:18px;
+    border-radius:20px;
+  }
+
+  .preview #previewPhotoGrid{
+    gap:14px !important;
+  }
+
+  .preview #previewPhotoGrid > .card{
+    aspect-ratio:4 / 3 !important;
+    border-radius:24px !important;
+  }
+
+  .preview #previewPhotoGrid > .card p{
+    left:5%;
+    right:5%;
+    bottom:5%;
+    padding:12px 14px !important;
+    border-radius:16px !important;
+    font-size:13px !important;
+  }
+
+  .preview #previewGalleryGrid{
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    gap:10px !important;
+  }
+
+  .preview #previewGalleryGrid > .gallery-card{
+    border-radius:18px !important;
+  }
+
+  .preview #previewGalleryGrid > .gallery-card p{
+    border-radius:0 0 17px 17px !important;
+    font-size:9px !important;
+  }
+}
