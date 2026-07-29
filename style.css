@@ -3539,3 +3539,271 @@ main{
   letter-spacing:.12em;
   text-transform:uppercase;
 }
+
+/* =========================================================
+   BLUVIXA — PREVIEW WEBSITE VISUAL POLISH ONLY
+   Rounded uploads, softer surfaces, glossy highlights.
+   No builder controls, backend behavior, or layout logic changed.
+   ========================================================= */
+
+.preview{
+  border-radius:28px;
+  overflow:hidden;
+  background:
+    radial-gradient(circle at 10% 0%,color-mix(in srgb,var(--site-theme) 12%,transparent),transparent 34%),
+    #fff;
+  border:1px solid color-mix(in srgb,var(--site-theme) 34%,rgba(255,255,255,.8));
+  box-shadow:
+    0 28px 75px rgba(0,0,0,.38),
+    0 0 0 1px rgba(255,255,255,.45),
+    inset 0 1px 0 rgba(255,255,255,.8);
+}
+
+.preview .site-header{
+  border-radius:28px 28px 0 0;
+  box-shadow:
+    0 12px 30px rgba(2,12,28,.18),
+    inset 0 1px 0 rgba(255,255,255,.16);
+  backdrop-filter:blur(14px) saturate(125%);
+}
+
+.preview .site-logo-frame{
+  border-radius:20px;
+  background:
+    linear-gradient(145deg,rgba(255,255,255,.22),rgba(255,255,255,.06));
+  box-shadow:
+    0 10px 24px color-mix(in srgb,var(--site-logo-outline) 35%,transparent),
+    inset 0 1px 0 rgba(255,255,255,.52),
+    inset 0 -8px 16px rgba(0,0,0,.12);
+}
+
+.preview .site-logo-frame img{
+  border-radius:15px;
+}
+
+.preview .site-nav button{
+  border-radius:999px;
+  padding:8px 11px;
+}
+
+.preview .site-nav button:hover,
+.preview .site-nav button:focus-visible{
+  background:linear-gradient(180deg,rgba(255,255,255,.2),rgba(255,255,255,.09));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.24);
+}
+
+.preview .site-call,
+.preview .hero-cta{
+  border-radius:999px;
+  border:1px solid color-mix(in srgb,var(--site-button) 66%,white);
+  box-shadow:
+    0 12px 28px color-mix(in srgb,var(--site-button) 34%,transparent),
+    inset 0 1px 0 rgba(255,255,255,.48),
+    inset 0 -5px 10px rgba(0,0,0,.12);
+}
+
+.preview .site-hero{
+  position:relative;
+  overflow:hidden;
+}
+
+.preview .site-hero::after{
+  content:"";
+  position:absolute;
+  top:-45%;
+  left:-30%;
+  width:58%;
+  height:180%;
+  pointer-events:none;
+  transform:rotate(18deg);
+  background:linear-gradient(
+    90deg,
+    transparent,
+    rgba(255,255,255,.10),
+    transparent
+  );
+}
+
+.preview .site-hero-copy{
+  position:relative;
+  z-index:1;
+}
+
+.preview .hero-bio{
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,.16);
+  border-left:4px solid var(--site-theme);
+  background:linear-gradient(145deg,rgba(255,255,255,.13),rgba(255,255,255,.055));
+  box-shadow:
+    0 12px 28px rgba(0,0,0,.13),
+    inset 0 1px 0 rgba(255,255,255,.18);
+  backdrop-filter:blur(12px);
+}
+
+.preview .scroll-wrap{
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.72),
+    inset 0 -1px 0 color-mix(in srgb,var(--site-theme) 20%,transparent);
+}
+
+.preview .scroll-chip{
+  border-radius:999px;
+  box-shadow:
+    0 8px 20px rgba(15,23,42,.10),
+    inset 0 1px 0 rgba(255,255,255,.9);
+}
+
+.preview .business,
+.preview .content-section,
+.preview .gallery-section,
+.preview .map-section{
+  position:relative;
+}
+
+.preview .info,
+.preview .content-card,
+.preview .gallery-item,
+.preview .map-copy,
+.preview .map-frame,
+.preview .section-cover{
+  border-radius:24px;
+}
+
+.preview .info,
+.preview .content-card,
+.preview .gallery-item,
+.preview .map-copy{
+  box-shadow:
+    0 16px 38px rgba(15,23,42,.11),
+    0 0 0 1px rgba(255,255,255,.48),
+    inset 0 1px 0 rgba(255,255,255,.72);
+}
+
+.preview .info{
+  background:
+    radial-gradient(circle at 12% 0%,color-mix(in srgb,var(--site-theme) 12%,transparent),transparent 38%),
+    var(--site-card);
+}
+
+.preview .content-card{
+  overflow:hidden;
+  transition:transform .2s ease,box-shadow .2s ease;
+}
+
+.preview .content-card:hover{
+  transform:translateY(-3px);
+  box-shadow:
+    0 22px 44px rgba(15,23,42,.16),
+    0 0 0 1px color-mix(in srgb,var(--site-theme) 38%,transparent),
+    inset 0 1px 0 rgba(255,255,255,.8);
+}
+
+.preview .content-card img,
+.preview .content-card video,
+.preview .card-media{
+  border-radius:22px 22px 0 0;
+}
+
+.preview .gallery-item{
+  border-radius:22px;
+  box-shadow:
+    0 14px 32px rgba(15,23,42,.13),
+    inset 0 1px 0 rgba(255,255,255,.5);
+  transition:transform .2s ease,box-shadow .2s ease;
+}
+
+.preview .gallery-item:hover{
+  transform:translateY(-3px) scale(1.01);
+  box-shadow:
+    0 20px 40px rgba(15,23,42,.18),
+    0 0 0 1px color-mix(in srgb,var(--site-theme) 35%,transparent);
+}
+
+.preview .gallery-item img,
+.preview .gallery-item video,
+.preview .gallery-media{
+  border-radius:21px;
+}
+
+.preview .gallery-caption{
+  border-radius:0 0 21px 21px;
+  backdrop-filter:blur(7px);
+}
+
+.preview .section-cover{
+  overflow:hidden;
+  box-shadow:
+    0 20px 44px rgba(15,23,42,.16),
+    inset 0 1px 0 rgba(255,255,255,.35);
+}
+
+.preview .section-label{
+  border-radius:22px;
+}
+
+.preview .content-section.has-cover .section-label,
+.preview .gallery-section.has-cover .section-label{
+  border-radius:22px;
+  background:linear-gradient(145deg,rgba(2,12,28,.76),rgba(2,12,28,.58));
+  box-shadow:
+    0 14px 34px rgba(0,0,0,.16),
+    inset 0 1px 0 rgba(255,255,255,.18);
+  backdrop-filter:blur(14px) saturate(120%);
+}
+
+.preview .business.has-cover .info,
+.preview .map-section.has-cover .map-copy{
+  border-radius:24px;
+  background:linear-gradient(145deg,rgba(2,12,28,.76),rgba(2,12,28,.58));
+  box-shadow:
+    0 16px 36px rgba(0,0,0,.18),
+    inset 0 1px 0 rgba(255,255,255,.18);
+  backdrop-filter:blur(14px) saturate(120%);
+}
+
+.preview .map-frame{
+  overflow:hidden;
+  box-shadow:
+    0 18px 40px rgba(15,23,42,.15),
+    0 0 0 1px color-mix(in srgb,var(--site-theme) 28%,transparent);
+}
+
+.preview .site-footer{
+  border-radius:0 0 28px 28px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.14);
+}
+
+@media(max-width:760px){
+  .preview{
+    border-radius:22px;
+  }
+
+  .preview .site-header{
+    border-radius:22px 22px 0 0;
+  }
+
+  .preview .site-footer{
+    border-radius:0 0 22px 22px;
+  }
+
+  .preview .info,
+  .preview .content-card,
+  .preview .gallery-item,
+  .preview .map-copy,
+  .preview .map-frame,
+  .preview .section-cover{
+    border-radius:20px;
+  }
+
+  .preview .content-card img,
+  .preview .content-card video,
+  .preview .card-media{
+    border-radius:19px 19px 0 0;
+  }
+
+  .preview .gallery-item img,
+  .preview .gallery-item video,
+  .preview .gallery-media{
+    border-radius:19px;
+  }
+}

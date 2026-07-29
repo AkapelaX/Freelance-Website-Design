@@ -1002,10 +1002,18 @@
     const logo = $("previewLogoImage");
     const placeholder = $("previewLogoPlaceholder");
     if (logo) {
-      logo.src = d.businessLogo || "";
-      safeShow(logo, Boolean(d.businessLogo));
+      if (d.businessLogo) {
+        logo.src = d.businessLogo;
+        logo.removeAttribute("hidden");
+        logo.style.display = "";
+      } else {
+        logo.removeAttribute("src");
+        logo.style.display = "none";
+      }
     }
-    safeShow(placeholder, !d.businessLogo);
+    if (placeholder) {
+      placeholder.style.display = d.businessLogo ? "none" : "";
+    }
 
     preview.style.setProperty("--theme-color", d.themeColor);
     preview.style.setProperty("--header-color", d.headerColor);
