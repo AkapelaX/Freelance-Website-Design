@@ -542,9 +542,16 @@
     const card = document.createElement("article");
     card.className = "website-library-card";
     card.dataset.projectId = project.id;
+
+    const previewContent = url
+      ? `<iframe src="${escapeAttr(url)}" title="${escapeAttr(data.businessName || project.name || "Website")} preview" loading="lazy" tabindex="-1" aria-hidden="true"></iframe>`
+      : cover
+        ? `<div class="website-card-cover" style="background-image:url('${escapeAttr(cover)}')"></div>`
+        : `<span>${escapeHtml((data.businessName || project.name || "Website").charAt(0).toUpperCase())}</span>`;
+
     card.innerHTML = `
-      <div class="website-card-preview"${cover ? ` style="background-image:url('${escapeAttr(cover)}')"` : ""}>
-        ${cover ? "" : `<span>${escapeHtml((data.businessName || project.name || "Website").charAt(0).toUpperCase())}</span>`}
+      <div class="website-card-preview">
+        ${previewContent}
         <small>${escapeHtml(capitalize(project.status || "draft"))}</small>
       </div>
       <div class="website-card-body">
@@ -1532,17 +1539,6 @@
     $$("[data-copy-target]").forEach((button) => button.addEventListener("click", () => {
       copyText($(button.dataset.copyTarget)?.textContent || "");
     }));
-
-    $("closeBackendBtn")?.addEventListener("click", () => safeShow($("backendModal"), false));
-    $("refreshJsonBtn")?.addEventListener("click", () => {
-      if ($("backendJson")) $("backendJson").textContent = JSON.stringify({
-        version: APP_VERSION,
-        apiOnline: state.apiOnline,
-        signedIn: Boolean(state.user),
-        projectCount: state.projects.length,
-        activeProjectId: state.activeProjectId
-      }, null, 2);
-    });
 
     setupTabs();
     setupDevices();

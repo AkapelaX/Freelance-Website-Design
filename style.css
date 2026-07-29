@@ -3484,3 +3484,58 @@ main{
 .website-library-card .website-card-body{
   background:#0d192b;
 }
+
+/* My Websites live card previews */
+.website-library-card .website-card-preview{
+  position:relative;
+  height:250px;
+  padding:0;
+  overflow:hidden;
+  background:linear-gradient(145deg,#142942,#08111f);
+}
+
+.website-library-card .website-card-preview iframe{
+  position:absolute;
+  inset:0;
+  width:400%;
+  height:400%;
+  border:0;
+  pointer-events:none;
+  transform:scale(.25);
+  transform-origin:top left;
+  background:#fff;
+}
+
+.website-library-card .website-card-cover{
+  position:absolute;
+  inset:0;
+  background-position:center;
+  background-size:cover;
+  background-repeat:no-repeat;
+}
+
+.website-library-card .website-card-preview > span{
+  position:absolute;
+  inset:0;
+  display:grid;
+  place-items:center;
+  font-size:54px;
+  font-weight:1000;
+}
+
+.website-library-card .website-card-preview > small{
+  position:absolute;
+  top:12px;
+  right:12px;
+  z-index:2;
+  padding:6px 9px;
+  border-radius:999px;
+  color:#fff;
+  background:rgba(2,11,24,.82);
+  border:1px solid rgba(255,255,255,.2);
+  backdrop-filter:blur(8px);
+  font-size:9px;
+  font-weight:950;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+}
