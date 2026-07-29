@@ -4571,3 +4571,42 @@ main{
     display:none !important;
   }
 }
+
+
+/* =========================================================
+   BLUVIXA — LIGHT PHOTO TINT + CLEAN DESCRIPTION TEXT
+   - Removes the dark text shadow from photo descriptions.
+   - Adds one subtle, even black tint to uploaded photos.
+   - Does not change card sizing, scrolling, layout, or logic.
+   ========================================================= */
+
+/* Remove the heavy black shadow from every photo description. */
+.preview #previewPhotoGrid > .card p,
+.preview #previewGalleryGrid > .gallery-card p,
+.preview .content-card .content-body,
+.preview .content-card .content-body h4,
+.preview .content-card .content-body p,
+.preview .gallery-caption{
+  text-shadow:none !important;
+  filter:none !important;
+}
+
+/* Apply a soft black tint evenly across all uploaded media. */
+.preview #previewPhotoGrid > .card img,
+.preview #previewPhotoGrid > .card video,
+.preview #previewGalleryGrid > .gallery-card img,
+.preview #previewGalleryGrid > .gallery-card video,
+.preview .content-card img,
+.preview .content-card video,
+.preview .gallery-item img,
+.preview .gallery-item video{
+  filter:brightness(.84) !important;
+}
+
+/* Keep description panels clear, bright, and easy to read. */
+.preview #previewPhotoGrid > .card p,
+.preview #previewGalleryGrid > .gallery-card p{
+  color:var(--site-card-text) !important;
+  background:var(--site-card) !important;
+  box-shadow:none !important;
+}
