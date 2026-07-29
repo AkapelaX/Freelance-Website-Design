@@ -4206,17 +4206,15 @@ main{
 
 
 /* =========================================================
-   BLUVIXA MASTER MVP — THREE REQUESTED CUSTOMER-SITE FIXES
-   1. Larger, longer Featured and Gallery media
-   2. Real bold section headings without header cards
-   3. Visible controlled glimmer on key website surfaces
-   No builder, backend, upload, publishing, billing, domain,
-   authentication, or JavaScript behavior is changed.
+   BLUVIXA FINAL MVP — DESCRIPTION + BUTTON SHINE FIX
+   - Photo proportions remain large and long.
+   - Photo glare is completely removed.
+   - Glimmer runs only across website buttons.
+   - Every upload description sits below its photo and scrolls
+     vertically only when the text exceeds its fixed area.
    ========================================================= */
 
-/* ---------- 1. LARGER, LONGER WEBSITE PHOTOS ---------- */
-
-/* Featured: one large normal website showcase per row */
+/* Featured uploads: one large, long photo per row */
 .preview #previewPhotoGrid{
   display:grid !important;
   grid-template-columns:minmax(0,1fr) !important;
@@ -4228,28 +4226,61 @@ main{
 
 .preview #previewPhotoGrid > .card{
   position:relative;
+  display:grid !important;
+  grid-template-rows:auto auto;
   width:100%;
   min-width:0;
-  aspect-ratio:4 / 5 !important;
-  min-height:560px;
-  overflow:hidden !important;
+  aspect-ratio:auto !important;
+  min-height:0 !important;
   padding:0 !important;
+  overflow:hidden !important;
   border-radius:28px !important;
 }
 
 .preview #previewPhotoGrid > .card img,
 .preview #previewPhotoGrid > .card video{
-  position:absolute;
-  inset:0;
+  position:relative !important;
+  inset:auto !important;
+  display:block;
   width:100% !important;
-  height:100% !important;
-  min-height:0 !important;
+  height:auto !important;
+  min-height:560px !important;
+  aspect-ratio:4 / 5 !important;
   object-fit:cover !important;
   object-position:center center !important;
-  border-radius:inherit !important;
+  border-radius:28px 28px 0 0 !important;
 }
 
-/* Gallery: two substantial portrait cards per row */
+/* Featured descriptions become a clean panel below each photo */
+.preview #previewPhotoGrid > .card p{
+  position:relative !important;
+  inset:auto !important;
+  z-index:1 !important;
+  width:100% !important;
+  max-width:none !important;
+  min-height:62px;
+  max-height:120px;
+  margin:0 !important;
+  padding:16px 18px !important;
+  overflow-y:auto !important;
+  overflow-x:hidden !important;
+  overscroll-behavior:contain;
+  color:var(--site-card-text) !important;
+  background:var(--site-card) !important;
+  border:0 !important;
+  border-top:1px solid color-mix(in srgb,var(--site-theme) 45%,transparent) !important;
+  border-radius:0 0 28px 28px !important;
+  box-shadow:none !important;
+  backdrop-filter:none !important;
+  font-size:15px !important;
+  font-weight:650 !important;
+  line-height:1.55 !important;
+  text-align:left !important;
+  white-space:normal !important;
+  overflow-wrap:anywhere;
+}
+
+/* Gallery uploads stay two per row, but descriptions also sit below */
 .preview #previewGalleryGrid{
   display:grid !important;
   grid-template-columns:repeat(2,minmax(0,1fr)) !important;
@@ -4261,29 +4292,83 @@ main{
 
 .preview #previewGalleryGrid > .gallery-card{
   position:relative;
+  display:grid !important;
+  grid-template-rows:auto auto;
   min-width:0;
-  aspect-ratio:4 / 5 !important;
-  min-height:390px;
-  overflow:hidden !important;
+  aspect-ratio:auto !important;
+  min-height:0 !important;
   padding:0 !important;
+  overflow:hidden !important;
   border-radius:24px !important;
 }
 
 .preview #previewGalleryGrid > .gallery-card img,
 .preview #previewGalleryGrid > .gallery-card video{
-  position:absolute;
-  inset:0;
+  position:relative !important;
+  inset:auto !important;
+  display:block;
   width:100% !important;
-  height:100% !important;
-  min-height:0 !important;
+  height:auto !important;
+  min-height:390px !important;
+  aspect-ratio:4 / 5 !important;
   object-fit:cover !important;
   object-position:center center !important;
-  border-radius:inherit !important;
+  border-radius:24px 24px 0 0 !important;
 }
 
-/* ---------- 2. REAL SECTION HEADERS — NO HEADER CARDS ---------- */
+/* Gallery descriptions become a scrollable panel below each photo */
+.preview #previewGalleryGrid > .gallery-card p{
+  position:relative !important;
+  inset:auto !important;
+  z-index:1 !important;
+  width:100% !important;
+  max-width:none !important;
+  min-height:56px;
+  max-height:110px;
+  margin:0 !important;
+  padding:13px 14px !important;
+  overflow-y:auto !important;
+  overflow-x:hidden !important;
+  overscroll-behavior:contain;
+  color:var(--site-card-text) !important;
+  background:var(--site-card) !important;
+  border:0 !important;
+  border-top:1px solid color-mix(in srgb,var(--site-theme) 45%,transparent) !important;
+  border-radius:0 0 24px 24px !important;
+  box-shadow:none !important;
+  backdrop-filter:none !important;
+  font-size:13px !important;
+  font-weight:650 !important;
+  line-height:1.5 !important;
+  text-align:left !important;
+  white-space:normal !important;
+  overflow-wrap:anywhere;
+}
 
-/* Remove the rounded/glass introduction cards from Featured and Gallery */
+/* Small, theme-matched description scrollbars */
+.preview #previewPhotoGrid > .card p,
+.preview #previewGalleryGrid > .gallery-card p{
+  scrollbar-width:thin;
+  scrollbar-color:var(--site-theme) color-mix(in srgb,var(--site-card) 88%,#000);
+}
+
+.preview #previewPhotoGrid > .card p::-webkit-scrollbar,
+.preview #previewGalleryGrid > .gallery-card p::-webkit-scrollbar{
+  width:7px;
+}
+
+.preview #previewPhotoGrid > .card p::-webkit-scrollbar-track,
+.preview #previewGalleryGrid > .gallery-card p::-webkit-scrollbar-track{
+  background:color-mix(in srgb,var(--site-card) 88%,#000);
+}
+
+.preview #previewPhotoGrid > .card p::-webkit-scrollbar-thumb,
+.preview #previewGalleryGrid > .gallery-card p::-webkit-scrollbar-thumb{
+  border-radius:999px;
+  background:var(--site-theme);
+}
+
+/* Keep the final bold section-heading treatment */
 .preview #previewFeaturedSection .section-label,
 .preview #previewGallerySection .section-label{
   display:block !important;
@@ -4298,7 +4383,6 @@ main{
   text-align:left;
 }
 
-/* Make the customer-entered section headings the real visual headers */
 .preview #previewFeaturedHeading,
 .preview #previewGalleryHeading{
   display:block !important;
@@ -4312,7 +4396,6 @@ main{
   text-shadow:0 3px 18px rgba(0,0,0,.28);
 }
 
-/* Strong accent rule, matching the main header language */
 .preview #previewFeaturedSection .section-label::before,
 .preview #previewGallerySection .section-label::before{
   content:"";
@@ -4325,7 +4408,6 @@ main{
   box-shadow:0 0 20px color-mix(in srgb,var(--site-theme) 62%,transparent);
 }
 
-/* Keep an optional description as plain supporting copy, not a card */
 .preview #previewFeaturedDescription,
 .preview #previewGalleryDescription{
   max-width:760px;
@@ -4336,24 +4418,31 @@ main{
   line-height:1.6 !important;
 }
 
-/* Hidden counters remain hidden and cannot recreate a side card */
 .preview #previewPhotoCount,
 .preview #previewGalleryCount{
   display:none !important;
 }
 
-/* The About section remains unchanged as the one information card section. */
+/* Remove all previous photo/hero glare pseudo-elements */
+.preview .site-hero::after,
+.preview #previewPhotoGrid > .card::before,
+.preview #previewPhotoGrid > .card::after,
+.preview #previewGalleryGrid > .gallery-card::before,
+.preview #previewGalleryGrid > .gallery-card::after{
+  content:none !important;
+  display:none !important;
+  animation:none !important;
+}
 
-/* ---------- 3. VISIBLE, CONTROLLED GLIMMER ---------- */
-
-@keyframes bluvixaMasterGlimmer{
-  0%{
+/* Glimmer only on customer-site buttons */
+@keyframes bluvixaButtonGlimmer{
+  0%,62%{
     transform:translateX(-220%) skewX(-20deg);
     opacity:0;
   }
-  8%{opacity:.18}
-  18%{opacity:.52}
-  30%{
+  67%{opacity:.18}
+  76%{opacity:.62}
+  88%{
     transform:translateX(520%) skewX(-20deg);
     opacity:0;
   }
@@ -4363,10 +4452,6 @@ main{
   }
 }
 
-/* Limit glimmer to the customer website's premium visual surfaces */
-.preview .site-hero,
-.preview #previewPhotoGrid > .card,
-.preview #previewGalleryGrid > .gallery-card,
 .preview .site-call,
 .preview .hero-cta{
   position:relative;
@@ -4374,58 +4459,39 @@ main{
   isolation:isolate;
 }
 
-.preview .site-hero::after,
-.preview #previewPhotoGrid > .card::before,
-.preview #previewGalleryGrid > .gallery-card::before,
 .preview .site-call::after,
 .preview .hero-cta::after{
   content:"";
   position:absolute;
   z-index:2;
-  top:-35%;
-  bottom:-35%;
-  left:-35%;
-  width:24%;
+  top:-45%;
+  bottom:-45%;
+  left:-38%;
+  width:25%;
   pointer-events:none;
   opacity:0;
   background:linear-gradient(
     90deg,
     transparent 0%,
-    rgba(255,255,255,.04) 12%,
-    rgba(255,255,255,.62) 48%,
-    rgba(190,230,255,.30) 68%,
+    rgba(255,255,255,.05) 14%,
+    rgba(255,255,255,.72) 50%,
+    rgba(200,235,255,.30) 70%,
     transparent 100%
   );
   filter:blur(.4px);
   transform:translateX(-220%) skewX(-20deg);
-  animation:bluvixaMasterGlimmer 7s ease-in-out infinite;
+  animation:bluvixaButtonGlimmer 7s ease-in-out infinite;
 }
 
-/* Stagger key surfaces to avoid one large simultaneous flash */
-.preview .site-hero::after{animation-delay:0s}
-.preview .site-call::after{animation-delay:.8s}
-.preview .hero-cta::after{animation-delay:1.4s}
-.preview #previewPhotoGrid > .card::before{animation-delay:2.1s}
-.preview #previewGalleryGrid > .gallery-card::before{animation-delay:3.1s}
+.preview .site-call::after{animation-delay:.4s}
+.preview .hero-cta::after{animation-delay:1.3s}
 
-/* Keep media below and readable content above the glimmer */
-.preview #previewPhotoGrid > .card img,
-.preview #previewPhotoGrid > .card video,
-.preview #previewGalleryGrid > .gallery-card img,
-.preview #previewGalleryGrid > .gallery-card video{
-  z-index:0;
-}
-
-.preview #previewPhotoGrid > .card p,
-.preview #previewGalleryGrid > .gallery-card p,
-.preview .site-hero > *,
 .preview .site-call > *,
 .preview .hero-cta > *{
   position:relative;
   z-index:3;
 }
 
-/* Mobile proportions remain large and usable */
 @media(max-width:760px){
   .preview #previewFeaturedSection,
   .preview #previewGallerySection{
@@ -4437,10 +4503,23 @@ main{
     gap:18px !important;
   }
 
-  .preview #previewPhotoGrid > .card{
+  .preview #previewPhotoGrid > .card img,
+  .preview #previewPhotoGrid > .card video{
+    min-height:520px !important;
     aspect-ratio:4 / 5 !important;
-    min-height:520px;
+    border-radius:26px 26px 0 0 !important;
+  }
+
+  .preview #previewPhotoGrid > .card,
+  .preview #previewPhotoGrid > .card p{
     border-radius:26px !important;
+  }
+
+  .preview #previewPhotoGrid > .card p{
+    border-radius:0 0 26px 26px !important;
+    max-height:105px;
+    padding:14px 15px !important;
+    font-size:14px !important;
   }
 
   .preview #previewGalleryGrid{
@@ -4448,10 +4527,23 @@ main{
     gap:11px !important;
   }
 
-  .preview #previewGalleryGrid > .gallery-card{
+  .preview #previewGalleryGrid > .gallery-card img,
+  .preview #previewGalleryGrid > .gallery-card video{
+    min-height:285px !important;
     aspect-ratio:4 / 5 !important;
-    min-height:285px;
+    border-radius:20px 20px 0 0 !important;
+  }
+
+  .preview #previewGalleryGrid > .gallery-card{
     border-radius:20px !important;
+  }
+
+  .preview #previewGalleryGrid > .gallery-card p{
+    border-radius:0 0 20px 20px !important;
+    min-height:50px;
+    max-height:92px;
+    padding:10px 11px !important;
+    font-size:11px !important;
   }
 
   .preview #previewFeaturedHeading,
@@ -4461,19 +4553,18 @@ main{
 }
 
 @media(max-width:430px){
-  .preview #previewPhotoGrid > .card{
-    min-height:500px;
+  .preview #previewPhotoGrid > .card img,
+  .preview #previewPhotoGrid > .card video{
+    min-height:500px !important;
   }
 
-  .preview #previewGalleryGrid > .gallery-card{
-    min-height:250px;
+  .preview #previewGalleryGrid > .gallery-card img,
+  .preview #previewGalleryGrid > .gallery-card video{
+    min-height:250px !important;
   }
 }
 
 @media(prefers-reduced-motion:reduce){
-  .preview .site-hero::after,
-  .preview #previewPhotoGrid > .card::before,
-  .preview #previewGalleryGrid > .gallery-card::before,
   .preview .site-call::after,
   .preview .hero-cta::after{
     animation:none !important;
