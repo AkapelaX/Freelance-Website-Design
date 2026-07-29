@@ -4610,3 +4610,41 @@ main{
   background:var(--site-card) !important;
   box-shadow:none !important;
 }
+
+
+
+/* =========================================================
+   PHOTO CARD OVERLAY (Non-destructive black tint)
+   ========================================================= */
+
+.content-card,
+.gallery-item{
+  position:relative;
+  overflow:hidden;
+}
+
+.content-card::before,
+.gallery-item::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:rgba(0,0,0,.16);
+  pointer-events:none;
+  z-index:1;
+}
+
+.content-card img,
+.content-card video,
+.card-media,
+.gallery-item img,
+.gallery-item video,
+.gallery-media{
+  position:relative;
+  z-index:0;
+}
+
+.content-body,
+.gallery-caption{
+  position:relative;
+  z-index:2;
+}
