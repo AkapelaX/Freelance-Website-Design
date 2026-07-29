@@ -201,7 +201,7 @@
 
   function getProjectData(project) {
     project = project || {};
-    const candidate = project.state || project.builder_state || project.website_state || project.site_state || project.data || {};
+    const candidate = project.data || project.state || project.builder_state || project.website_state || project.site_state || {};
     const nestedBusiness = candidate.business || {};
     const nestedHeader = candidate.header || project.header || {};
     const nestedDesign = candidate.design || project.site_settings || project.design || {};
