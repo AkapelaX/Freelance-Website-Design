@@ -34,6 +34,7 @@
     created_at: "",
     updated_at: "",
     published_at: "",
+    thumbnail: "",
     data: {
       businessName: "",
       businessBio: "",
@@ -537,17 +538,17 @@
 
   function projectCard(project) {
     const data = project.data || {};
+    const thumbnail = project.thumbnail || data.dashboardThumbnail || "";
     const cover = data.headerImage || data.featuredCover || data.aboutCover || "";
     const url = project.published_url || "";
     const card = document.createElement("article");
     card.className = "website-library-card";
     card.dataset.projectId = project.id;
 
-    const previewContent = url
-      ? `<iframe src="${escapeAttr(url)}" title="${escapeAttr(data.businessName || project.name || "Website")} preview" loading="lazy" tabindex="-1" aria-hidden="true"></iframe>`
-      : cover
-        ? `<div class="website-card-cover" style="background-image:url('${escapeAttr(cover)}')"></div>`
-        : `<span>${escapeHtml((data.businessName || project.name || "Website").charAt(0).toUpperCase())}</span>`;
+    const previewImage = thumbnail || cover;
+    const previewContent = previewImage
+      ? `<div class="website-card-cover" style="background-image:url('${escapeAttr(previewImage)}')"></div>`
+      : `<span>${escapeHtml((data.businessName || project.name || "Website").charAt(0).toUpperCase())}</span>`;
 
     card.innerHTML = `
       <div class="website-card-preview">
@@ -703,17 +704,50 @@
     updateDomainPreview();
   }
 
+  async function captureProjectThumbnail(project = activeProject()) {
+    const preview = $("preview");
+    if (!project || !preview || typeof window.html2canvas !== "function") return "";
+
+    try {
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+
+      const captureHeight = Math.min(Math.max(preview.clientHeight || 0, 520), 900);
+      const canvas = await window.html2canvas(preview, {
+        backgroundColor: null,
+        scale: 0.45,
+        useCORS: true,
+        allowTaint: false,
+        logging: false,
+        width: preview.scrollWidth || preview.clientWidth,
+        height: captureHeight,
+        windowWidth: preview.scrollWidth || preview.clientWidth,
+        windowHeight: captureHeight,
+        ignoreElements: (element) => element.tagName === "IFRAME" || element.tagName === "VIDEO"
+      });
+
+      const thumbnail = canvas.toDataURL("image/jpeg", 0.72);
+      project.thumbnail = thumbnail;
+      project.data = project.data || {};
+      project.data.dashboardThumbnail = thumbnail;
+      return thumbnail;
+    } catch (error) {
+      console.warn("Bluvixa thumbnail capture skipped:", error);
+      return "";
+    }
+  }
+
   function queueAutosave() {
     clearTimeout(state.autosaveTimer);
     if ($("saveStatus")) $("saveStatus").textContent = "Saving changes…";
     state.autosaveTimer = setTimeout(async () => {
-      readFormIntoProject();
+      const project = readFormIntoProject();
+      renderPreview();
+      await captureProjectThumbnail(project);
       saveLocalState();
       if ($("saveStatus")) $("saveStatus").textContent = "Saved locally";
-      renderPreview();
       if (state.user && state.apiOnline) {
         try {
-          await saveProject({ silent: true });
+          await saveProject({ silent: true, captureThumbnail: false });
           if ($("saveStatus")) $("saveStatus").textContent = "Saved to cloud";
         } catch {
           if ($("saveStatus")) $("saveStatus").textContent = "Saved locally; cloud unavailable";
@@ -722,8 +756,10 @@
     }, 650);
   }
 
-  async function saveProject({ silent = false } = {}) {
+  async function saveProject({ silent = false, captureThumbnail = true } = {}) {
     const project = readFormIntoProject();
+    renderPreview();
+    if (captureThumbnail) await captureProjectThumbnail(project);
     saveLocalState();
 
     let savedProject = project;
