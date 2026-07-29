@@ -543,38 +543,11 @@
     card.className = "website-library-card";
     card.dataset.projectId = project.id;
 
-    const draftPreview = `<!doctype html>
-<html>
-<head>
-<meta charset="utf-8">
-<style>
-  *{box-sizing:border-box}
-  body{margin:0;font-family:Arial,sans-serif;background:${escapeHtml(data.cardColor || "#ffffff")};color:#ffffff;overflow:hidden}
-  header{height:34px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;background:${escapeHtml(data.headerColor || "#082b5e")};font-size:8px;font-weight:700}
-  .hero{height:210px;padding:34px 24px;background:${cover ? `linear-gradient(rgba(0,0,0,.48),rgba(0,0,0,.48)),url("${escapeHtml(cover)}") center/cover` : escapeHtml(data.themeColor || "#1769ff")};display:flex;flex-direction:column;justify-content:center}
-  .tagline{font-size:9px;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px}
-  h1{font-size:28px;line-height:1.05;margin:0 0 12px;max-width:85%}
-  p{font-size:10px;line-height:1.5;margin:0;max-width:80%}
-  .button{display:inline-block;margin-top:16px;padding:8px 14px;border-radius:20px;background:${escapeHtml(data.buttonColor || "#1769ff")};font-size:9px;font-weight:700;width:max-content}
-</style>
-</head>
-<body>
-  <header>
-    <span>${escapeHtml(data.businessName || project.name || "YOUR BUSINESS")}</span>
-    <span>Home&nbsp;&nbsp;Services&nbsp;&nbsp;Contact</span>
-  </header>
-  <section class="hero">
-    <div class="tagline">${escapeHtml(data.headerTagline || "")}</div>
-    <h1>${escapeHtml(data.headerHeadline || data.businessName || project.name || "Your headline appears here.")}</h1>
-    <p>${escapeHtml(data.headerBio || data.businessBio || "")}</p>
-    <span class="button">${escapeHtml(data.callButtonText || "Call Now")}</span>
-  </section>
-</body>
-</html>`;
-
     const previewContent = url
       ? `<iframe src="${escapeAttr(url)}" title="${escapeAttr(data.businessName || project.name || "Website")} preview" loading="lazy" tabindex="-1" aria-hidden="true"></iframe>`
-      : `<iframe srcdoc="${escapeAttr(draftPreview)}" title="${escapeAttr(data.businessName || project.name || "Website")} draft preview" loading="lazy" tabindex="-1" aria-hidden="true"></iframe>`;
+      : cover
+        ? `<div class="website-card-cover" style="background-image:url('${escapeAttr(cover)}')"></div>`
+        : `<span>${escapeHtml((data.businessName || project.name || "Website").charAt(0).toUpperCase())}</span>`;
 
     card.innerHTML = `
       <div class="website-card-preview">

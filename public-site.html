@@ -946,10 +946,15 @@ footer small{opacity:.55}
     showWebsite();
   }
 
+  window.BluvixaPublicSite=Object.freeze({applyWebsite});
+
   async function start(){
     showLoading();
 
     const params=new URLSearchParams(location.search);
+
+    if(params.get("preview")==="1")return;
+
     const pathMatch=location.pathname.match(/^\/site\/([^/?#]+)/i);
 
     const slug=params.get("slug")||(pathMatch?decodeURIComponent(pathMatch[1]):"");
