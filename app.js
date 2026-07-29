@@ -519,12 +519,7 @@
       try {
         const result = await api("projects?action=list");
         state.projects = (result.projects || result || []).map(normalizeProject);
-        const activeProjectStillExists = state.projects.some(
-          (project) => project.id === state.activeProjectId
-        );
-        state.activeProjectId = activeProjectStillExists
-          ? state.activeProjectId
-          : state.projects[0]?.id || "";
+        state.activeProjectId = state.activeProjectId || state.projects[0]?.id || "";
         saveLocalState();
         return;
       } catch (error) {
@@ -718,40 +713,20 @@
   async function saveProject({ silent = false } = {}) {
     const project = readFormIntoProject();
     saveLocalState();
-
-    let savedProject = project;
-
     if (state.user && state.apiOnline) {
-      const isCloudProject = Boolean(project.user_id);
-      const result = await api(
-        `projects?action=${isCloudProject ? "save" : "create"}`,
-        {
-          method: "POST",
-          body: JSON.stringify({ project })
-        }
-      );
-
-      savedProject = normalizeProject(result.project || result);
+      const result = await api("projects?action=save", {
+        method: "POST",
+        body: JSON.stringify({ project })
+      });
+      const saved = normalizeProject(result.project || result);
       const index = state.projects.findIndex((item) => item.id === project.id);
-
-      if (index >= 0) state.projects[index] = savedProject;
-      else state.projects.unshift(savedProject);
-
-      state.activeProjectId = savedProject.id;
+      if (index >= 0) state.projects[index] = saved;
+      state.activeProjectId = saved.id;
       saveLocalState();
     }
-
-    if (!silent) {
-      toast(
-        state.user && state.apiOnline
-          ? "Website saved to your account."
-          : "Website saved on this device.",
-        "success"
-      );
-    }
-
+    if (!silent) toast(state.user && state.apiOnline ? "Website saved to your account." : "Website saved on this device.", "success");
     renderProjects();
-    return savedProject;
+    return project;
   }
 
   async function saveSnapshot() {
@@ -1105,7 +1080,10 @@
     updateDomainPreview();
     if (!state.apiOnline) return toast("Address format is valid. Backend availability checking will activate after the API is installed.", "success");
     try {
-      const result = await api(`domains?action=check-slug&slug=${encodeURIComponent(slug)}`);
+      const projectId = activeProject()?.id || "";
+      const result = await api(
+        `domains?action=check-slug&slug=${encodeURIComponent(slug)}&project_id=${encodeURIComponent(projectId)}`
+      );
       toast(result.available ? "Address is available." : "That address is already reserved.", result.available ? "success" : "error");
     } catch (error) {
       toast(error.message, "error");
