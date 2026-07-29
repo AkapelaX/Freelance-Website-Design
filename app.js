@@ -999,37 +999,30 @@
     applyBackground($("previewGallerySection"), d.galleryCover);
     applyBackground($("previewMapSection"), d.mapCover);
 
-   const logoFrame = $("previewLogoFrame");
-const logoImage = $("previewLogoImage");
-const logoPlaceholder = $("previewLogoPlaceholder");
-const logoUrl = data.businessLogo || "";
+    const logoFrame = $("previewLogoFrame");
+    const logoImage = $("previewLogoImage");
+    const logoPlaceholder = $("previewLogoPlaceholder");
+    const logoUrl = text(d.businessLogo);
 
-if (logoImage) {
-  if (logoUrl) {
-    logoImage.src = logoUrl;
-    logoImage.hidden = false;
-  } else {
-    logoImage.removeAttribute("src");
-    logoImage.hidden = true;
-  }
-}
-
-if (logoFrame) {
-  logoFrame.classList.toggle("has-logo", Boolean(logoUrl));
-}
-
-if (logoPlaceholder) {
-  logoPlaceholder.hidden = Boolean(logoUrl);
-}
-        logo.removeAttribute("hidden");
-        logo.style.display = "";
+    if (logoImage) {
+      if (logoUrl) {
+        logoImage.src = logoUrl;
+        logoImage.hidden = false;
+        logoImage.style.display = "";
       } else {
-        logo.removeAttribute("src");
-        logo.style.display = "none";
+        logoImage.removeAttribute("src");
+        logoImage.hidden = true;
+        logoImage.style.display = "none";
       }
     }
-    if (placeholder) {
-      placeholder.style.display = d.businessLogo ? "none" : "";
+
+    if (logoFrame) {
+      logoFrame.classList.toggle("has-logo", Boolean(logoUrl));
+    }
+
+    if (logoPlaceholder) {
+      logoPlaceholder.hidden = Boolean(logoUrl);
+      logoPlaceholder.style.display = logoUrl ? "none" : "";
     }
 
     preview.style.setProperty("--theme-color", d.themeColor);
