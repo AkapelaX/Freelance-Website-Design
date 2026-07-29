@@ -999,11 +999,28 @@
     applyBackground($("previewGallerySection"), d.galleryCover);
     applyBackground($("previewMapSection"), d.mapCover);
 
-    const logo = $("previewLogoImage");
-    const placeholder = $("previewLogoPlaceholder");
-    if (logo) {
-      if (d.businessLogo) {
-        logo.src = d.businessLogo;
+   const logoFrame = $("previewLogoFrame");
+const logoImage = $("previewLogoImage");
+const logoPlaceholder = $("previewLogoPlaceholder");
+const logoUrl = data.businessLogo || "";
+
+if (logoImage) {
+  if (logoUrl) {
+    logoImage.src = logoUrl;
+    logoImage.hidden = false;
+  } else {
+    logoImage.removeAttribute("src");
+    logoImage.hidden = true;
+  }
+}
+
+if (logoFrame) {
+  logoFrame.classList.toggle("has-logo", Boolean(logoUrl));
+}
+
+if (logoPlaceholder) {
+  logoPlaceholder.hidden = Boolean(logoUrl);
+}
         logo.removeAttribute("hidden");
         logo.style.display = "";
       } else {
