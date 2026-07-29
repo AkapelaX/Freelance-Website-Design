@@ -1,6 +1,6 @@
 "use strict";
 
-const { getAdmin } = require("../_supabase");
+const { getAdmin } = require("./_supabase");
 
 function bearer(req) {
   const header = req.headers.authorization || "";
