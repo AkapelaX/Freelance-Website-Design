@@ -6554,7 +6554,7 @@ button:disabled {
 
 #domains .dm-layout {
   display: grid;
-  grid-template-columns: minmax(0,1.55fr) minmax(280px,.72fr);
+  grid-template-columns: minmax(0,1.55fr) minmax(0,.72fr);
   gap: 22px;
   align-items: start;
 }
