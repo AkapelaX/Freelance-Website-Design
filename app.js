@@ -316,7 +316,17 @@
   }
 
   function currentSelectedPlan() {
-    return $("planSelect")?.value || state.profile?.plan || "starter";
+    const accountPlan = text(state.profile?.plan).toLowerCase();
+
+    if (["starter", "professional", "advanced"].includes(accountPlan)) {
+      return accountPlan;
+    }
+
+    const selectedPlan = text($("planSelect")?.value).toLowerCase();
+
+    return ["starter", "professional", "advanced"].includes(selectedPlan)
+      ? selectedPlan
+      : "starter";
   }
 
   function hasSubscriberAccess() {
@@ -601,7 +611,13 @@
     if (state.user && state.apiOnline) {
       try {
         const result = await api("projects?action=list");
-        state.projects = (result.projects || result || []).map(normalizeProject);
+        const accountPlan = currentSelectedPlan();
+
+        state.projects = (result.projects || result || []).map((project) => {
+          const normalized = normalizeProject(project);
+          normalized.plan = accountPlan;
+          return normalized;
+        });
         const activeProjectStillExists = state.projects.some(
           (project) => project.id === state.activeProjectId
         );
@@ -721,19 +737,39 @@
       return;
     }
     if (action === "delete") {
-      if (!confirm(`Delete "${project.data?.businessName || project.name}"? This cannot be undone.`)) return;
-      if (state.user && state.apiOnline) {
-        try {
-          await api(`projects?action=delete&id=${encodeURIComponent(project.id)}`, { method: "DELETE" });
-        } catch (error) {
-          return toast(error.message, "error");
-        }
+      if (!confirm(`Delete "${project.data?.businessName || project.name}"? This cannot be undone.`)) {
+        return;
       }
+
+      const previousProjects = [...state.projects];
+      const previousActiveProjectId = state.activeProjectId;
+
       state.projects = state.projects.filter((item) => item.id !== project.id);
-      if (state.activeProjectId === project.id) state.activeProjectId = state.projects[0]?.id || "";
+
+      if (state.activeProjectId === project.id) {
+        state.activeProjectId = state.projects[0]?.id || "";
+      }
+
       saveLocalState();
       renderProjects();
-      toast("Website deleted.");
+      renderDrafts();
+      toast("Website deleted.", "success");
+
+      if (state.user && state.apiOnline) {
+        try {
+          await api(
+            `projects?action=delete&id=${encodeURIComponent(project.id)}`,
+            { method: "DELETE" }
+          );
+        } catch (error) {
+          state.projects = previousProjects;
+          state.activeProjectId = previousActiveProjectId;
+          saveLocalState();
+          renderProjects();
+          renderDrafts();
+          toast(`Website could not be deleted: ${error.message}`, "error");
+        }
+      }
     }
   }
 
@@ -2063,12 +2099,6 @@
     await restoreSession();
     await loadProfile();
     await loadProjects();
-    if (!state.projects.length) {
-      const project = createProject();
-      state.projects.push(project);
-      state.activeProjectId = project.id;
-      saveLocalState();
-    }
     renderAuthState();
     renderProjects();
     renderDrafts();
@@ -2077,8 +2107,12 @@
     if (!checkoutStarted) {
       renderRoute();
     }
-    loadProjectIntoForm(activeProject());
-    renderPreview();
+    const project = activeProject();
+
+    if (project) {
+      loadProjectIntoForm(project);
+      renderPreview();
+    }
 
     const params = new URLSearchParams(location.hash.split("?")[1] || location.search);
     if (params.get("checkout") === "success") toast("Payment confirmed. Your account is refreshing.", "success");
