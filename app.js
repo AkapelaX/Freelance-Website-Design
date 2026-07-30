@@ -707,6 +707,10 @@
       copy.status = "draft";
       copy.published_url = "";
       copy.custom_domain = "";
+      copy.domain_status = "not_connected";
+      copy.ssl_status = "waiting";
+      copy.domain_checked_at = "";
+      copy.domain_verified_at = "";
       copy.owned = false;
       copy.created_at = nowIso();
       copy.updated_at = copy.created_at;
@@ -753,7 +757,6 @@
     project.plan = currentSelectedPlan();
     project.name = text(d.businessName) || project.name || "Untitled Website";
     project.slug = slugify($("projectSlug")?.value || project.slug || project.name);
-    project.custom_domain = normalizeDomain($("customDomain")?.value || project.custom_domain);
     project.updated_at = nowIso();
     return project;
   }
@@ -1523,21 +1526,49 @@
     }
   }
 
-  async function connectDomain() {
-    const project = readFormIntoProject();
-    const domain = normalizeDomain($("customDomain")?.value);
-    if (!domain || !domain.includes(".")) return toast("Enter a valid domain such as example.com.", "error");
+  async function connectDomain(event) {
     if (!state.user) return openAuth("signin");
     if (!state.apiOnline) return toast("The domain backend has not been installed yet.", "error");
-    const button = $("connectDomainBtn") || $("dmConnectBtn");
+
+    const button =
+      event?.currentTarget ||
+      $("dmConnectBtn") ||
+      $("connectDomainBtn");
+
+    const domainCenterValue = text($("dmDomainInput")?.value);
+    const builderValue = text($("customDomain")?.value);
+    const domain = normalizeDomain(domainCenterValue || builderValue);
+
+    if (!domain || !domain.includes(".")) {
+      return toast("Enter a valid domain such as example.com.", "error");
+    }
+
     setBusy(button, true, "Connecting…");
+
     try {
+      let project = readFormIntoProject();
+      project = await ensureCloudProject(project);
+      project = activeProject() || project;
+
       const result = await api("domains?action=connect", {
         method: "POST",
         body: JSON.stringify({ project_id: project.id, domain })
       });
-      Object.assign(project, result.project || { custom_domain: domain, domain_status: result.status || "pending" });
+
+      Object.assign(
+        project,
+        result.project || {
+          custom_domain: domain,
+          domain_status: result.status || "pending",
+          ssl_status: "waiting"
+        }
+      );
+
+      if ($("customDomain")) $("customDomain").value = project.custom_domain || domain;
+      if ($("dmDomainInput")) $("dmDomainInput").value = project.custom_domain || domain;
+
       saveLocalState();
+      updateDomainPreview();
       renderDomainCenter();
       toast("Domain added. Complete the DNS records shown.", "success");
     } catch (error) {
