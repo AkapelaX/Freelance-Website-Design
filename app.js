@@ -1073,7 +1073,7 @@
 
     const scroll = $("previewScroll");
     if (scroll) scroll.innerHTML = text(d.scrollItems).split(",").map((item) => text(item)).filter(Boolean)
-      .map((item) => `<span>${escapeHtml(item)}</span>`).join("");
+      .map((item) => `<span class="scroll-chip">${escapeHtml(item)}</span>`).join("");
 
     renderMediaGrid("previewPhotoGrid", d.photos, "card");
     renderMediaGrid("previewGalleryGrid", d.gallery, "gallery-card");
