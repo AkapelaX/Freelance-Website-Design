@@ -1567,6 +1567,8 @@
       if ($("customDomain")) $("customDomain").value = project.custom_domain || domain;
       if ($("dmDomainInput")) $("dmDomainInput").value = project.custom_domain || domain;
 
+      if (result.dns) project.domain_dns = result.dns;
+
       saveLocalState();
       updateDomainPreview();
       renderDomainCenter();
@@ -1575,6 +1577,72 @@
       toast(error.message, "error");
     } finally {
       setBusy(button, false);
+    }
+  }
+
+  function renderDomainDns(project) {
+    const connected = Boolean(project?.custom_domain);
+    const dnsInfo = project?.domain_dns || null;
+
+    safeShow($("dmDnsEmpty"), !connected || !dnsInfo);
+    safeShow($("dmDnsRecords"), connected && Boolean(dnsInfo));
+
+    if ($("dmDnsEmpty")) {
+      $("dmDnsEmpty").textContent = connected
+        ? "Loading the exact DNS records from Vercel…"
+        : "Connect a custom domain to reveal DNS records.";
+    }
+
+    if (!connected || !dnsInfo) return;
+
+    setText("dmDnsType1", dnsInfo.apex?.type || "A");
+    setText("dmDnsHost1", dnsInfo.apex?.host || "@");
+    setText("dmDnsValue1", dnsInfo.apex?.value || "");
+
+    setText("dmDnsType2", dnsInfo.www?.type || "CNAME");
+    setText("dmDnsHost2", dnsInfo.www?.host || "www");
+    setText("dmDnsValue2", dnsInfo.www?.value || "");
+
+    const verification = dnsInfo.verification;
+    safeShow($("dmVerificationRecord"), Boolean(verification));
+    if (verification) {
+      setText("dmVerificationHost", verification.host || "_vercel");
+      setText("dmVerificationValue", verification.value || "");
+    }
+  }
+
+  async function loadDomainDns(project) {
+    if (
+      !project?.id ||
+      !project.custom_domain ||
+      project.domain_dns ||
+      project._domainDnsLoading ||
+      !state.apiOnline ||
+      !state.user
+    ) {
+      return;
+    }
+
+    project._domainDnsLoading = true;
+    renderDomainDns(project);
+
+    try {
+      const result = await api(
+        `domains?action=instructions&project_id=${encodeURIComponent(project.id)}`
+      );
+
+      if (result?.dns) {
+        project.domain_dns = result.dns;
+        saveLocalState();
+      }
+    } catch (error) {
+      if ($("dmDnsEmpty")) {
+        $("dmDnsEmpty").textContent =
+          `DNS instructions could not be loaded: ${error.message}`;
+      }
+    } finally {
+      project._domainDnsLoading = false;
+      renderDomainDns(project);
     }
   }
 
@@ -1592,6 +1660,8 @@
     const bluvixaUrl = `${location.origin}/site/${slug}`;
     if ($("dmSlugInput")) $("dmSlugInput").value = slug;
     if ($("dmDomainInput")) $("dmDomainInput").value = project.custom_domain || "";
+    renderDomainDns(project);
+    loadDomainDns(project);
     setLink("dmBluvixaAddress", bluvixaUrl, bluvixaUrl);
     setText("dmOverviewBluvixa", slug ? "Reserved" : "Not reserved");
     setText("dmOverviewBluvixaDetail", bluvixaUrl);
@@ -1605,6 +1675,22 @@
     setText("dmDetailSslStatus", capitalize(project.ssl_status || "waiting"));
     setText("dmDetailVerifiedAt", project.domain_verified_at ? formatDate(project.domain_verified_at) : "—");
     setText("dmDetailLastChecked", project.domain_checked_at ? formatDate(project.domain_checked_at) : "—");
+    const domainState = project.custom_domain
+      ? (project.domain_status || "pending")
+      : "not_connected";
+    const liveTitle =
+      domainState === "verified" ? "Connected" :
+      domainState === "pending" ? "Waiting for DNS" :
+      "Not connected";
+    const liveMessage =
+      domainState === "verified"
+        ? "DNS is verified and HTTPS is being prepared."
+        : domainState === "pending"
+          ? "Add the DNS records shown above, then retry verification."
+          : "Enter a custom domain and select Connect Domain.";
+    setText("dmLiveTitle", liveTitle);
+    setText("dmLiveMessage", liveMessage);
+    setText("dmStatusPill", capitalize(domainState.replaceAll("_", " ")));
     setText("publishingCenterProjectName", project.data?.businessName || project.name);
     setText("publishingMetricStatus", capitalize(project.status));
     setText("publishingMetricDate", project.published_at ? formatDate(project.published_at) : "Never");
@@ -1672,6 +1758,7 @@
       }
     }
     project.custom_domain = "";
+    project.domain_dns = null;
     project.domain_status = "not_connected";
     project.ssl_status = "waiting";
     saveLocalState();

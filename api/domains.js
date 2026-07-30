@@ -85,6 +85,147 @@ async function removeProjectDomain(domain) {
   );
 }
 
+function firstDnsValue(value) {
+  if (typeof value === "string" && value.trim()) return value.trim().replace(/\.$/, "");
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      const found = firstDnsValue(item);
+      if (found) return found;
+    }
+  }
+  if (value && typeof value === "object") {
+    for (const key of ["value", "recommendedValue", "recommended", "target"]) {
+      const found = firstDnsValue(value[key]);
+      if (found) return found;
+    }
+  }
+  return "";
+}
+
+function findConfigValue(payload, preferredKeys = []) {
+  if (!payload || typeof payload !== "object") return "";
+
+  for (const key of preferredKeys) {
+    const found = firstDnsValue(payload[key]);
+    if (found) return found;
+  }
+
+  for (const [key, value] of Object.entries(payload)) {
+    const normalizedKey = key.toLowerCase();
+    if (
+      preferredKeys.some((preferred) =>
+        normalizedKey.includes(preferred.toLowerCase())
+      )
+    ) {
+      const found = firstDnsValue(value);
+      if (found) return found;
+    }
+  }
+
+  for (const value of Object.values(payload)) {
+    if (value && typeof value === "object") {
+      const found = findConfigValue(value, preferredKeys);
+      if (found) return found;
+    }
+  }
+
+  return "";
+}
+
+function verificationRecordFrom(...payloads) {
+  for (const payload of payloads) {
+    const records = Array.isArray(payload?.verification)
+      ? payload.verification
+      : payload?.verification
+        ? [payload.verification]
+        : [];
+
+    for (const record of records) {
+      const type = String(record?.type || "").toUpperCase();
+      const domain = String(record?.domain || record?.name || "").trim();
+      const value = String(record?.value || "").trim();
+
+      if (type === "TXT" && domain && value) {
+        return {
+          type: "TXT",
+          host: domain,
+          value
+        };
+      }
+    }
+  }
+
+  return null;
+}
+
+async function getExactDnsInstructions(domain, addApexResult = null, addWwwResult = null) {
+  let apexConfig = {};
+  let wwwConfig = {};
+
+  try {
+    apexConfig = await vercelRequest(
+      `/v6/domains/${encodeURIComponent(domain)}/config`,
+      { method: "GET" }
+    );
+  } catch {}
+
+  try {
+    wwwConfig = await vercelRequest(
+      `/v6/domains/${encodeURIComponent(`www.${domain}`)}/config`,
+      { method: "GET" }
+    );
+  } catch {}
+
+  const exactA =
+    findConfigValue(apexConfig, [
+      "recommendedIPv4",
+      "recommendedIp",
+      "recommendedA",
+      "recommendedValue"
+    ]) || EXPECTED_A;
+
+  const exactCname =
+    findConfigValue(wwwConfig, [
+      "recommendedCNAME",
+      "recommendedCname",
+      "recommendedValue"
+    ]) ||
+    findConfigValue(apexConfig, [
+      "recommendedCNAME",
+      "recommendedCname"
+    ]) ||
+    EXPECTED_CNAME;
+
+  return {
+    apex: {
+      type: "A",
+      host: "@",
+      value: exactA
+    },
+    www: {
+      type: "CNAME",
+      host: "www",
+      value: exactCname
+    },
+    verification: verificationRecordFrom(
+      addApexResult,
+      addWwwResult,
+      apexConfig,
+      wwwConfig
+    ),
+    vercel: {
+      apex_misconfigured:
+        typeof apexConfig?.misconfigured === "boolean"
+          ? apexConfig.misconfigured
+          : null,
+      www_misconfigured:
+        typeof wwwConfig?.misconfigured === "boolean"
+          ? wwwConfig.misconfigured
+          : null
+    }
+  };
+}
+
 async function nextAvailableSlug(supabase, requestedSlug, excludeProjectId = "") {
   const baseSlug = slugify(requestedSlug) || "my-website";
   let candidate = baseSlug;
@@ -185,8 +326,13 @@ module.exports = async function handler(req, res) {
        *   www.example.com
        * Both aliases must be attached to the Vercel project.
        */
-      await addProjectDomain(domain);
-      await addProjectDomain(`www.${domain}`);
+      const addedApex = await addProjectDomain(domain);
+      const addedWww = await addProjectDomain(`www.${domain}`);
+      const dnsInstructions = await getExactDnsInstructions(
+        domain,
+        addedApex,
+        addedWww
+      );
 
       /*
        * When replacing a domain, remove the old aliases only after the new
@@ -217,10 +363,26 @@ module.exports = async function handler(req, res) {
 
       return ok(res, {
         project: data,
-        dns: {
-          apex: { type: "A", host: "@", value: EXPECTED_A },
-          www: { type: "CNAME", host: "www", value: EXPECTED_CNAME }
-        }
+        dns: dnsInstructions
+      });
+    }
+
+    if (name === "instructions") {
+      method(req, ["GET"]);
+
+      const projectId = text(req.query.project_id, 80);
+      if (!projectId) return fail(res, 400, "Project ID required");
+
+      const project = await requireProjectOwner(projectId, user.id);
+      const domain = normalizeDomain(project.custom_domain);
+      if (!domain) return fail(res, 400, "No domain connected");
+
+      const dnsInstructions = await getExactDnsInstructions(domain);
+
+      return ok(res, {
+        project_id: projectId,
+        domain,
+        dns: dnsInstructions
       });
     }
 
