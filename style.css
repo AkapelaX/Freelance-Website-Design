@@ -9469,3 +9469,29 @@ body:not(.route-builder) .info * {
     font-size: 10px !important;
   }
 }
+
+
+/* =========================================================
+   DOMAIN & PUBLISHING — MEDIUM DESKTOP FIT FIX
+   Keeps wide desktop unchanged and prevents the right-side
+   Connection Details / Automatic Checks cards from clipping
+   on standard PC screens or browser zoom above 100%.
+   Mobile rules remain unchanged.
+   ========================================================= */
+@media (min-width: 981px) and (max-width: 1400px) {
+  #domains .dm-layout {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  #domains .dm-main,
+  #domains .dm-side,
+  #domains .dm-card {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  #domains .member-content {
+    overflow-x: hidden;
+  }
+}
