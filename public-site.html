@@ -260,6 +260,7 @@
     setText("previewAddress", d.businessAddress);
     setText("previewAboutHeading", d.aboutHeading);
     setText("previewFeaturedHeading", d.featuredHeading);
+    $("previewFeaturedHeading").hidden = !text(d.featuredHeading);
     setText("previewFeaturedDescription", d.featuredDescription);
     setText("previewGalleryHeading", d.galleryHeading);
     setText("previewGalleryDescription", d.galleryDescription);

@@ -1008,6 +1008,7 @@
     setText("previewAddress", d.businessAddress);
     setText("previewAboutHeading", d.aboutHeading || "About Our Business");
     setText("previewFeaturedHeading", d.featuredHeading);
+    if ($("previewFeaturedHeading")) $("previewFeaturedHeading").hidden = !text(d.featuredHeading);
     setText("previewFeaturedDescription", d.featuredDescription);
     setText("previewGalleryHeading", d.galleryHeading);
     setText("previewGalleryDescription", d.galleryDescription);

@@ -977,6 +977,7 @@ h1 {
 
 .business h3 {
   font-size: 32px;
+  font-weight: 900;
   margin: 0 0 12px;
 }
 
@@ -1026,6 +1027,7 @@ h1 {
 
 .section-label h3 {
   font-size: 30px;
+  font-weight: 900;
   margin: 0;
 }
 
