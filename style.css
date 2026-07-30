@@ -8964,3 +8964,180 @@ textarea {
     text-overflow: ellipsis;
   }
 }
+
+/* =========================================================
+   BLUVIXA 4.0 — FINAL TWO TARGETED FIXES
+   1. Restore visible three-line hamburger icons.
+   2. Force preview/live website text to readable black or white.
+   Everything else remains unchanged.
+   ========================================================= */
+
+/* 1. RESTORE HAMBURGER ICONS */
+
+/* Main Bluvixa mobile menu button */
+.mobile-menu-button {
+  position: relative;
+}
+
+.mobile-menu-button span {
+  display: block !important;
+  width: 22px !important;
+  height: 3px !important;
+  margin: 2.5px auto !important;
+  border-radius: 999px !important;
+  background: #ffffff !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Preview and published/live website menu buttons */
+.preview .site-menu-toggle,
+#publicSiteRoot .site-menu-toggle {
+  position: relative !important;
+}
+
+.preview .site-menu-toggle span,
+#publicSiteRoot .site-menu-toggle span {
+  display: block !important;
+  width: 22px !important;
+  height: 3px !important;
+  margin: 2.5px auto !important;
+  border-radius: 999px !important;
+  background: #ffffff !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Keep all three lines visible even when the menu is open. */
+.mobile-menu-button[aria-expanded="true"] span,
+.preview .site-menu-toggle[aria-expanded="true"] span,
+#publicSiteRoot .site-menu-toggle[aria-expanded="true"] span {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: none !important;
+}
+
+/* 2. BLACK-AND-WHITE WEBSITE TEXT FOR MAXIMUM READABILITY */
+
+/* Dark areas use white text. */
+.preview .site-header,
+.preview .site-header *,
+.preview .site-hero,
+.preview .site-hero *,
+.preview .map-copy,
+.preview .map-copy *,
+.preview .site-footer,
+.preview .site-footer *,
+.preview .site-nav,
+.preview .site-nav *,
+.preview .gallery-caption,
+.preview .site-call,
+.preview .hero-cta,
+#publicSiteRoot .site-header,
+#publicSiteRoot .site-header *,
+#publicSiteRoot .site-hero,
+#publicSiteRoot .site-hero *,
+#publicSiteRoot .map-copy,
+#publicSiteRoot .map-copy *,
+#publicSiteRoot .site-footer,
+#publicSiteRoot .site-footer *,
+#publicSiteRoot .site-nav,
+#publicSiteRoot .site-nav *,
+#publicSiteRoot .gallery-caption,
+#publicSiteRoot .site-call,
+#publicSiteRoot .hero-cta {
+  color: #ffffff !important;
+}
+
+/* Light section areas use black text. */
+.preview .scroll-wrap,
+.preview .scroll-wrap *,
+.preview .business,
+.preview .business *,
+.preview .content-section,
+.preview .content-section *,
+.preview .gallery-section,
+.preview .gallery-section *,
+.preview .info,
+.preview .info *,
+.preview .content-card,
+.preview .content-card *,
+.preview #previewPhotoGrid > .card p,
+.preview #previewGalleryGrid > .gallery-card p,
+#publicSiteRoot .scroll-wrap,
+#publicSiteRoot .scroll-wrap *,
+#publicSiteRoot .business,
+#publicSiteRoot .business *,
+#publicSiteRoot .content-section,
+#publicSiteRoot .content-section *,
+#publicSiteRoot .gallery-section,
+#publicSiteRoot .gallery-section *,
+#publicSiteRoot .info,
+#publicSiteRoot .info *,
+#publicSiteRoot .content-card,
+#publicSiteRoot .content-card *,
+#publicSiteRoot #previewPhotoGrid > .card p,
+#publicSiteRoot #previewGalleryGrid > .gallery-card p {
+  color: #000000 !important;
+}
+
+/* Keep upload/gallery text white when it sits directly over imagery. */
+.preview .gallery-caption,
+.preview .preview-upload-grid article > p:not(.content-body p),
+#publicSiteRoot .gallery-caption,
+#publicSiteRoot .preview-upload-grid article > p:not(.content-body p) {
+  color: #ffffff !important;
+}
+
+/* The separated upload-description panels remain black text. */
+.preview #previewPhotoGrid > .card p,
+#publicSiteRoot #previewPhotoGrid > .card p {
+  color: #000000 !important;
+  text-shadow: none !important;
+}
+
+/* Scroll chips remain readable on light card backgrounds. */
+.preview .scroll-chip,
+.preview .scroll-chip *,
+#publicSiteRoot .scroll-chip,
+#publicSiteRoot .scroll-chip * {
+  color: #000000 !important;
+}
+
+/* Call-to-action buttons always use white text. */
+.preview .site-call,
+.preview .site-call *,
+.preview .hero-cta,
+.preview .hero-cta *,
+#publicSiteRoot .site-call,
+#publicSiteRoot .site-call *,
+#publicSiteRoot .hero-cta,
+#publicSiteRoot .hero-cta * {
+  color: #ffffff !important;
+}
+
+/* Contact cards and business-information cards stay black for readability. */
+.preview .info,
+.preview .info div,
+.preview .info strong,
+.preview .info span,
+#publicSiteRoot .info,
+#publicSiteRoot .info div,
+#publicSiteRoot .info strong,
+#publicSiteRoot .info span {
+  color: #000000 !important;
+}
+
+/* Mobile dropdown links stay white against the dark dropdown panel. */
+@media (max-width: 820px) {
+  .preview .site-nav button,
+  .preview .site-nav button *,
+  #publicSiteRoot .site-nav button,
+  #publicSiteRoot .site-nav button * {
+    color: #ffffff !important;
+  }
+}
