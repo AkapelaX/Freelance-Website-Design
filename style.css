@@ -9255,3 +9255,9 @@ textarea {
   color: var(--card-text-color, var(--site-card-text, #000000)) !important;
   -webkit-text-fill-color: var(--card-text-color, var(--site-card-text, #000000)) !important;
 }
+/* Keep upload-section headings readable over section cover images. */
+.preview .content-section.has-cover .section-label h3,
+.preview .gallery-section.has-cover .section-label h3 {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
