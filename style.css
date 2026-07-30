@@ -9316,3 +9316,156 @@ body:not(.route-builder) .info * {
   opacity: 1 !important;
   visibility: visible !important;
 }
+
+/* =========================================================
+   BLUVIXA 4.0 — COMPACT MY WEBSITES CARDS
+   Targeted visual change only:
+   - Removes the obsolete thumbnail/logo preview area.
+   - Keeps the existing status badge and project actions.
+   - Adds a subtle green glass overlay.
+   ========================================================= */
+
+.website-library-card {
+  position: relative;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(65, 224, 151, .34) !important;
+  border-radius: 18px !important;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(63, 224, 151, .20), transparent 42%),
+    linear-gradient(145deg, rgba(13, 67, 51, .96), rgba(7, 28, 35, .98)) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .09),
+    0 16px 38px rgba(0, 0, 0, .25),
+    0 0 26px rgba(47, 214, 160, .09) !important;
+}
+
+/* Collapse the obsolete preview area while preserving its status badge. */
+.website-library-card .website-card-preview {
+  position: static !important;
+  width: 0 !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: visible !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+.website-library-card .website-card-preview iframe,
+.website-library-card .website-card-cover,
+.website-library-card .website-card-preview > span {
+  display: none !important;
+}
+
+/* Move Draft/Published into the compact card itself. */
+.website-library-card .website-card-preview > small {
+  position: absolute !important;
+  top: 16px !important;
+  right: 16px !important;
+  z-index: 3 !important;
+  display: inline-flex !important;
+  align-items: center;
+  min-height: 26px;
+  padding: 6px 10px !important;
+  color: #dffff2 !important;
+  border: 1px solid rgba(100, 238, 174, .38) !important;
+  border-radius: 999px !important;
+  background: rgba(5, 42, 31, .78) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08);
+  backdrop-filter: blur(10px);
+}
+
+/* Tight compact content layout. */
+.website-library-card .website-card-body {
+  min-height: 0 !important;
+  padding: 18px !important;
+  padding-top: 17px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  justify-content: flex-start !important;
+  gap: 12px !important;
+  color: #f4fff9;
+  background: transparent !important;
+}
+
+.website-library-card .website-card-body > div:first-child {
+  min-width: 0;
+  padding-right: 84px;
+}
+
+.website-library-card .website-card-body small {
+  color: #8ff2c9 !important;
+}
+
+.website-library-card .website-card-body h2,
+.website-library-card .website-card-body h3 {
+  margin: 5px 0 4px !important;
+  color: #ffffff !important;
+  font-size: clamp(18px, 2vw, 22px) !important;
+  line-height: 1.15 !important;
+  overflow-wrap: anywhere;
+}
+
+.website-library-card .website-card-body p {
+  margin: 0 !important;
+  color: #b9d7ca !important;
+  font-size: 12px !important;
+}
+
+.website-library-card .website-card-body > a {
+  color: #8ff2c9 !important;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+/* Keep every existing action, but remove excess vertical space. */
+.website-library-card .website-card-actions {
+  width: 100%;
+  margin-top: 2px !important;
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 8px !important;
+  justify-content: stretch !important;
+}
+
+.website-library-card .website-card-actions .btn {
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 40px !important;
+  padding: 9px 10px !important;
+  border-radius: 11px !important;
+  font-size: 11px !important;
+}
+
+@media (max-width: 560px) {
+  .website-library-grid {
+    gap: 12px !important;
+  }
+
+  .website-library-card .website-card-body {
+    padding: 16px !important;
+    gap: 10px !important;
+  }
+
+  .website-library-card .website-card-preview > small {
+    top: 14px !important;
+    right: 14px !important;
+  }
+
+  .website-library-card .website-card-body > div:first-child {
+    padding-right: 80px;
+  }
+
+  .website-library-card .website-card-actions {
+    gap: 6px !important;
+  }
+
+  .website-library-card .website-card-actions .btn {
+    min-height: 38px !important;
+    padding-inline: 7px !important;
+    font-size: 10px !important;
+  }
+}
