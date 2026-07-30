@@ -266,6 +266,11 @@
     const d = getProjectData(project);
     const preview = $("publicSiteRoot");
 
+    const isStarterPlan = text(project?.plan).toLowerCase() === "starter";
+    $("previewGallerySection").hidden = isStarterPlan;
+    const galleryNavButton = document.querySelector('[data-preview-target="previewGallerySection"]');
+    if (galleryNavButton) galleryNavButton.hidden = isStarterPlan;
+
     document.title = d.businessName || "Website";
     document.querySelector('meta[name="description"]').setAttribute("content", (d.businessBio || d.headerHeadline || d.businessName).slice(0,160));
     document.querySelector('meta[name="theme-color"]').setAttribute("content", d.headerColor);
