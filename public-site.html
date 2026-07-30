@@ -83,7 +83,7 @@
     <div class="section-cover hidden" id="previewFeaturedCover" aria-hidden="true"></div>
     <div class="section-label">
       <div>
-        <h3 id="previewFeaturedHeading" hidden></h3>
+        <h3 id="previewFeaturedHeading"></h3>
         <p id="previewFeaturedDescription"></p>
       </div>
       <small id="previewPhotoCount" hidden></small>
@@ -95,7 +95,7 @@
     <div class="section-cover hidden" id="previewGalleryCover" aria-hidden="true"></div>
     <div class="section-label">
       <div>
-        <h3 id="previewGalleryHeading" hidden></h3>
+        <h3 id="previewGalleryHeading"></h3>
         <p id="previewGalleryDescription"></p>
       </div>
       <small id="previewGalleryCount" hidden></small>
@@ -263,6 +263,7 @@
     $("previewFeaturedHeading").hidden = !text(d.featuredHeading);
     setText("previewFeaturedDescription", d.featuredDescription);
     setText("previewGalleryHeading", d.galleryHeading);
+    $("previewGalleryHeading").hidden = !text(d.galleryHeading);
     setText("previewGalleryDescription", d.galleryDescription);
     setText("previewMapHeading", d.mapHeading);
     setText("previewMapAddress", d.businessAddress);
