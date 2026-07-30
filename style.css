@@ -8601,3 +8601,366 @@ textarea {
     grid-template-columns: 1fr 1fr;
   }
 }
+
+/* =========================================================
+   BLUVIXA 4.0 — TARGETED FINAL BUG FIXES
+   Scope:
+   1. Hide color hex-code text.
+   2. Enlarge top uploads and place descriptions beneath them.
+   3. Vertically center the website logo, name, menu, and call button.
+   4. Repair the Bluvixa, preview, and published-site mobile menus.
+   No unrelated layout or visual rules are changed.
+   ========================================================= */
+
+/* 1. Keep the working color controls, but hide their raw hex values. */
+.color-control {
+  grid-template-columns: minmax(0, 1fr) 52px !important;
+}
+
+.color-control > span {
+  display: none !important;
+}
+
+.color-control input[type="color"] {
+  justify-self: end;
+  width: 48px !important;
+  height: 42px !important;
+}
+
+/* 2. Uploaded website media: larger cards with the saved description
+      displayed as a separate color-matched panel below the image/video. */
+.preview #previewPhotoGrid,
+#publicSiteRoot #previewPhotoGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 20px !important;
+  width: 100% !important;
+  max-width: 1120px;
+  margin-inline: auto;
+}
+
+.preview #previewPhotoGrid > .card,
+#publicSiteRoot #previewPhotoGrid > .card {
+  display: grid !important;
+  grid-template-rows: minmax(330px, auto) auto !important;
+  aspect-ratio: auto !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  border-radius: 26px !important;
+  background: var(--site-card) !important;
+}
+
+.preview #previewPhotoGrid > .card img,
+.preview #previewPhotoGrid > .card video,
+#publicSiteRoot #previewPhotoGrid > .card img,
+#publicSiteRoot #previewPhotoGrid > .card video {
+  position: relative !important;
+  inset: auto !important;
+  z-index: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 330px !important;
+  max-height: 540px !important;
+  aspect-ratio: 16 / 10 !important;
+  object-fit: cover !important;
+  object-position: center !important;
+  border-radius: 25px 25px 0 0 !important;
+}
+
+.preview #previewPhotoGrid > .card p,
+#publicSiteRoot #previewPhotoGrid > .card p {
+  position: relative !important;
+  inset: auto !important;
+  z-index: 3 !important;
+  display: block !important;
+  width: 100% !important;
+  min-height: 58px;
+  max-height: 180px;
+  margin: 0 !important;
+  padding: 15px 17px 17px !important;
+  overflow-y: auto !important;
+  color: var(--site-card-text) !important;
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--site-card) 92%, var(--site-theme)),
+      var(--site-card)
+    ) !important;
+  border: 0 !important;
+  border-top: 2px solid var(--site-theme) !important;
+  border-radius: 0 0 25px 25px !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.3) !important;
+  font-size: 14px !important;
+  font-weight: 650 !important;
+  line-height: 1.55 !important;
+  text-align: left !important;
+  text-shadow: none !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere;
+}
+
+/* The dark media overlay remains subtle and stays behind descriptions. */
+.preview #previewPhotoGrid > .card::after,
+.preview #previewGalleryGrid > .gallery-card::after,
+#publicSiteRoot #previewPhotoGrid > .card::after,
+#publicSiteRoot #previewGalleryGrid > .gallery-card::after {
+  z-index: 1 !important;
+  background: linear-gradient(
+    180deg,
+    rgba(0,0,0,.04) 0%,
+    rgba(0,0,0,.12) 58%,
+    rgba(0,0,0,.28) 100%
+  ) !important;
+}
+
+.preview #previewPhotoGrid > .card p,
+.preview #previewGalleryGrid > .gallery-card p,
+#publicSiteRoot #previewPhotoGrid > .card p,
+#publicSiteRoot #previewGalleryGrid > .gallery-card p {
+  z-index: 3 !important;
+}
+
+/* 3. Website header alignment: lower and vertically center all controls. */
+.preview .site-header,
+#publicSiteRoot .site-header {
+  min-height: 82px !important;
+  height: auto !important;
+  padding-top: 11px !important;
+  padding-bottom: 11px !important;
+  align-items: center !important;
+}
+
+.preview .site-brand-wrap,
+#publicSiteRoot .site-brand-wrap {
+  align-self: center !important;
+  align-items: center !important;
+}
+
+.preview .site-logo-frame,
+.preview .site-brand,
+.preview .site-call,
+.preview .site-menu-toggle,
+#publicSiteRoot .site-logo-frame,
+#publicSiteRoot .site-brand,
+#publicSiteRoot .site-call,
+#publicSiteRoot .site-menu-toggle {
+  align-self: center !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  transform: none;
+}
+
+/* Preserve the normal call-button hover lift without shifting its base position. */
+.preview .site-call:hover,
+#publicSiteRoot .site-call:hover {
+  transform: translateY(-2px) scale(1.03);
+}
+
+/* 4A. Main Bluvixa mobile navigation. */
+@media (max-width: 820px) {
+  .app-header {
+    height: 70px !important;
+    min-height: 70px !important;
+    padding: 8px 14px !important;
+    align-items: center !important;
+  }
+
+  body {
+    padding-top: 70px !important;
+  }
+
+  .mobile-menu-button {
+    display: inline-flex !important;
+    flex-direction: column;
+    justify-content: center;
+    align-items: stretch;
+    flex: 0 0 44px;
+    width: 44px !important;
+    height: 44px !important;
+    margin-left: auto;
+  }
+
+  .mobile-menu {
+    position: fixed !important;
+    top: 70px !important;
+    left: 10px !important;
+    right: 10px !important;
+    width: auto !important;
+    max-height: calc(100dvh - 82px) !important;
+    overflow-y: auto !important;
+    z-index: 5000 !important;
+    padding: 12px !important;
+    border-radius: 0 0 18px 18px !important;
+    transform: none !important;
+  }
+
+  .mobile-menu.hidden {
+    display: none !important;
+  }
+
+  .mobile-menu:not(.hidden) {
+    display: block !important;
+  }
+
+  .mobile-menu-public,
+  .mobile-menu-member {
+    width: 100%;
+  }
+}
+
+/* 4B. Builder preview and live/published website dropdown.
+      The navigation is positioned beneath the header instead of over the hero. */
+@media (max-width: 820px) {
+  .preview .site-header,
+  #publicSiteRoot .site-header {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 200 !important;
+    min-height: 76px !important;
+    padding: 10px 13px !important;
+    flex-wrap: nowrap !important;
+    overflow: visible !important;
+  }
+
+  .preview .site-brand-wrap,
+  #publicSiteRoot .site-brand-wrap {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  .preview .site-logo-frame,
+  #publicSiteRoot .site-logo-frame {
+    width: 46px !important;
+    height: 46px !important;
+    flex: 0 0 46px !important;
+  }
+
+  .preview .site-brand,
+  #publicSiteRoot .site-brand {
+    min-width: 0;
+    max-width: none !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .preview .site-menu-toggle,
+  #publicSiteRoot .site-menu-toggle {
+    display: inline-flex !important;
+    flex-direction: column;
+    justify-content: center;
+    flex: 0 0 42px !important;
+    width: 42px !important;
+    height: 42px !important;
+    order: initial !important;
+  }
+
+  .preview .site-call,
+  #publicSiteRoot .site-call {
+    flex: 0 0 auto;
+    min-width: 0 !important;
+    height: 42px !important;
+    min-height: 42px !important;
+    padding: 0 12px !important;
+    margin-left: 0 !important;
+    order: initial !important;
+  }
+
+  .preview .site-nav,
+  #publicSiteRoot .site-nav {
+    display: none !important;
+    position: absolute !important;
+    top: calc(100% + 1px) !important;
+    left: 10px !important;
+    right: 10px !important;
+    width: auto !important;
+    z-index: 500 !important;
+    margin: 0 !important;
+    padding: 10px !important;
+    flex-direction: column !important;
+    gap: 6px !important;
+    background:
+      linear-gradient(
+        160deg,
+        color-mix(in srgb, var(--site-header) 92%, #ffffff),
+        var(--site-header-dark)
+      ) !important;
+    border: 1px solid color-mix(in srgb, var(--site-theme) 60%, #ffffff) !important;
+    border-radius: 0 0 18px 18px !important;
+    box-shadow: 0 22px 46px rgba(0,0,0,.48) !important;
+    backdrop-filter: blur(22px) saturate(145%);
+  }
+
+  .preview .site-nav.open,
+  .preview .site-nav.active,
+  #publicSiteRoot .site-nav.open,
+  #publicSiteRoot .site-nav.active {
+    display: flex !important;
+  }
+
+  .preview .site-nav button,
+  #publicSiteRoot .site-nav button {
+    display: block !important;
+    width: 100% !important;
+    min-height: 44px;
+    padding: 11px 13px !important;
+    text-align: left !important;
+    color: #fff !important;
+    border: 1px solid color-mix(in srgb, var(--site-theme) 28%, transparent) !important;
+    border-radius: 11px !important;
+    background: color-mix(in srgb, var(--site-header) 80%, rgba(255,255,255,.12)) !important;
+  }
+}
+
+@media (max-width: 560px) {
+  .preview #previewPhotoGrid,
+  #publicSiteRoot #previewPhotoGrid {
+    grid-template-columns: 1fr !important;
+    gap: 18px !important;
+  }
+
+  .preview #previewPhotoGrid > .card,
+  #publicSiteRoot #previewPhotoGrid > .card {
+    grid-template-rows: minmax(360px, auto) auto !important;
+    border-radius: 24px !important;
+  }
+
+  .preview #previewPhotoGrid > .card img,
+  .preview #previewPhotoGrid > .card video,
+  #publicSiteRoot #previewPhotoGrid > .card img,
+  #publicSiteRoot #previewPhotoGrid > .card video {
+    min-height: 360px !important;
+    max-height: 600px !important;
+    aspect-ratio: 4 / 5 !important;
+    border-radius: 23px 23px 0 0 !important;
+  }
+
+  .preview #previewPhotoGrid > .card p,
+  #publicSiteRoot #previewPhotoGrid > .card p {
+    min-height: 64px;
+    padding: 16px !important;
+    border-radius: 0 0 23px 23px !important;
+    font-size: 14px !important;
+  }
+
+  .preview .site-header,
+  #publicSiteRoot .site-header {
+    gap: 8px !important;
+    padding-inline: 10px !important;
+  }
+
+  .preview .site-brand,
+  #publicSiteRoot .site-brand {
+    max-width: 120px !important;
+    font-size: .78rem !important;
+  }
+
+  .preview .site-call,
+  #publicSiteRoot .site-call {
+    max-width: 118px;
+    padding-inline: 9px !important;
+    font-size: .72rem !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
