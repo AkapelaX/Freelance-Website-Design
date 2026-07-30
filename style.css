@@ -9514,3 +9514,18 @@ body:not(.route-builder) .info * {
     min-height:0 !important;
     overflow:auto !important;
 }
+
+/* =========================================================
+   LIVE WEBSITE ONLY — SQUARE TOP EDGE
+   Removes the rounded top corners from the published website
+   without changing the builder preview.
+   ========================================================= */
+#publicSiteRoot {
+  border-top-left-radius: 0 !important;
+  border-top-right-radius: 0 !important;
+}
+
+#publicSiteRoot .site-header {
+  border-top-left-radius: 0 !important;
+  border-top-right-radius: 0 !important;
+}
