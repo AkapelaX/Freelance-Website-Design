@@ -928,7 +928,7 @@ h1 {
   border-left: 3px solid #219bff;
   background: rgba(255,255,255,.055);
   border-radius: 0 10px 10px 0;
-  color: #d7e4f4;
+  color: var(--heading-text-color, #ffffff);
   font-size: 14px;
   line-height: 1.55;
   border-left-color: var(--site-theme) !important;
@@ -9259,11 +9259,15 @@ textarea {
 }
 /* === Heading Text Color and Supporting Text Color === */
 .preview #previewHeadline,
+.preview #previewHeaderBios,
+.preview #previewHeaderBios *,
 .preview #previewAboutHeading,
 .preview #previewFeaturedHeading,
 .preview #previewGalleryHeading,
 .preview #previewMapAddress,
 #publicSiteRoot #previewHeadline,
+#publicSiteRoot #previewHeaderBios,
+#publicSiteRoot #previewHeaderBios *,
 #publicSiteRoot #previewAboutHeading,
 #publicSiteRoot #previewFeaturedHeading,
 #publicSiteRoot #previewGalleryHeading,
@@ -9273,15 +9277,11 @@ textarea {
 }
 
 .preview #previewTagline,
-.preview #previewHeaderBios,
-.preview #previewHeaderBios *,
 .preview #previewBusinessBio,
 .preview #previewFeaturedDescription,
 .preview #previewGalleryDescription,
 .preview #previewMapHeading,
 #publicSiteRoot #previewTagline,
-#publicSiteRoot #previewHeaderBios,
-#publicSiteRoot #previewHeaderBios *,
 #publicSiteRoot #previewBusinessBio,
 #publicSiteRoot #previewFeaturedDescription,
 #publicSiteRoot #previewGalleryDescription,
