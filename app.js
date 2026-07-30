@@ -66,6 +66,8 @@
       buttonColor: "#1769ff",
       cardColor: "#ffffff",
       cardTextColor: "#000000",
+      headingTextColor: "#ffffff",
+      supportingTextColor: "#d7e4f4",
       logoOutlineColor: "#61c7ff",
       scrollItems: "Home, Services, Gallery, Reviews, Contact",
       mapHeading: "Find Us",
@@ -741,7 +743,8 @@
       featuredDescription: "featuredDescription", galleryHeading: "galleryHeading",
       galleryDescription: "galleryDescription", themeColor: "themeColor",
       headerColor: "headerColor", buttonColor: "buttonColor", cardColor: "cardColor",
-      cardTextColor: "cardTextColor", logoOutlineColor: "logoOutlineColor", scrollItems: "scrollItems",
+      cardTextColor: "cardTextColor", headingTextColor: "headingTextColor",
+      supportingTextColor: "supportingTextColor", logoOutlineColor: "logoOutlineColor", scrollItems: "scrollItems",
       mapHeading: "mapHeading", businessAddress: "businessAddress", mapEmbedUrl: "mapEmbedUrl"
     };
     Object.entries(mappings).forEach(([key, id]) => {
@@ -766,7 +769,8 @@
       featuredDescription: "featuredDescription", galleryHeading: "galleryHeading",
       galleryDescription: "galleryDescription", themeColor: "themeColor",
       headerColor: "headerColor", buttonColor: "buttonColor", cardColor: "cardColor",
-      cardTextColor: "cardTextColor", logoOutlineColor: "logoOutlineColor", scrollItems: "scrollItems",
+      cardTextColor: "cardTextColor", headingTextColor: "headingTextColor",
+      supportingTextColor: "supportingTextColor", logoOutlineColor: "logoOutlineColor", scrollItems: "scrollItems",
       mapHeading: "mapHeading", businessAddress: "businessAddress", mapEmbedUrl: "mapEmbedUrl"
     };
     Object.entries(mappings).forEach(([key, id]) => { if ($(id)) $(id).value = d[key] ?? ""; });
@@ -955,7 +959,7 @@
   }
 
   function updateColorLabels() {
-    ["themeColor", "headerColor", "buttonColor", "cardColor", "cardTextColor", "logoOutlineColor"].forEach((id) => {
+    ["themeColor", "headerColor", "buttonColor", "cardColor", "cardTextColor", "headingTextColor", "supportingTextColor", "logoOutlineColor"].forEach((id) => {
       const label = $(`${id}Value`);
       if (label && $(id)) label.textContent = $(id).value;
     });
@@ -1064,6 +1068,8 @@
     preview.style.setProperty("--button-color", d.buttonColor);
     preview.style.setProperty("--card-color", d.cardColor);
     preview.style.setProperty("--card-text-color", d.cardTextColor);
+    preview.style.setProperty("--heading-text-color", d.headingTextColor);
+    preview.style.setProperty("--supporting-text-color", d.supportingTextColor);
     preview.style.setProperty("--logo-outline-color", d.logoOutlineColor);
 
     const header = preview.querySelector(".site-header");
@@ -1461,16 +1467,16 @@
 
   function setupThemePresets() {
     const presets = {
-      blue: ["#1769ff", "#082b5e", "#1769ff", "#ffffff", "#000000", "#61c7ff"],
-      purple: ["#7c3aed", "#2e1065", "#7c3aed", "#ffffff", "#000000", "#c4b5fd"],
-      red: ["#dc2626", "#450a0a", "#dc2626", "#ffffff", "#000000", "#fca5a5"],
-      green: ["#059669", "#022c22", "#059669", "#ffffff", "#000000", "#6ee7b7"],
-      orange: ["#ea580c", "#431407", "#ea580c", "#ffffff", "#000000", "#fdba74"]
+      blue: ["#1769ff", "#082b5e", "#1769ff", "#ffffff", "#000000", "#ffffff", "#d7e4f4", "#61c7ff"],
+      purple: ["#7c3aed", "#2e1065", "#7c3aed", "#ffffff", "#000000", "#ffffff", "#ede9fe", "#c4b5fd"],
+      red: ["#dc2626", "#450a0a", "#dc2626", "#ffffff", "#000000", "#ffffff", "#fee2e2", "#fca5a5"],
+      green: ["#059669", "#022c22", "#059669", "#ffffff", "#000000", "#ffffff", "#d1fae5", "#6ee7b7"],
+      orange: ["#ea580c", "#431407", "#ea580c", "#ffffff", "#000000", "#ffffff", "#ffedd5", "#fdba74"]
     };
     $$(".theme-preset").forEach((button) => button.addEventListener("click", () => {
       const values = presets[button.dataset.theme];
       if (!values) return;
-      ["themeColor", "headerColor", "buttonColor", "cardColor", "cardTextColor", "logoOutlineColor"].forEach((id, index) => {
+      ["themeColor", "headerColor", "buttonColor", "cardColor", "cardTextColor", "headingTextColor", "supportingTextColor", "logoOutlineColor"].forEach((id, index) => {
         if ($(id)) $(id).value = values[index];
       });
       $$(".theme-preset").forEach((node) => node.classList.toggle("active", node === button));
@@ -1846,7 +1852,7 @@
       "businessName","businessBio","phoneNumber","emailAddress","businessHours","callButtonText",
       "headerTagline","headerHeadline","headerBio","aboutHeading","featuredHeading","featuredDescription",
       "galleryHeading","galleryDescription","themeColor","headerColor","buttonColor","cardColor","cardTextColor",
-      "logoOutlineColor","scrollItems","mapHeading","businessAddress","mapEmbedUrl","projectSlug","customDomain"
+      "headingTextColor","supportingTextColor","logoOutlineColor","scrollItems","mapHeading","businessAddress","mapEmbedUrl","projectSlug","customDomain"
     ];
     formIds.forEach((id) => {
       $(id)?.addEventListener("input", () => { updateColorLabels(); renderPreview(); queueAutosave(); });

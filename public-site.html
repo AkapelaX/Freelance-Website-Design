@@ -235,6 +235,8 @@
       buttonColor: first(candidate.buttonColor, nestedDesign.buttonColor, "#1769ff"),
       cardColor: first(candidate.cardColor, nestedDesign.cardColor, "#ffffff"),
       cardTextColor: first(candidate.cardTextColor, nestedDesign.cardTextColor, "#000000"),
+      headingTextColor: first(candidate.headingTextColor, nestedDesign.headingTextColor, "#ffffff"),
+      supportingTextColor: first(candidate.supportingTextColor, nestedDesign.supportingTextColor, "#d7e4f4"),
       logoOutlineColor: first(candidate.logoOutlineColor, nestedDesign.logoOutlineColor, "#61c7ff"),
       scrollItems: candidate.scrollItems != null ? candidate.scrollItems : (nestedDesign.scrollItems != null ? nestedDesign.scrollItems : nestedDesign.scroll),
       photos: Array.isArray(candidate.photos) ? candidate.photos : Array.isArray(candidate.featured) ? candidate.featured : Array.isArray(candidate.uploads) ? candidate.uploads : Array.isArray(project.content_cards) ? project.content_cards : [],
@@ -314,6 +316,8 @@
     preview.style.setProperty("--site-card-muted", d.cardTextColor);
     preview.style.setProperty("--card-color", d.cardColor);
     preview.style.setProperty("--card-text-color", d.cardTextColor);
+    preview.style.setProperty("--heading-text-color", d.headingTextColor);
+    preview.style.setProperty("--supporting-text-color", d.supportingTextColor);
     preview.style.setProperty("--site-logo-outline", d.logoOutlineColor);
 
     const scrollItems = Array.isArray(d.scrollItems)
