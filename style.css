@@ -9495,3 +9495,22 @@ body:not(.route-builder) .info * {
     overflow-x: hidden;
   }
 }
+/* ===== FINAL BUILDER SCROLLBAR POLISH ===== */
+
+.builder-shell{
+    overflow:hidden !important;
+}
+
+.workspace{
+    height:100% !important;
+    min-height:0 !important;
+    max-height:none !important;
+    overflow:hidden !important;
+}
+
+.preview-wrap{
+    flex:1 1 auto !important;
+    height:100% !important;
+    min-height:0 !important;
+    overflow:auto !important;
+}
