@@ -9141,3 +9141,35 @@ textarea {
     color: #ffffff !important;
   }
 }
+
+/* =========================================================
+   BLUVIXA 4.0 — FINAL TEXT VISIBILITY TOUCH-UP
+   Only corrects the two component types whose lettering was
+   being held black by the previous broad text-color rule.
+   No other CSS is replaced or changed.
+   ========================================================= */
+
+/* Scroll-bar item buttons need visible white lettering on dark card colors. */
+.preview .scroll-chip,
+.preview .scroll-chip *,
+#publicSiteRoot .scroll-chip,
+#publicSiteRoot .scroll-chip * {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+/* Business/contact information cards need visible white lettering
+   when the selected information-card color is dark. */
+.preview .info,
+.preview .info div,
+.preview .info strong,
+.preview .info span,
+.preview .info a,
+#publicSiteRoot .info,
+#publicSiteRoot .info div,
+#publicSiteRoot .info strong,
+#publicSiteRoot .info span,
+#publicSiteRoot .info a {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
