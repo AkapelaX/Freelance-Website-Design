@@ -9173,3 +9173,51 @@ textarea {
   color: #ffffff !important;
   -webkit-text-fill-color: #ffffff !important;
 }
+
+/* =========================================================
+   BLUVIXA 4.0 — CARD COLOR CONTRAST FIX
+   The Information Cards color control applies only to:
+   - business/contact information cards
+   - uploaded media description cards
+   Text automatically becomes black or white from the value
+   calculated by the application JavaScript.
+   ========================================================= */
+
+.preview .info,
+.preview .info *,
+#publicSiteRoot .info,
+#publicSiteRoot .info * {
+  color: var(--site-card-text, var(--card-text-color, #000000)) !important;
+  -webkit-text-fill-color: var(--site-card-text, var(--card-text-color, #000000)) !important;
+}
+
+.preview .info div,
+#publicSiteRoot .info div {
+  color: var(--site-card-muted, var(--card-muted-color, rgba(0,0,0,.72))) !important;
+  -webkit-text-fill-color: var(--site-card-muted, var(--card-muted-color, rgba(0,0,0,.72))) !important;
+}
+
+.preview #previewPhotoGrid > .card > p,
+.preview #previewGalleryGrid > .gallery-card > p,
+.preview .content-card .content-body,
+.preview .content-card .content-body h4,
+.preview .content-card .content-body p,
+#publicSiteRoot #previewPhotoGrid > .card > p,
+#publicSiteRoot #previewGalleryGrid > .gallery-card > p,
+#publicSiteRoot .content-card .content-body,
+#publicSiteRoot .content-card .content-body h4,
+#publicSiteRoot .content-card .content-body p {
+  color: var(--site-card-text, var(--card-text-color, #000000)) !important;
+  -webkit-text-fill-color: var(--site-card-text, var(--card-text-color, #000000)) !important;
+  text-shadow: none !important;
+}
+
+.preview #previewPhotoGrid > .card > p,
+.preview #previewGalleryGrid > .gallery-card > p,
+.preview .content-card .content-body p,
+#publicSiteRoot #previewPhotoGrid > .card > p,
+#publicSiteRoot #previewGalleryGrid > .gallery-card > p,
+#publicSiteRoot .content-card .content-body p {
+  color: var(--site-card-muted, var(--card-muted-color, rgba(0,0,0,.72))) !important;
+  -webkit-text-fill-color: var(--site-card-muted, var(--card-muted-color, rgba(0,0,0,.72))) !important;
+}
