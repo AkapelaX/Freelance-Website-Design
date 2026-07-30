@@ -65,8 +65,6 @@
       headerColor: "#082b5e",
       buttonColor: "#1769ff",
       cardColor: "#ffffff",
-      cardTextColor: "#000000",
-      cardMutedColor: "rgba(0,0,0,.72)",
       logoOutlineColor: "#61c7ff",
       scrollItems: "Home, Services, Gallery, Reviews, Contact",
       mapHeading: "Find Us",
@@ -748,10 +746,6 @@
     Object.entries(mappings).forEach(([key, id]) => {
       if ($(id)) d[key] = $(id).value;
     });
-    const cardColors = getReadableCardColors(d.cardColor);
-    d.cardTextColor = cardColors.text;
-    d.cardMutedColor = cardColors.muted;
-
     project.plan = currentSelectedPlan();
     project.name = text(d.businessName) || project.name || "Untitled Website";
     project.slug = slugify($("projectSlug")?.value || project.slug || project.name);
@@ -959,41 +953,72 @@
     }
   }
 
-
-  function getReadableCardColors(color) {
-    const value = text(color).replace("#", "");
-    const normalized = value.length === 3
-      ? value.split("").map((character) => character + character).join("")
-      : value.padEnd(6, "f").slice(0, 6);
-
-    const red = parseInt(normalized.slice(0, 2), 16);
-    const green = parseInt(normalized.slice(2, 4), 16);
-    const blue = parseInt(normalized.slice(4, 6), 16);
-
-    const channel = (number) => {
-      const decimal = number / 255;
-      return decimal <= 0.03928
-        ? decimal / 12.92
-        : Math.pow((decimal + 0.055) / 1.055, 2.4);
-    };
-
-    const luminance =
-      (0.2126 * channel(red)) +
-      (0.7152 * channel(green)) +
-      (0.0722 * channel(blue));
-
-    const useDarkText = luminance > 0.179;
-
-    return {
-      text: useDarkText ? "#000000" : "#ffffff",
-      muted: useDarkText ? "rgba(0,0,0,.72)" : "rgba(255,255,255,.78)"
-    };
-  }
-
   function updateColorLabels() {
     ["themeColor", "headerColor", "buttonColor", "cardColor", "logoOutlineColor"].forEach((id) => {
       const label = $(`${id}Value`);
       if (label && $(id)) label.textContent = $(id).value;
+    });
+  }
+
+  function getCardContrastColors(color) {
+    const raw = text(color).replace("#", "");
+    const hex = raw.length === 3
+      ? raw.split("").map((character) => character + character).join("")
+      : raw.padEnd(6, "f").slice(0, 6);
+
+    const red = Number.parseInt(hex.slice(0, 2), 16);
+    const green = Number.parseInt(hex.slice(2, 4), 16);
+    const blue = Number.parseInt(hex.slice(4, 6), 16);
+
+    const linearize = (channel) => {
+      const value = channel / 255;
+      return value <= 0.03928
+        ? value / 12.92
+        : Math.pow((value + 0.055) / 1.055, 2.4);
+    };
+
+    const luminance =
+      (0.2126 * linearize(red)) +
+      (0.7152 * linearize(green)) +
+      (0.0722 * linearize(blue));
+
+    const darkText = luminance > 0.179;
+
+    return {
+      main: darkText ? "#000000" : "#ffffff",
+      muted: darkText ? "rgba(0,0,0,.72)" : "rgba(255,255,255,.78)"
+    };
+  }
+
+  function applyCardColorScheme(root, cardColor) {
+    if (!root) return;
+
+    const colors = getCardContrastColors(cardColor);
+    root.style.setProperty("--site-card", cardColor);
+    root.style.setProperty("--site-card-text", colors.main);
+    root.style.setProperty("--site-card-muted", colors.muted);
+
+    const cardSelectors = [
+      ".info",
+      "#previewPhotoGrid > .card",
+      "#previewGalleryGrid > .gallery-card",
+      ".content-card"
+    ].join(",");
+
+    root.querySelectorAll(cardSelectors).forEach((card) => {
+      card.style.setProperty("background-color", cardColor, "important");
+      card.style.setProperty("color", colors.main, "important");
+      card.style.setProperty("-webkit-text-fill-color", colors.main, "important");
+
+      card.querySelectorAll("*").forEach((child) => {
+        const isDescription =
+          child.matches("p") ||
+          child.classList.contains("content-body");
+
+        const childColor = isDescription ? colors.muted : colors.main;
+        child.style.setProperty("color", childColor, "important");
+        child.style.setProperty("-webkit-text-fill-color", childColor, "important");
+      });
     });
   }
 
@@ -1065,15 +1090,7 @@
     preview.style.setProperty("--theme-color", d.themeColor);
     preview.style.setProperty("--header-color", d.headerColor);
     preview.style.setProperty("--button-color", d.buttonColor);
-    const cardColors = getReadableCardColors(d.cardColor);
-    d.cardTextColor = cardColors.text;
-    d.cardMutedColor = cardColors.muted;
-
     preview.style.setProperty("--card-color", d.cardColor);
-    preview.style.setProperty("--site-card-text", d.cardTextColor);
-    preview.style.setProperty("--site-card-muted", d.cardMutedColor);
-    preview.style.setProperty("--card-text-color", d.cardTextColor);
-    preview.style.setProperty("--card-muted-color", d.cardMutedColor);
     preview.style.setProperty("--logo-outline-color", d.logoOutlineColor);
 
     const header = preview.querySelector(".site-header");
@@ -1081,7 +1098,6 @@
     if (header) header.style.backgroundColor = d.headerColor;
     if (footer) footer.style.backgroundColor = d.headerColor;
     preview.querySelectorAll(".site-call,.hero-cta").forEach((button) => button.style.backgroundColor = d.buttonColor);
-    preview.querySelectorAll(".card,.gallery-card").forEach((card) => card.style.backgroundColor = d.cardColor);
     if ($("previewLogoFrame")) $("previewLogoFrame").style.borderColor = d.logoOutlineColor;
 
     const scroll = $("previewScroll");
@@ -1090,6 +1106,10 @@
 
     renderMediaGrid("previewPhotoGrid", d.photos, "card");
     renderMediaGrid("previewGalleryGrid", d.gallery, "gallery-card");
+
+    // Apply after rendering because renderMediaGrid replaces the upload-card DOM.
+    applyCardColorScheme(preview, d.cardColor);
+
     if ($("previewPhotoCount")) $("previewPhotoCount").textContent = `${d.photos.length} uploads`;
     if ($("previewGalleryCount")) $("previewGalleryCount").textContent = `${d.gallery.length} uploads`;
 
