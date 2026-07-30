@@ -9289,21 +9289,3 @@ textarea {
   color: var(--supporting-text-color, #d7e4f4) !important;
   -webkit-text-fill-color: var(--supporting-text-color, #d7e4f4) !important;
 }
-/* =========================================================
-   PREVIEW + LIVE SITE STICKY NAVIGATION FIX
-   ========================================================= */
-
-.preview,
-#publicSiteRoot {
-  overflow: clip !important;
-}
-
-.preview .site-header,
-#publicSiteRoot .site-header {
-  position: sticky !important;
-  position: -webkit-sticky !important;
-  top: 0 !important;
-  z-index: 1000 !important;
-  width: 100% !important;
-  align-self: stretch;
-}
