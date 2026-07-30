@@ -1,10 +1,11 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Bluvixa 4.0 — Website Builder</title>
-<meta name="description" content="Build, save, publish, manage, and own professional websites with Bluvixa."/>
+<meta content="Build, save, publish, manage, and own professional websites with Bluvixa." name="description"/>
 <link href="hero-bluvixa-webicon.webp?v=5" rel="icon" type="image/webp"/>
 <link href="assets/bluvixa-favicon.png?v=5" rel="apple-touch-icon"/>
 <link href="style.css?v=20260729-preview-live-overlay" rel="stylesheet"/>
@@ -21,7 +22,7 @@
 <body class="route-home">
 <header class="app-header">
 <a class="app-brand" href="#home">
-<div class="app-brand-mark"><img src="hero-bluvixa-webicon.webp" alt="Bluvixa"/></div>
+<div class="app-brand-mark"><img alt="Bluvixa" src="hero-bluvixa-webicon.webp"/></div>
 <div><strong>BLUVIXA</strong><small>WEBSITE PLATFORM</small></div>
 </a>
 <nav class="public-nav" id="publicNav">
@@ -30,19 +31,19 @@
 <a href="#builder">Try Builder</a>
 </nav>
 <nav class="member-nav hidden" id="memberNav">
-<a href="#projects" data-route-link="projects">My Websites</a>
-<a href="#drafts" data-route-link="drafts">Saved Drafts</a>
-<a href="#builder" data-route-link="builder">Builder</a>
-<a href="#billing" data-route-link="billing">Billing & Ownership</a>
-<a href="#domains" data-route-link="domains">Domains & Publishing</a>
+<a data-route-link="projects" href="#projects">My Websites</a>
+<a data-route-link="drafts" href="#drafts">Saved Drafts</a>
+<a data-route-link="builder" href="#builder">Builder</a>
+<a data-route-link="billing" href="#billing">Billing &amp; Ownership</a>
+<a data-route-link="domains" href="#domains">Domains &amp; Publishing</a>
 </nav>
 <div class="header-actions">
-<button class="mobile-menu-button" id="mobileMenuButton" type="button" aria-expanded="false" aria-controls="mobileMenu" aria-label="Open navigation">
+<button aria-controls="mobileMenu" aria-expanded="false" aria-label="Open navigation" class="mobile-menu-button" id="mobileMenuButton" type="button">
 <span></span><span></span><span></span>
 </button>
 <button class="btn btn-ghost hidden" id="signInBtn" type="button">Sign In</button>
 <button class="btn btn-primary hidden" id="startTrialBtn" type="button">Start Free Trial</button>
-<button class="avatar-button hidden backend-only" id="accountNavLink" type="button" aria-label="Open dashboard">B</button>
+<button aria-label="Open dashboard" class="avatar-button hidden backend-only" id="accountNavLink" type="button">B</button>
 <button class="btn btn-ghost hidden backend-only" id="signOutBtn" type="button">Sign Out</button>
 </div>
 </header>
@@ -68,7 +69,6 @@
 <button class="btn btn-secondary backend-only" id="mobileSignOutBtn" type="button">Sign Out</button>
 </div>
 </div>
-
 <div class="session-loading-screen" id="sessionLoadingScreen">
 <div class="session-loading-card">
 <div class="session-loading-logo">B</div>
@@ -76,9 +76,8 @@
 <span>Checking your membership…</span>
 </div>
 </div>
-
 <main>
-<section class="app-page landing-page" id="home" data-page="home">
+<section class="app-page landing-page" data-page="home" id="home">
 <div class="landing-grid">
 <div class="landing-copy">
 <span class="landing-badge">A COMPLETE WEBSITE WORKSPACE</span>
@@ -86,7 +85,7 @@
 <p>Bluvixa combines a visual website builder, member dashboard, saved-draft library, subscription management, publishing controls, and one-time website buyouts.</p>
 <div class="landing-actions">
 <button class="btn btn-primary btn-large" id="landingStartBtn" type="button">Start 7-Day Free Trial</button>
-<a class="btn btn-secondary btn-large" id="landingSecondaryBtn" href="#builder">Preview the Builder</a>
+<a class="btn btn-secondary btn-large" href="#builder" id="landingSecondaryBtn">Preview the Builder</a>
 </div>
 <div class="landing-proof">
 <div><strong>Visual Builder</strong><span>Design without code</span></div>
@@ -113,9 +112,7 @@
 </div>
 </div>
 </section>
-
-
-<section class="app-page projects-page backend-only" id="projects" data-page="projects">
+<section class="app-page projects-page backend-only" data-page="projects" id="projects">
 <div class="member-shell">
 <aside class="member-sidebar">
 <div class="sidebar-user">
@@ -126,12 +123,11 @@
 <a class="active" href="#projects"><span>▦</span> My Websites</a>
 <a href="#drafts"><span>▤</span> Saved Drafts</a>
 <a href="#builder"><span>✎</span> Website Builder</a>
-<a href="#billing"><span>$</span> Billing & Ownership</a>
-<a href="#domains"><span>◎</span> Domains & Publishing</a>
+<a href="#billing"><span>$</span> Billing &amp; Ownership</a>
+<a href="#domains"><span>◎</span> Domains &amp; Publishing</a>
 </nav>
 <div class="sidebar-bottom"><button class="btn btn-ghost backend-only" id="accountSignOutBtn" type="button">Sign Out</button></div>
 </aside>
-
 <div class="member-content">
 <div class="member-page-head">
 <div>
@@ -141,14 +137,12 @@
 </div>
 <button class="btn btn-primary" id="createWebsiteBtn" type="button">Create New Website</button>
 </div>
-
 <div class="membership-strip" id="memberConfirmation">
 <div class="membership-check">✓</div>
 <div><small>MEMBER ACCOUNT</small><strong id="memberConfirmationTitle">You are signed in</strong></div>
 <div class="membership-plan"><small>PLAN</small><strong id="accountPlan">No active plan</strong></div>
 <div class="membership-plan"><small>STATUS</small><strong id="accountBillingStatus">Not subscribed</strong></div>
 </div>
-
 <div class="trial-home-card" id="trialHomeCard">
 <div class="trial-home-icon">7</div>
 <div class="trial-home-copy">
@@ -158,10 +152,9 @@
 </div>
 <div class="trial-home-actions">
 <a class="btn btn-primary" href="#builder">Open Builder</a>
-<a class="btn btn-secondary" href="#billing">Billing & Ownership</a>
+<a class="btn btn-secondary" href="#billing">Billing &amp; Ownership</a>
 </div>
 </div>
-
 <div class="website-library-toolbar">
 <div class="draft-search"><span>⌕</span><input id="projectSearchInput" placeholder="Search websites"/></div>
 <div class="website-library-stats">
@@ -170,14 +163,11 @@
 <div><strong id="draftProjectCount">0</strong><span>Drafts</span></div>
 </div>
 </div>
-
 <div class="website-library-grid" id="websiteLibraryGrid"></div>
 </div>
 </div>
 </section>
-
-
-<section class="app-page drafts-page backend-only" id="drafts" data-page="drafts">
+<section class="app-page drafts-page backend-only" data-page="drafts" id="drafts">
 <div class="member-shell">
 <aside class="member-sidebar">
 <div class="sidebar-user"><div class="sidebar-avatar">B</div><div><small>BLUVIXA MEMBER</small><strong id="draftsMemberEmail">Your account</strong></div></div>
@@ -185,11 +175,10 @@
 <a href="#projects"><span>▦</span> My Websites</a>
 <a class="active" href="#drafts"><span>▤</span> Saved Drafts</a>
 <a href="#builder"><span>✎</span> Website Builder</a>
-<a href="#billing"><span>$</span> Billing & Ownership</a>
-<a href="#domains"><span>◎</span> Domains & Publishing</a>
+<a href="#billing"><span>$</span> Billing &amp; Ownership</a>
+<a href="#domains"><span>◎</span> Domains &amp; Publishing</a>
 </nav>
 </aside>
-
 <div class="member-content">
 <div class="member-page-head">
 <div>
@@ -202,33 +191,29 @@
 <button class="btn btn-primary" id="createWebsiteFromDraftsBtn" type="button">Create New Website</button>
 </div>
 </div>
-
 <div class="draft-toolbar">
 <div class="draft-search"><span>⌕</span><input id="draftSearchInput" placeholder="Search drafts and websites"/></div>
 <div class="draft-filter-buttons">
-<button class="active" type="button" data-draft-filter="all">All</button>
-<button type="button" data-draft-filter="project">Websites</button>
-<button type="button" data-draft-filter="snapshot">Snapshots</button>
-<button type="button" data-draft-filter="incomplete">Incomplete</button>
+<button class="active" data-draft-filter="all" type="button">All</button>
+<button data-draft-filter="project" type="button">Websites</button>
+<button data-draft-filter="snapshot" type="button">Snapshots</button>
+<button data-draft-filter="incomplete" type="button">Incomplete</button>
 </div>
 <div class="draft-count"><strong id="savedDraftCount">0</strong><span>items</span></div>
 </div>
-
 <div class="draft-ownership-explainer">
 <div>
 <small>HOW BUYOUTS WORK</small>
 <h2>Buy out any finished website when you are ready.</h2>
 <p>Your subscription lets you build and manage websites. A buyout is a separate one-time purchase for a specific website. After Stripe confirms that website’s buyout, its ZIP export unlocks permanently.</p>
 </div>
-<a class="btn btn-secondary" href="#billing">Read Billing & Ownership</a>
+<a class="btn btn-secondary" href="#billing">Read Billing &amp; Ownership</a>
 </div>
-
 <div class="saved-drafts-grid" id="savedDraftsGrid"></div>
 </div>
 </div>
 </section>
-
-<section class="app-page builder-page" id="builder" data-page="builder">
+<section class="app-page builder-page" data-page="builder" id="builder">
 <div class="container">
 <div class="workspace-page-head">
 <div>
@@ -258,14 +243,13 @@
 <button class="tab" data-tab="gallery" type="button">Gallery</button>
 <button class="tab" data-tab="design" type="button">Design</button>
 <button class="tab" data-tab="map" type="button">Map</button>
-
 <button class="tab domain-tab" data-tab="project" type="button">Domain</button>
 </div>
 <section class="panel active" data-panel="business">
 <div class="group">
 <label for="planSelect">Your plan</label>
-<select class="select" id="planSelect" disabled aria-readonly="true">
-<option selected value="starter">Starter</option>
+<select aria-readonly="true" class="select" disabled="" id="planSelect">
+<option selected="" value="starter">Starter</option>
 </select>
 <small class="plan-lock-note">Plan changes are managed from Billing.</small>
 </div>
@@ -425,7 +409,7 @@
 <div class="color-control"><label for="themeColor">Overall page theme</label><input id="themeColor" type="color" value="#1769ff"/><span id="themeColorValue">#1769ff</span></div>
 <div class="color-control"><label for="headerColor">Header and footer</label><input id="headerColor" type="color" value="#082b5e"/><span id="headerColorValue">#082b5e</span></div>
 <div class="color-control"><label for="buttonColor">Buttons</label><input id="buttonColor" type="color" value="#1769ff"/><span id="buttonColorValue">#1769ff</span></div>
-<div class="color-control"><label for="cardColor">Information cards</label><input id="cardColor" type="color" value="#ffffff"/><span id="cardColorValue">#ffffff</span></div>
+<div class="color-control"><label for="cardColor">Information cards</label><input id="cardColor" type="color" value="#ffffff"/><span id="cardColorValue">#ffffff</span><div class="information-card-text-preview">Information card text</div></div>
 <div class="color-control"><label for="logoOutlineColor">Logo outline</label><input id="logoOutlineColor" type="color" value="#61c7ff"/><span id="logoOutlineColorValue">#61c7ff</span></div>
 </div>
 <div class="group">
@@ -479,27 +463,27 @@
 <div class="group">
 <label>Website domain</label>
 <label class="domain-choice">
-<input checked="" id="domainModeSubdomain" name="domainMode" type="radio" value="subdomain">
+<input checked="" id="domainModeSubdomain" name="domainMode" type="radio" value="subdomain"/>
 <span>
 <strong>Use a Bluvixa address</strong>
 <small>Fastest option. No DNS setup required.</small>
 </span>
-</input></label>
+</label>
 <label class="domain-choice">
-<input id="domainModeCustom" name="domainMode" type="radio" value="custom">
+<input id="domainModeCustom" name="domainMode" type="radio" value="custom"/>
 <span>
 <strong>Connect my own domain</strong>
 <small>Use a domain purchased from any registrar.</small>
 </span>
-</input></label>
+</label>
 </div>
 <div id="subdomainSettings">
 <div class="group">
 <label for="projectSlug">Bluvixa website address</label>
 <div class="domain-input-row">
-<input class="input" id="projectSlug" value="">
+<input class="input" id="projectSlug" value=""/>
 <span>.bluvixa.com</span>
-</input></div>
+</div>
 <div class="domain-preview" id="subdomainPreview">https://summit-auto-care.bluvixa.com</div>
 </div>
 <button class="btn btn-secondary" id="checkSubdomainBtn" style="width:100%" type="button">
@@ -509,8 +493,8 @@
 <div class="hidden" id="customDomainSettings">
 <div class="group">
 <label for="customDomain">Domain you own</label>
-<input class="input" id="customDomain" placeholder="example.com" value="">
-</input></div>
+<input class="input" id="customDomain" placeholder="example.com" value=""/>
+</div>
 <button class="btn btn-secondary" id="connectDomainBtn" style="width:100%;margin-bottom:10px" type="button">
                   Connect Domain
                 </button>
@@ -555,11 +539,10 @@
 <button class="btn btn-primary backend-only" id="publishBtn" type="button">Publish</button>
 </div>
 </aside>
-<div class="builder-resizer" id="builderResizer" role="separator" aria-label="Resize website editor" aria-orientation="vertical" tabindex="0"></div>
+<div aria-label="Resize website editor" aria-orientation="vertical" class="builder-resizer" id="builderResizer" role="separator" tabindex="0"></div>
 <section class="workspace">
 <div class="toolbar">
 <div class="toolbar-left">
-
 <button class="device active" data-device="desktop" type="button">▰</button>
 <button class="device" data-device="tablet" type="button">▯</button>
 <button class="device" data-device="mobile" type="button">▯</button>
@@ -578,15 +561,15 @@
 </div>
 <div class="site-brand" id="previewBusinessName">YOUR BUSINESS</div>
 </div>
-<button class="site-menu-toggle" id="previewMenuToggle" type="button" aria-label="Open website navigation" aria-expanded="false">
+<button aria-expanded="false" aria-label="Open website navigation" class="site-menu-toggle" id="previewMenuToggle" type="button">
 <span></span><span></span><span></span>
 </button>
-<nav class="site-nav" id="previewSiteNav" aria-label="Website sections">
-<button type="button" data-preview-target="previewHero">Home</button>
-<button type="button" data-preview-target="previewAboutSection">About</button>
-<button type="button" data-preview-target="previewFeaturedSection">Services</button>
-<button type="button" data-preview-target="previewGallerySection">Display</button>
-<button type="button" data-preview-target="previewMapSection">Location</button>
+<nav aria-label="Website sections" class="site-nav" id="previewSiteNav">
+<button data-preview-target="previewHero" type="button">Home</button>
+<button data-preview-target="previewAboutSection" type="button">About</button>
+<button data-preview-target="previewFeaturedSection" type="button">Services</button>
+<button data-preview-target="previewGallerySection" type="button">Display</button>
+<button data-preview-target="previewMapSection" type="button">Location</button>
 </nav>
 <a class="site-call" href="tel:+15595550199" id="previewCallButton">Call Now</a>
 </header>
@@ -614,24 +597,24 @@
 </div>
 </section>
 <section class="content-section cover-background preview-cover-section preview-upload-section" id="previewFeaturedSection">
-<div class="section-cover hidden" id="previewFeaturedCover" aria-hidden="true"></div>
+<div aria-hidden="true" class="section-cover hidden" id="previewFeaturedCover"></div>
 <div class="section-label">
 <div>
-<h3 id="previewFeaturedHeading" hidden></h3>
+<h3 hidden="" id="previewFeaturedHeading"></h3>
 <p id="previewFeaturedDescription"></p>
 </div>
-<small id="previewPhotoCount" hidden></small>
+<small hidden="" id="previewPhotoCount"></small>
 </div>
 <div class="cards preview-upload-grid" id="previewPhotoGrid"></div>
 </section>
 <section class="gallery-section cover-background preview-cover-section preview-upload-section" id="previewGallerySection">
-<div class="section-cover hidden" id="previewGalleryCover" aria-hidden="true"></div>
+<div aria-hidden="true" class="section-cover hidden" id="previewGalleryCover"></div>
 <div class="section-label">
 <div>
-<h3 id="previewGalleryHeading" hidden></h3>
+<h3 hidden="" id="previewGalleryHeading"></h3>
 <p id="previewGalleryDescription"></p>
 </div>
-<small id="previewGalleryCount" hidden></small>
+<small hidden="" id="previewGalleryCount"></small>
 </div>
 <div class="gallery-grid preview-upload-grid" id="previewGalleryGrid"></div>
 </section>
@@ -653,9 +636,7 @@
 </div>
 </div>
 </section>
-
-
-<section class="app-page billing-page backend-only" id="billing" data-page="billing">
+<section class="app-page billing-page backend-only" data-page="billing" id="billing">
 <div class="member-shell">
 <aside class="member-sidebar">
 <div class="sidebar-user"><div class="sidebar-avatar">B</div><div><small>BLUVIXA MEMBER</small><strong>Billing center</strong></div></div>
@@ -663,21 +644,19 @@
 <a href="#projects"><span>▦</span> My Websites</a>
 <a href="#drafts"><span>▤</span> Saved Drafts</a>
 <a href="#builder"><span>✎</span> Website Builder</a>
-<a class="active" href="#billing"><span>$</span> Billing & Ownership</a>
-<a href="#domains"><span>◎</span> Domains & Publishing</a>
+<a class="active" href="#billing"><span>$</span> Billing &amp; Ownership</a>
+<a href="#domains"><span>◎</span> Domains &amp; Publishing</a>
 </nav>
 </aside>
-
 <div class="member-content">
 <div class="member-page-head">
 <div>
-<span class="workspace-kicker">BILLING & OWNERSHIP</span>
+<span class="workspace-kicker">BILLING &amp; OWNERSHIP</span>
 <h1>Simple subscription access. Permanent website ownership.</h1>
 <p>Your Bluvixa subscription and website buyouts are separate so customers always know exactly what they are paying for.</p>
 </div>
 <button class="btn btn-primary backend-only" id="manageBillingBtn" type="button">Manage Subscription</button>
 </div>
-
 <div class="billing-explanation-grid">
 <article class="billing-explainer-card subscription">
 <span class="billing-step">1</span>
@@ -692,7 +671,6 @@
 </ul>
 <div class="current-plan-box"><span>Current plan</span><strong id="dashboardSubscriptionPlan">No active plan</strong><small id="dashboardSubscriptionStatus">Not subscribed</small><small id="dashboardSubscriptionDate">Renewal information unavailable</small></div>
 </article>
-
 <article class="billing-explainer-card buyout">
 <span class="billing-step">2</span>
 <small>WEBSITE BUYOUT</small>
@@ -707,7 +685,6 @@
 <a class="btn btn-primary" href="#drafts">Choose a Website to Buy Out</a>
 </article>
 </div>
-
 <div class="billing-rule-card">
 <h2>What happens after a buyout?</h2>
 <div class="billing-rule-grid">
@@ -717,7 +694,6 @@
 <div><strong>Hosting is separate</strong><p>Code ownership does not automatically include permanent hosting, domain registration, or future platform service.</p></div>
 </div>
 </div>
-
 <div class="member-plan-grid billing-plan-options">
 <article><small>STARTER</small><h3>$180/year</h3><span>$499 per website buyout</span><button class="btn btn-secondary memberPlanCheckout" data-plan="starter">Choose Starter</button></article>
 <article class="featured"><small>PROFESSIONAL</small><h3>$348/year</h3><span>$599 per website buyout</span><button class="btn btn-primary memberPlanCheckout" data-plan="professional">Choose Professional</button></article>
@@ -726,232 +702,202 @@
 </div>
 </div>
 </section>
-
-
-
-<section class="app-page domains-page backend-only" id="domains" data-page="domains">
-  <div class="member-shell">
-    <aside class="member-sidebar">
-      <div class="sidebar-user"><div class="sidebar-avatar">B</div><div><small>BLUVIXA MEMBER</small><strong>Domain center</strong></div></div>
-      <nav>
-        <a href="#projects"><span>▦</span> My Websites</a>
-        <a href="#drafts"><span>▤</span> Saved Drafts</a>
-        <a href="#builder"><span>✎</span> Website Builder</a>
-        <a href="#billing"><span>$</span> Billing &amp; Ownership</a>
-        <a class="active" href="#domains"><span>◎</span> Domains &amp; Publishing</a>
-      </nav>
-    </aside>
-
-    <div class="member-content">
-      <div class="member-page-head">
-        <div>
-          <span class="workspace-kicker">DOMAINS &amp; PUBLISHING</span>
-          <h1>Choose a Bluvixa address or connect your own domain.</h1>
-          <p>Every website can keep a free Bluvixa address and optionally use a verified custom domain with automatic HTTPS.</p>
-        </div>
-        <button class="btn btn-secondary" id="dmRefreshAllBtn" type="button">Refresh Status</button>
-      </div>
-
-      <div class="dm-status-overview" aria-live="polite">
-        <article><span class="dm-overview-icon">B</span><div><small>BLUVIXA ADDRESS</small><strong id="dmOverviewBluvixa">Not reserved</strong><p id="dmOverviewBluvixaDetail">Choose a website below.</p></div></article>
-        <article><span class="dm-overview-icon">◎</span><div><small>CUSTOM DOMAIN</small><strong id="dmOverviewDomain">Not connected</strong><p id="dmOverviewDomainDetail">Optional custom domain.</p></div></article>
-        <article><span class="dm-overview-icon">🔒</span><div><small>SSL</small><strong id="dmOverviewSsl">Waiting</strong><p id="dmOverviewSslDetail">HTTPS activates after verification.</p></div></article>
-      </div>
-
-      <div class="dm-project-picker dm-card">
-        <div class="dm-card-head">
-          <div><small>WEBSITE</small><h2>Select the website to manage</h2><p>Both address types below belong to this selected website.</p></div>
-          <span>1</span>
-        </div>
-        <label for="dmProjectSelect">Website project</label>
-        <select id="dmProjectSelect"></select>
-      </div>
-
-      <div class="dm-dual-grid">
-        <section class="dm-card dm-bluvixa-card">
-          <div class="dm-card-head">
-            <div><small>FREE BLUVIXA ADDRESS</small><h2>Reserve your platform address</h2><p>No DNS setup is required.</p></div>
-            <span>B</span>
-          </div>
-
-          <label for="dmSlugInput">Requested address</label>
-          <div class="dm-slug-row">
-            <span>bluvixa.com/site/</span>
-            <input id="dmSlugInput" placeholder="your-business" autocomplete="off" spellcheck="false"/>
-          </div>
-
-          <div class="dm-actions">
-            <button class="btn btn-secondary" id="dmCheckSlugBtn" type="button">Check Availability</button>
-            <button class="btn btn-primary" id="dmReserveSlugBtn" type="button">Reserve Address</button>
-          </div>
-
-          <div class="dm-inline-message" id="dmSlugMessage"></div>
-
-          <div class="dm-current-address">
-            <span>Reserved Bluvixa address</span>
-            <a id="dmBluvixaAddress" href="#" target="_blank" rel="noopener">Not reserved</a>
-          </div>
-        </section>
-
-        <section class="dm-card">
-          <div class="dm-card-head">
-            <div><small>CUSTOM DOMAIN</small><h2>Connect a domain you own</h2><p>Use a domain purchased from any registrar.</p></div>
-            <span>◎</span>
-          </div>
-
-          <label for="dmDomainInput">Custom domain</label>
-          <div class="dm-domain-input-row">
-            <input id="dmDomainInput" inputmode="url" autocomplete="url" spellcheck="false" placeholder="example.com"/>
-            <button class="btn btn-primary" id="dmConnectBtn" type="button">Connect Domain</button>
-          </div>
-          <div class="dm-inline-message" id="dmConnectMessage"></div>
-        </section>
-      </div>
-
-      <div class="dm-layout">
-        <div class="dm-main">
-          <article class="dm-card">
-            <div class="dm-card-head">
-              <div><small>DNS INSTRUCTIONS</small><h2>Add these records</h2><p>Only required for a custom domain.</p></div>
-              <span>2</span>
-            </div>
-
-            <div class="dm-empty" id="dmDnsEmpty">Connect a custom domain to reveal DNS records.</div>
-
-            <div class="dm-dns-records hidden" id="dmDnsRecords">
-              <div class="dm-dns-record">
-                <div><small>TYPE</small><strong id="dmDnsType1">A</strong></div>
-                <div><small>HOST</small><strong id="dmDnsHost1">@</strong></div>
-                <div><small>VALUE</small><strong id="dmDnsValue1">76.76.21.21</strong></div>
-                <button class="dm-copy-btn" type="button" data-copy-target="dmDnsValue1">Copy</button>
-              </div>
-              <div class="dm-dns-record">
-                <div><small>TYPE</small><strong id="dmDnsType2">CNAME</strong></div>
-                <div><small>HOST</small><strong id="dmDnsHost2">www</strong></div>
-                <div><small>VALUE</small><strong id="dmDnsValue2">cname.vercel-dns.com</strong></div>
-                <button class="dm-copy-btn" type="button" data-copy-target="dmDnsValue2">Copy</button>
-              </div>
-              <div class="dm-dns-record hidden" id="dmVerificationRecord">
-                <div><small>TYPE</small><strong>TXT</strong></div>
-                <div><small>HOST</small><strong id="dmVerificationHost">_vercel</strong></div>
-                <div><small>VALUE</small><strong id="dmVerificationValue"></strong></div>
-                <button class="dm-copy-btn" type="button" data-copy-target="dmVerificationValue">Copy</button>
-              </div>
-              <div class="dm-dns-help">
-                <strong>Important</strong>
-                <p>Do not remove MX records used by email. If Cloudflare proxying prevents verification, temporarily set the relevant record to DNS only.</p>
-              </div>
-            </div>
-          </article>
-
-          <article class="dm-card">
-            <div class="dm-card-head">
-              <div><small>VERIFICATION</small><h2>Verify DNS and HTTPS</h2><p>Retry after DNS records have propagated.</p></div>
-              <span>3</span>
-            </div>
-
-            <div class="dm-live-status">
-              <span class="dm-live-dot waiting" id="dmLiveDot"></span>
-              <div><strong id="dmLiveTitle">Not connected</strong><p id="dmLiveMessage">Enter a custom domain and select Connect Domain.</p></div>
-              <span class="dm-status-pill waiting" id="dmStatusPill">Not Connected</span>
-            </div>
-
-            <div class="dm-actions">
-              <button class="btn btn-primary" id="dmVerifyBtn" type="button">Verify Domain</button>
-              <button class="btn btn-secondary" id="dmRetryBtn" type="button">Retry Verification</button>
-              <button class="btn btn-danger" id="dmRemoveBtn" type="button">Remove Custom Domain</button>
-            </div>
-            <div class="dm-inline-message" id="dmStatusMessage"></div>
-          </article>
-        </div>
-
-        <aside class="dm-side">
-          <article class="dm-card">
-            <small>CONNECTION DETAILS</small>
-            <h3 id="dmSideDomain">No custom domain</h3>
-            <dl class="dm-details-list">
-              <div><dt>Bluvixa address</dt><dd id="dmDetailBluvixa">Not reserved</dd></div>
-              <div><dt>Domain status</dt><dd id="dmDetailDomainStatus">Not connected</dd></div>
-              <div><dt>DNS verified</dt><dd id="dmDetailDnsStatus">No</dd></div>
-              <div><dt>SSL status</dt><dd id="dmDetailSslStatus">Waiting</dd></div>
-              <div><dt>Verified at</dt><dd id="dmDetailVerifiedAt">—</dd></div>
-              <div><dt>Last checked</dt><dd id="dmDetailLastChecked">—</dd></div>
-            </dl>
-          </article>
-
-          <article class="dm-card">
-            <small>AUTOMATIC CHECKS</small>
-            <h3>Connection monitoring</h3>
-            <p>Pending custom domains refresh automatically while this page is open.</p>
-            <label class="dm-toggle-row">
-              <input id="dmAutoRefreshToggle" type="checkbox" checked/>
-              <span><strong>Automatic refresh</strong><small>Check every 30 seconds</small></span>
-            </label>
-          </article>
-        </aside>
-      </div>
-
-      <section class="publishing-center" aria-labelledby="publishingCenterTitle">
-        <div class="publishing-center-head">
-          <div><small>PUBLISHING CENTER</small><h2 id="publishingCenterTitle">Launch and manage your live website.</h2><p>Publish, view, copy, and share the selected website.</p></div>
-          <label class="publishing-site-picker"><span>Website</span><select id="publishingCenterProjectSelect"></select></label>
-        </div>
-
-        <div id="publishingCenterEmpty" class="empty-state hidden">Create a website before using the Publishing Center.</div>
-
-        <div id="publishingCenterWorkspace" class="publishing-center-workspace">
-          <article class="publishing-status-hero">
-            <div class="publishing-status-copy">
-              <div class="publishing-status-line"><span id="publishingStatusDot" class="publishing-status-dot"></span><strong id="publishingStatusText">Draft</strong></div>
-              <h3 id="publishingCenterProjectName">Website</h3>
-              <p id="publishingCenterMessage">This website has not been published yet.</p>
-              <div class="publishing-live-url"><span>Live address</span><a id="publishingLiveUrl" href="#" target="_blank" rel="noopener">Not published</a></div>
-            </div>
-            <div class="publishing-primary-actions">
-              <button class="btn btn-primary" id="publishingPrimaryBtn" type="button">Publish Now</button>
-              <a class="btn btn-secondary hidden" id="publishingViewLiveBtn" href="#" target="_blank" rel="noopener">View Live</a>
-            </div>
-          </article>
-
-          <div class="publishing-metrics-grid">
-            <article><span>STATUS</span><strong id="publishingMetricStatus">Draft</strong><small id="publishingMetricStatusDetail">Not publicly visible</small></article>
-            <article><span>LAST PUBLISHED</span><strong id="publishingMetricDate">Never</strong><small>Latest confirmed deployment</small></article>
-            <article><span>DOMAIN</span><strong id="publishingMetricDomain">Bluvixa address</strong><small id="publishingMetricDomainDetail">No custom domain connected</small><span class="dm-mini-badge waiting" id="dmPublishingDomainBadge">Not Connected</span></article>
-            <article><span>SSL</span><strong id="publishingMetricSsl">Waiting</strong><small id="dmPublishingSslDetail">HTTPS activates after verification</small></article>
-          </div>
-
-          <div class="publishing-action-grid">
-            <article class="publishing-panel">
-              <div class="publishing-panel-head"><div><small>LINK TOOLS</small><h3>Share your website</h3></div></div>
-              <div class="publishing-link-box"><input id="publishingShareUrl" readonly value="Publish the website to create a public link"><button class="btn btn-secondary" id="copyPublishedLinkBtn" type="button">Copy Link</button></div>
-              <div class="publishing-inline-actions"><button class="btn btn-secondary" id="sharePublishedSiteBtn" type="button">Share Website</button><button class="btn btn-secondary" id="openDomainForPublishingBtn" type="button">Manage Domain</button></div>
-              <div class="domain-result-message" id="publishingShareMessage"></div>
-            </article>
-
-            <article class="publishing-panel">
-              <div class="publishing-panel-head"><div><small>DEPLOYMENT</small><h3>Publishing progress</h3></div><span id="publishingProgressPercent">0%</span></div>
-              <div class="publishing-progress-track"><span id="publishingProgressBar"></span></div>
-              <div class="publishing-step-list">
-                <div data-publish-step="save"><span>1</span><strong>Save latest changes</strong><small>Waiting</small></div>
-                <div data-publish-step="media"><span>2</span><strong>Confirm cloud media</strong><small>Waiting</small></div>
-                <div data-publish-step="build"><span>3</span><strong>Prepare live website</strong><small>Waiting</small></div>
-                <div data-publish-step="deploy"><span>4</span><strong>Publish securely</strong><small>Waiting</small></div>
-              </div>
-            </article>
-          </div>
-
-          <article class="publishing-panel publishing-version-panel">
-            <div class="publishing-panel-head"><div><small>VERSION HISTORY</small><h3>Saved website versions</h3></div><a class="btn btn-secondary" href="#drafts">Manage All Drafts</a></div>
-            <div id="publishingVersionHistory" class="publishing-version-history"></div>
-          </article>
-        </div>
-      </section>
-    </div>
-  </div>
+<section class="app-page domains-page backend-only" data-page="domains" id="domains">
+<div class="member-shell">
+<aside class="member-sidebar">
+<div class="sidebar-user"><div class="sidebar-avatar">B</div><div><small>BLUVIXA MEMBER</small><strong>Domain center</strong></div></div>
+<nav>
+<a href="#projects"><span>▦</span> My Websites</a>
+<a href="#drafts"><span>▤</span> Saved Drafts</a>
+<a href="#builder"><span>✎</span> Website Builder</a>
+<a href="#billing"><span>$</span> Billing &amp; Ownership</a>
+<a class="active" href="#domains"><span>◎</span> Domains &amp; Publishing</a>
+</nav>
+</aside>
+<div class="member-content">
+<div class="member-page-head">
+<div>
+<span class="workspace-kicker">DOMAINS &amp; PUBLISHING</span>
+<h1>Choose a Bluvixa address or connect your own domain.</h1>
+<p>Every website can keep a free Bluvixa address and optionally use a verified custom domain with automatic HTTPS.</p>
+</div>
+<button class="btn btn-secondary" id="dmRefreshAllBtn" type="button">Refresh Status</button>
+</div>
+<div aria-live="polite" class="dm-status-overview">
+<article><span class="dm-overview-icon">B</span><div><small>BLUVIXA ADDRESS</small><strong id="dmOverviewBluvixa">Not reserved</strong><p id="dmOverviewBluvixaDetail">Choose a website below.</p></div></article>
+<article><span class="dm-overview-icon">◎</span><div><small>CUSTOM DOMAIN</small><strong id="dmOverviewDomain">Not connected</strong><p id="dmOverviewDomainDetail">Optional custom domain.</p></div></article>
+<article><span class="dm-overview-icon">🔒</span><div><small>SSL</small><strong id="dmOverviewSsl">Waiting</strong><p id="dmOverviewSslDetail">HTTPS activates after verification.</p></div></article>
+</div>
+<div class="dm-project-picker dm-card">
+<div class="dm-card-head">
+<div><small>WEBSITE</small><h2>Select the website to manage</h2><p>Both address types below belong to this selected website.</p></div>
+<span>1</span>
+</div>
+<label for="dmProjectSelect">Website project</label>
+<select id="dmProjectSelect"></select>
+</div>
+<div class="dm-dual-grid">
+<section class="dm-card dm-bluvixa-card">
+<div class="dm-card-head">
+<div><small>FREE BLUVIXA ADDRESS</small><h2>Reserve your platform address</h2><p>No DNS setup is required.</p></div>
+<span>B</span>
+</div>
+<label for="dmSlugInput">Requested address</label>
+<div class="dm-slug-row">
+<span>bluvixa.com/site/</span>
+<input autocomplete="off" id="dmSlugInput" placeholder="your-business" spellcheck="false"/>
+</div>
+<div class="dm-actions">
+<button class="btn btn-secondary" id="dmCheckSlugBtn" type="button">Check Availability</button>
+<button class="btn btn-primary" id="dmReserveSlugBtn" type="button">Reserve Address</button>
+</div>
+<div class="dm-inline-message" id="dmSlugMessage"></div>
+<div class="dm-current-address">
+<span>Reserved Bluvixa address</span>
+<a href="#" id="dmBluvixaAddress" rel="noopener" target="_blank">Not reserved</a>
+</div>
 </section>
-
-
-<section class="app-page pricing-page" id="pricing" data-page="pricing">
+<section class="dm-card">
+<div class="dm-card-head">
+<div><small>CUSTOM DOMAIN</small><h2>Connect a domain you own</h2><p>Use a domain purchased from any registrar.</p></div>
+<span>◎</span>
+</div>
+<label for="dmDomainInput">Custom domain</label>
+<div class="dm-domain-input-row">
+<input autocomplete="url" id="dmDomainInput" inputmode="url" placeholder="example.com" spellcheck="false"/>
+<button class="btn btn-primary" id="dmConnectBtn" type="button">Connect Domain</button>
+</div>
+<div class="dm-inline-message" id="dmConnectMessage"></div>
+</section>
+</div>
+<div class="dm-layout">
+<div class="dm-main">
+<article class="dm-card">
+<div class="dm-card-head">
+<div><small>DNS INSTRUCTIONS</small><h2>Add these records</h2><p>Only required for a custom domain.</p></div>
+<span>2</span>
+</div>
+<div class="dm-empty" id="dmDnsEmpty">Connect a custom domain to reveal DNS records.</div>
+<div class="dm-dns-records hidden" id="dmDnsRecords">
+<div class="dm-dns-record">
+<div><small>TYPE</small><strong id="dmDnsType1">A</strong></div>
+<div><small>HOST</small><strong id="dmDnsHost1">@</strong></div>
+<div><small>VALUE</small><strong id="dmDnsValue1">76.76.21.21</strong></div>
+<button class="dm-copy-btn" data-copy-target="dmDnsValue1" type="button">Copy</button>
+</div>
+<div class="dm-dns-record">
+<div><small>TYPE</small><strong id="dmDnsType2">CNAME</strong></div>
+<div><small>HOST</small><strong id="dmDnsHost2">www</strong></div>
+<div><small>VALUE</small><strong id="dmDnsValue2">cname.vercel-dns.com</strong></div>
+<button class="dm-copy-btn" data-copy-target="dmDnsValue2" type="button">Copy</button>
+</div>
+<div class="dm-dns-record hidden" id="dmVerificationRecord">
+<div><small>TYPE</small><strong>TXT</strong></div>
+<div><small>HOST</small><strong id="dmVerificationHost">_vercel</strong></div>
+<div><small>VALUE</small><strong id="dmVerificationValue"></strong></div>
+<button class="dm-copy-btn" data-copy-target="dmVerificationValue" type="button">Copy</button>
+</div>
+<div class="dm-dns-help">
+<strong>Important</strong>
+<p>Do not remove MX records used by email. If Cloudflare proxying prevents verification, temporarily set the relevant record to DNS only.</p>
+</div>
+</div>
+</article>
+<article class="dm-card">
+<div class="dm-card-head">
+<div><small>VERIFICATION</small><h2>Verify DNS and HTTPS</h2><p>Retry after DNS records have propagated.</p></div>
+<span>3</span>
+</div>
+<div class="dm-live-status">
+<span class="dm-live-dot waiting" id="dmLiveDot"></span>
+<div><strong id="dmLiveTitle">Not connected</strong><p id="dmLiveMessage">Enter a custom domain and select Connect Domain.</p></div>
+<span class="dm-status-pill waiting" id="dmStatusPill">Not Connected</span>
+</div>
+<div class="dm-actions">
+<button class="btn btn-primary" id="dmVerifyBtn" type="button">Verify Domain</button>
+<button class="btn btn-secondary" id="dmRetryBtn" type="button">Retry Verification</button>
+<button class="btn btn-danger" id="dmRemoveBtn" type="button">Remove Custom Domain</button>
+</div>
+<div class="dm-inline-message" id="dmStatusMessage"></div>
+</article>
+</div>
+<aside class="dm-side">
+<article class="dm-card">
+<small>CONNECTION DETAILS</small>
+<h3 id="dmSideDomain">No custom domain</h3>
+<dl class="dm-details-list">
+<div><dt>Bluvixa address</dt><dd id="dmDetailBluvixa">Not reserved</dd></div>
+<div><dt>Domain status</dt><dd id="dmDetailDomainStatus">Not connected</dd></div>
+<div><dt>DNS verified</dt><dd id="dmDetailDnsStatus">No</dd></div>
+<div><dt>SSL status</dt><dd id="dmDetailSslStatus">Waiting</dd></div>
+<div><dt>Verified at</dt><dd id="dmDetailVerifiedAt">—</dd></div>
+<div><dt>Last checked</dt><dd id="dmDetailLastChecked">—</dd></div>
+</dl>
+</article>
+<article class="dm-card">
+<small>AUTOMATIC CHECKS</small>
+<h3>Connection monitoring</h3>
+<p>Pending custom domains refresh automatically while this page is open.</p>
+<label class="dm-toggle-row">
+<input checked="" id="dmAutoRefreshToggle" type="checkbox"/>
+<span><strong>Automatic refresh</strong><small>Check every 30 seconds</small></span>
+</label>
+</article>
+</aside>
+</div>
+<section aria-labelledby="publishingCenterTitle" class="publishing-center">
+<div class="publishing-center-head">
+<div><small>PUBLISHING CENTER</small><h2 id="publishingCenterTitle">Launch and manage your live website.</h2><p>Publish, view, copy, and share the selected website.</p></div>
+<label class="publishing-site-picker"><span>Website</span><select id="publishingCenterProjectSelect"></select></label>
+</div>
+<div class="empty-state hidden" id="publishingCenterEmpty">Create a website before using the Publishing Center.</div>
+<div class="publishing-center-workspace" id="publishingCenterWorkspace">
+<article class="publishing-status-hero">
+<div class="publishing-status-copy">
+<div class="publishing-status-line"><span class="publishing-status-dot" id="publishingStatusDot"></span><strong id="publishingStatusText">Draft</strong></div>
+<h3 id="publishingCenterProjectName">Website</h3>
+<p id="publishingCenterMessage">This website has not been published yet.</p>
+<div class="publishing-live-url"><span>Live address</span><a href="#" id="publishingLiveUrl" rel="noopener" target="_blank">Not published</a></div>
+</div>
+<div class="publishing-primary-actions">
+<button class="btn btn-primary" id="publishingPrimaryBtn" type="button">Publish Now</button>
+<a class="btn btn-secondary hidden" href="#" id="publishingViewLiveBtn" rel="noopener" target="_blank">View Live</a>
+</div>
+</article>
+<div class="publishing-metrics-grid">
+<article><span>STATUS</span><strong id="publishingMetricStatus">Draft</strong><small id="publishingMetricStatusDetail">Not publicly visible</small></article>
+<article><span>LAST PUBLISHED</span><strong id="publishingMetricDate">Never</strong><small>Latest confirmed deployment</small></article>
+<article><span>DOMAIN</span><strong id="publishingMetricDomain">Bluvixa address</strong><small id="publishingMetricDomainDetail">No custom domain connected</small><span class="dm-mini-badge waiting" id="dmPublishingDomainBadge">Not Connected</span></article>
+<article><span>SSL</span><strong id="publishingMetricSsl">Waiting</strong><small id="dmPublishingSslDetail">HTTPS activates after verification</small></article>
+</div>
+<div class="publishing-action-grid">
+<article class="publishing-panel">
+<div class="publishing-panel-head"><div><small>LINK TOOLS</small><h3>Share your website</h3></div></div>
+<div class="publishing-link-box"><input id="publishingShareUrl" readonly="" value="Publish the website to create a public link"/><button class="btn btn-secondary" id="copyPublishedLinkBtn" type="button">Copy Link</button></div>
+<div class="publishing-inline-actions"><button class="btn btn-secondary" id="sharePublishedSiteBtn" type="button">Share Website</button><button class="btn btn-secondary" id="openDomainForPublishingBtn" type="button">Manage Domain</button></div>
+<div class="domain-result-message" id="publishingShareMessage"></div>
+</article>
+<article class="publishing-panel">
+<div class="publishing-panel-head"><div><small>DEPLOYMENT</small><h3>Publishing progress</h3></div><span id="publishingProgressPercent">0%</span></div>
+<div class="publishing-progress-track"><span id="publishingProgressBar"></span></div>
+<div class="publishing-step-list">
+<div data-publish-step="save"><span>1</span><strong>Save latest changes</strong><small>Waiting</small></div>
+<div data-publish-step="media"><span>2</span><strong>Confirm cloud media</strong><small>Waiting</small></div>
+<div data-publish-step="build"><span>3</span><strong>Prepare live website</strong><small>Waiting</small></div>
+<div data-publish-step="deploy"><span>4</span><strong>Publish securely</strong><small>Waiting</small></div>
+</div>
+</article>
+</div>
+<article class="publishing-panel publishing-version-panel">
+<div class="publishing-panel-head"><div><small>VERSION HISTORY</small><h3>Saved website versions</h3></div><a class="btn btn-secondary" href="#drafts">Manage All Drafts</a></div>
+<div class="publishing-version-history" id="publishingVersionHistory"></div>
+</article>
+</div>
+</section>
+</div>
+</div>
+</section>
+<section class="app-page pricing-page" data-page="pricing" id="pricing">
 <div class="pricing-inner">
 <div class="container">
 <div class="section-head">
@@ -1015,15 +961,14 @@
 </div>
 </section>
 </main>
-
 <div class="modal hidden" id="authModal">
 <div class="modal-card auth-card">
 <div class="modal-head"><div><h3 id="authTitle">Sign in to Bluvixa</h3><div class="tiny">Access your dashboard, drafts, subscription, and websites.</div></div><button class="btn btn-secondary btn-small" id="closeAuthBtn" type="button">Close</button></div>
 <div class="auth-tabs"><button class="auth-tab active" id="showSignInTab" type="button">Sign In</button><button class="auth-tab" id="showSignUpTab" type="button">Create Account</button></div>
 <form id="authForm">
 <div class="group hidden" id="fullNameGroup"><label for="authFullName">Full name</label><input autocomplete="name" class="input" id="authFullName"/></div>
-<div class="group"><label for="authEmail">Email</label><input autocomplete="email" class="input" id="authEmail" required type="email"/></div>
-<div class="group"><label for="authPassword">Password</label><input autocomplete="current-password" class="input" id="authPassword" minlength="8" required type="password"/></div>
+<div class="group"><label for="authEmail">Email</label><input autocomplete="email" class="input" id="authEmail" required="" type="email"/></div>
+<div class="group"><label for="authPassword">Password</label><input autocomplete="current-password" class="input" id="authPassword" minlength="8" required="" type="password"/></div>
 <button class="btn btn-primary" id="authSubmitBtn" style="width:100%" type="submit">Sign In</button>
 </form>
 <button class="text-button" id="forgotPasswordBtn" type="button">Forgot your password?</button><div class="notice hidden" id="authMessage"></div>
@@ -1032,11 +977,10 @@
 <div class="toast" id="toast"></div>
 <!-- Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <!-- Platform -->
 <!-- Domains -->
 <!-- Main App -->
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script defer src="app.js?v=20260728-consolidated"></script>
+<script defer="" src="app.js?v=20260728-consolidated"></script>
 </body>
 </html>

@@ -65,6 +65,7 @@
       headerColor: "#082b5e",
       buttonColor: "#1769ff",
       cardColor: "#ffffff",
+      cardTextColor: "#000000",
       logoOutlineColor: "#61c7ff",
       scrollItems: "Home, Services, Gallery, Reviews, Contact",
       mapHeading: "Find Us",
@@ -740,7 +741,7 @@
       featuredDescription: "featuredDescription", galleryHeading: "galleryHeading",
       galleryDescription: "galleryDescription", themeColor: "themeColor",
       headerColor: "headerColor", buttonColor: "buttonColor", cardColor: "cardColor",
-      logoOutlineColor: "logoOutlineColor", scrollItems: "scrollItems",
+      cardTextColor: "cardTextColor", logoOutlineColor: "logoOutlineColor", scrollItems: "scrollItems",
       mapHeading: "mapHeading", businessAddress: "businessAddress", mapEmbedUrl: "mapEmbedUrl"
     };
     Object.entries(mappings).forEach(([key, id]) => {
@@ -765,7 +766,7 @@
       featuredDescription: "featuredDescription", galleryHeading: "galleryHeading",
       galleryDescription: "galleryDescription", themeColor: "themeColor",
       headerColor: "headerColor", buttonColor: "buttonColor", cardColor: "cardColor",
-      logoOutlineColor: "logoOutlineColor", scrollItems: "scrollItems",
+      cardTextColor: "cardTextColor", logoOutlineColor: "logoOutlineColor", scrollItems: "scrollItems",
       mapHeading: "mapHeading", businessAddress: "businessAddress", mapEmbedUrl: "mapEmbedUrl"
     };
     Object.entries(mappings).forEach(([key, id]) => { if ($(id)) $(id).value = d[key] ?? ""; });
@@ -954,49 +955,23 @@
   }
 
   function updateColorLabels() {
-    ["themeColor", "headerColor", "buttonColor", "cardColor", "logoOutlineColor"].forEach((id) => {
+    ["themeColor", "headerColor", "buttonColor", "cardColor", "cardTextColor", "logoOutlineColor"].forEach((id) => {
       const label = $(`${id}Value`);
       if (label && $(id)) label.textContent = $(id).value;
     });
   }
 
-  function getCardContrastColors(color) {
-    const raw = text(color).replace("#", "");
-    const hex = raw.length === 3
-      ? raw.split("").map((character) => character + character).join("")
-      : raw.padEnd(6, "f").slice(0, 6);
-
-    const red = Number.parseInt(hex.slice(0, 2), 16);
-    const green = Number.parseInt(hex.slice(2, 4), 16);
-    const blue = Number.parseInt(hex.slice(4, 6), 16);
-
-    const linearize = (channel) => {
-      const value = channel / 255;
-      return value <= 0.03928
-        ? value / 12.92
-        : Math.pow((value + 0.055) / 1.055, 2.4);
-    };
-
-    const luminance =
-      (0.2126 * linearize(red)) +
-      (0.7152 * linearize(green)) +
-      (0.0722 * linearize(blue));
-
-    const darkText = luminance > 0.179;
-
-    return {
-      main: darkText ? "#000000" : "#ffffff",
-      muted: darkText ? "rgba(0,0,0,.72)" : "rgba(255,255,255,.78)"
-    };
-  }
-
-  function applyCardColorScheme(root, cardColor) {
+  function applyCardColorScheme(root, cardColor, cardTextColor) {
     if (!root) return;
 
-    const colors = getCardContrastColors(cardColor);
-    root.style.setProperty("--site-card", cardColor);
-    root.style.setProperty("--site-card-text", colors.main);
-    root.style.setProperty("--site-card-muted", colors.muted);
+    const backgroundColor = text(cardColor) || "#ffffff";
+    const textColor = text(cardTextColor) || "#000000";
+
+    root.style.setProperty("--site-card", backgroundColor);
+    root.style.setProperty("--site-card-text", textColor);
+    root.style.setProperty("--site-card-muted", textColor);
+    root.style.setProperty("--card-color", backgroundColor);
+    root.style.setProperty("--card-text-color", textColor);
 
     const cardSelectors = [
       ".info",
@@ -1006,18 +981,13 @@
     ].join(",");
 
     root.querySelectorAll(cardSelectors).forEach((card) => {
-      card.style.setProperty("background-color", cardColor, "important");
-      card.style.setProperty("color", colors.main, "important");
-      card.style.setProperty("-webkit-text-fill-color", colors.main, "important");
+      card.style.setProperty("background-color", backgroundColor, "important");
+      card.style.setProperty("color", textColor, "important");
+      card.style.setProperty("-webkit-text-fill-color", textColor, "important");
 
       card.querySelectorAll("*").forEach((child) => {
-        const isDescription =
-          child.matches("p") ||
-          child.classList.contains("content-body");
-
-        const childColor = isDescription ? colors.muted : colors.main;
-        child.style.setProperty("color", childColor, "important");
-        child.style.setProperty("-webkit-text-fill-color", childColor, "important");
+        child.style.setProperty("color", textColor, "important");
+        child.style.setProperty("-webkit-text-fill-color", textColor, "important");
       });
     });
   }
@@ -1091,6 +1061,7 @@
     preview.style.setProperty("--header-color", d.headerColor);
     preview.style.setProperty("--button-color", d.buttonColor);
     preview.style.setProperty("--card-color", d.cardColor);
+    preview.style.setProperty("--card-text-color", d.cardTextColor);
     preview.style.setProperty("--logo-outline-color", d.logoOutlineColor);
 
     const header = preview.querySelector(".site-header");
@@ -1108,7 +1079,7 @@
     renderMediaGrid("previewGalleryGrid", d.gallery, "gallery-card");
 
     // Apply after rendering because renderMediaGrid replaces the upload-card DOM.
-    applyCardColorScheme(preview, d.cardColor);
+    applyCardColorScheme(preview, d.cardColor, d.cardTextColor);
 
     if ($("previewPhotoCount")) $("previewPhotoCount").textContent = `${d.photos.length} uploads`;
     if ($("previewGalleryCount")) $("previewGalleryCount").textContent = `${d.gallery.length} uploads`;
@@ -1488,16 +1459,16 @@
 
   function setupThemePresets() {
     const presets = {
-      blue: ["#1769ff", "#082b5e", "#1769ff", "#ffffff", "#61c7ff"],
-      purple: ["#7c3aed", "#2e1065", "#7c3aed", "#ffffff", "#c4b5fd"],
-      red: ["#dc2626", "#450a0a", "#dc2626", "#ffffff", "#fca5a5"],
-      green: ["#059669", "#022c22", "#059669", "#ffffff", "#6ee7b7"],
-      orange: ["#ea580c", "#431407", "#ea580c", "#ffffff", "#fdba74"]
+      blue: ["#1769ff", "#082b5e", "#1769ff", "#ffffff", "#000000", "#61c7ff"],
+      purple: ["#7c3aed", "#2e1065", "#7c3aed", "#ffffff", "#000000", "#c4b5fd"],
+      red: ["#dc2626", "#450a0a", "#dc2626", "#ffffff", "#000000", "#fca5a5"],
+      green: ["#059669", "#022c22", "#059669", "#ffffff", "#000000", "#6ee7b7"],
+      orange: ["#ea580c", "#431407", "#ea580c", "#ffffff", "#000000", "#fdba74"]
     };
     $$(".theme-preset").forEach((button) => button.addEventListener("click", () => {
       const values = presets[button.dataset.theme];
       if (!values) return;
-      ["themeColor", "headerColor", "buttonColor", "cardColor", "logoOutlineColor"].forEach((id, index) => {
+      ["themeColor", "headerColor", "buttonColor", "cardColor", "cardTextColor", "logoOutlineColor"].forEach((id, index) => {
         if ($(id)) $(id).value = values[index];
       });
       $$(".theme-preset").forEach((node) => node.classList.toggle("active", node === button));
@@ -1872,7 +1843,7 @@
     const formIds = [
       "businessName","businessBio","phoneNumber","emailAddress","businessHours","callButtonText",
       "headerTagline","headerHeadline","headerBio","aboutHeading","featuredHeading","featuredDescription",
-      "galleryHeading","galleryDescription","themeColor","headerColor","buttonColor","cardColor",
+      "galleryHeading","galleryDescription","themeColor","headerColor","buttonColor","cardColor","cardTextColor",
       "logoOutlineColor","scrollItems","mapHeading","businessAddress","mapEmbedUrl","projectSlug","customDomain"
     ];
     formIds.forEach((id) => {

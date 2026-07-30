@@ -761,8 +761,8 @@ h1 {
   --site-button: var(--button-color,#1769ff);
   --site-button-dark: color-mix(in srgb,var(--button-color,#1769ff) 72%,#000000);
   --site-card: var(--card-color,#ffffff);
-  --site-card-text: color-mix(in srgb,var(--card-color,#ffffff) 12%,#000000);
-  --site-card-muted: color-mix(in srgb,var(--card-color,#ffffff) 28%,#334155);
+  --site-card-text: var(--card-text-color,#000000);
+  --site-card-muted: var(--card-text-color,#000000);
   --site-logo-outline: var(--logo-outline-color,#61c7ff);
   border-radius: 28px;
   overflow: hidden;
@@ -9215,4 +9215,30 @@ textarea {
 #publicSiteRoot #previewGalleryGrid > .gallery-card > p,
 #publicSiteRoot .content-card .content-body p {
   color: var(--site-card-muted, rgba(0,0,0,.72));
+}
+
+/* =========================================================
+   BLUVIXA 4.0 — INFORMATION CARD TEXT PICKER
+   Only the business information card and uploaded-media
+   description cards use the selected card text color.
+   ========================================================= */
+
+.preview .info,
+.preview .info *,
+.preview #previewPhotoGrid > .card,
+.preview #previewPhotoGrid > .card *,
+.preview #previewGalleryGrid > .gallery-card,
+.preview #previewGalleryGrid > .gallery-card *,
+.preview .content-card,
+.preview .content-card *,
+#publicSiteRoot .info,
+#publicSiteRoot .info *,
+#publicSiteRoot #previewPhotoGrid > .card,
+#publicSiteRoot #previewPhotoGrid > .card *,
+#publicSiteRoot #previewGalleryGrid > .gallery-card,
+#publicSiteRoot #previewGalleryGrid > .gallery-card *,
+#publicSiteRoot .content-card,
+#publicSiteRoot .content-card * {
+  color: var(--card-text-color,var(--site-card-text,#000000)) !important;
+  -webkit-text-fill-color: var(--card-text-color,var(--site-card-text,#000000)) !important;
 }
