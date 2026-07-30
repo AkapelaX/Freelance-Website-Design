@@ -285,6 +285,12 @@
       data: { ...base.data, ...(project?.data || {}) },
       snapshots: Array.isArray(project?.snapshots) ? project.snapshots : []
     };
+
+    const accountPlan = text(state.profile?.plan).toLowerCase();
+    if (["starter", "professional", "advanced"].includes(accountPlan)) {
+      normalized.plan = accountPlan;
+    }
+
     normalized.photos = undefined;
     removeLegacyThumbnails(normalized);
     return normalized;
