@@ -9242,3 +9242,14 @@ textarea {
   color: var(--card-text-color,var(--site-card-text,#000000)) !important;
   -webkit-text-fill-color: var(--card-text-color,var(--site-card-text,#000000)) !important;
 }
+
+
+
+/* === Scroll chip text follows Information Card Text color === */
+.preview .scroll-chip,
+.preview .scroll-chip *,
+#publicSiteRoot .scroll-chip,
+#publicSiteRoot .scroll-chip *{
+  color: var(--card-text-color, var(--site-card-text, #000000)) !important;
+  -webkit-text-fill-color: var(--card-text-color, var(--site-card-text, #000000)) !important;
+}
