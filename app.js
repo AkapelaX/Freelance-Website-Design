@@ -1011,6 +1011,7 @@
     if ($("previewFeaturedHeading")) $("previewFeaturedHeading").hidden = !text(d.featuredHeading);
     setText("previewFeaturedDescription", d.featuredDescription);
     setText("previewGalleryHeading", d.galleryHeading);
+    if ($("previewGalleryHeading")) $("previewGalleryHeading").hidden = !text(d.galleryHeading);
     setText("previewGalleryDescription", d.galleryDescription);
     setText("previewMapHeading", d.mapHeading || "Find Us");
     setText("previewMapAddress", d.businessAddress);
