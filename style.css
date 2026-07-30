@@ -9307,3 +9307,12 @@ textarea {
   width: 100% !important;
   align-self: stretch;
 }
+/* LIVE WEBSITE INFORMATION CARD VISIBILITY */
+body:not(.route-builder) .info,
+body:not(.route-builder) .info * {
+  color: var(--card-text-color, var(--site-card-text, #000000)) !important;
+  -webkit-text-fill-color:
+    var(--card-text-color, var(--site-card-text, #000000)) !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}

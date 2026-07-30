@@ -13,13 +13,31 @@
 <style>
   [hidden]{display:none!important}
   html{scroll-behavior:smooth}
-  body.public-site-body{margin:0;min-width:0;overflow-x:hidden;padding-top:0!important;background:#fff}
+  body.public-site-body{margin:0;min-width:0;overflow-x:clip;padding-top:0!important;background:#fff}
   .public-site-status{min-height:100vh;display:grid;place-items:center;padding:30px;background:#041023;color:#fff;text-align:center;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
   .public-site-status strong{display:block;font-size:clamp(1.8rem,5vw,3rem);margin-bottom:10px}
   .public-site-status p{margin:0;opacity:.8;font-size:1.05rem}
-  #publicSiteRoot{width:100%;min-height:100vh}
-  #publicSiteRoot.preview{max-width:none;width:100%;height:auto;min-height:100vh;border-radius:0;overflow:visible}
-  #publicSiteRoot .site-header{top:0}
+  #publicSiteRoot{
+    width:100%;
+    min-height:100vh;
+    padding-top:82px;
+  }
+  #publicSiteRoot.preview{
+    max-width:none;
+    width:100%;
+    height:auto;
+    min-height:100vh;
+    border-radius:0;
+    overflow:visible!important;
+  }
+  #publicSiteRoot .site-header{
+    position:fixed!important;
+    top:0!important;
+    left:0!important;
+    right:0!important;
+    width:100%!important;
+    z-index:1000!important;
+  }
 </style>
 </head>
 <body class="public-site-body">
@@ -319,6 +337,23 @@
     preview.style.setProperty("--heading-text-color", d.headingTextColor);
     preview.style.setProperty("--supporting-text-color", d.supportingTextColor);
     preview.style.setProperty("--site-logo-outline", d.logoOutlineColor);
+
+    // The builder preview applies card colors directly after rendering.
+    // Do the same on the public site so older broad stylesheet rules cannot
+    // make the information-card lettering disappear.
+    const infoCard = preview.querySelector(".info");
+    if (infoCard) {
+      infoCard.style.setProperty("background-color", d.cardColor || "#ffffff", "important");
+      infoCard.style.setProperty("color", d.cardTextColor || "#000000", "important");
+      infoCard.style.setProperty("-webkit-text-fill-color", d.cardTextColor || "#000000", "important");
+
+      infoCard.querySelectorAll("*").forEach((node) => {
+        node.style.setProperty("color", d.cardTextColor || "#000000", "important");
+        node.style.setProperty("-webkit-text-fill-color", d.cardTextColor || "#000000", "important");
+        node.style.setProperty("opacity", "1", "important");
+        node.style.setProperty("visibility", "visible", "important");
+      });
+    }
 
     const scrollItems = Array.isArray(d.scrollItems)
       ? d.scrollItems
