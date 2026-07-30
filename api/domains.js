@@ -1530,12 +1530,14 @@
     if (!state.user) return openAuth("signin");
     if (!state.apiOnline) return toast("The domain backend has not been installed yet.", "error");
 
-    const button = event?.currentTarget || $("connectDomainBtn") || $("dmConnectBtn");
-    const input = button?.id === "dmConnectBtn"
-      ? $("dmDomainInput")
-      : $("customDomain");
+   const button = event?.currentTarget || $("dmConnectBtn") || $("connectDomainBtn");
 
-    const domain = normalizeDomain(input?.value);
+const domainCenterValue = text($("dmDomainInput")?.value);
+const builderValue = text($("customDomain")?.value);
+
+const domain = normalizeDomain(
+  domainCenterValue || builderValue
+);
     if (!domain || !domain.includes(".")) {
       return toast("Enter a valid domain such as example.com.", "error");
     }
