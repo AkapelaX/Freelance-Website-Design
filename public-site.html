@@ -269,7 +269,10 @@
     const isStarterPlan = text(project?.plan).toLowerCase() === "starter";
     $("previewGallerySection").hidden = isStarterPlan;
     const galleryNavButton = document.querySelector('[data-preview-target="previewGallerySection"]');
-    if (galleryNavButton) galleryNavButton.hidden = isStarterPlan;
+    if (galleryNavButton) {
+      galleryNavButton.hidden = isStarterPlan;
+      galleryNavButton.style.display = isStarterPlan ? "none" : "";
+    }
 
     document.title = d.businessName || "Website";
     document.querySelector('meta[name="description"]').setAttribute("content", (d.businessBio || d.headerHeadline || d.businessName).slice(0,160));

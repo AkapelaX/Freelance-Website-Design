@@ -1047,6 +1047,22 @@
     const preview = $("preview");
     if (!preview) return;
 
+    const isStarterPlan = text(project.plan).toLowerCase() === "starter";
+    const gallerySection = $("previewGallerySection");
+    const galleryNavButton = document.querySelector(
+      '#previewSiteNav [data-preview-target="previewGallerySection"]'
+    );
+
+    if (gallerySection) {
+      gallerySection.hidden = isStarterPlan;
+      gallerySection.style.display = isStarterPlan ? "none" : "";
+    }
+
+    if (galleryNavButton) {
+      galleryNavButton.hidden = isStarterPlan;
+      galleryNavButton.style.display = isStarterPlan ? "none" : "";
+    }
+
     setText("previewBusinessName", d.businessName || "YOUR BUSINESS");
     setText("previewTagline", d.headerTagline);
     setText("previewHeadline", d.headerHeadline || "Your headline appears here.");
