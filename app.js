@@ -1181,10 +1181,19 @@
     if (!grid) return;
     grid.innerHTML = items.map((item) => {
       const media = item.type?.startsWith("video")
-        ? `<video src="${escapeAttr(item.url)}" controls preload="metadata"></video>`
+        ? `<video src="${escapeAttr(item.url)}" autoplay muted loop playsinline controls preload="auto"></video>`
         : `<img src="${escapeAttr(item.url)}" alt="${escapeAttr(item.description || "Website upload")}">`;
       return `<article class="${cardClass}">${media}${item.description ? `<p>${escapeHtml(item.description)}</p>` : ""}</article>`;
     }).join("");
+
+    grid.querySelectorAll("video").forEach((video) => {
+      video.muted = true;
+      video.defaultMuted = true;
+      video.autoplay = true;
+      video.loop = true;
+      video.playsInline = true;
+      video.play().catch(() => {});
+    });
   }
 
   async function compressImage(file, purpose = "content") {
@@ -2159,21 +2168,46 @@
 
 // Pull down to refresh (mobile)
 let pullStartY = 0;
+let pullDistance = 0;
+let pullRefreshReady = false;
 
 window.addEventListener("touchstart", (event) => {
-  if (window.scrollY === 0) {
-    pullStartY = event.touches[0].clientY;
+  const pageTop = window.scrollY <= 0 || document.documentElement.scrollTop <= 0;
+
+  if (!pageTop || event.touches.length !== 1) {
+    pullRefreshReady = false;
+    return;
+  }
+
+  pullStartY = event.touches[0].clientY;
+  pullDistance = 0;
+  pullRefreshReady = true;
+}, { passive: true });
+
+window.addEventListener("touchmove", (event) => {
+  if (!pullRefreshReady || event.touches.length !== 1) return;
+
+  pullDistance = event.touches[0].clientY - pullStartY;
+
+  if (pullDistance < 0) {
+    pullRefreshReady = false;
   }
 }, { passive: true });
 
-window.addEventListener("touchend", (event) => {
-  if (window.scrollY !== 0) return;
-
-  const pullDistance = event.changedTouches[0].clientY - pullStartY;
-
-  if (pullDistance > 120) {
-    location.reload();
+window.addEventListener("touchend", () => {
+  if (pullRefreshReady && pullDistance >= 90) {
+    window.location.reload();
   }
+
+  pullStartY = 0;
+  pullDistance = 0;
+  pullRefreshReady = false;
+}, { passive: true });
+
+window.addEventListener("touchcancel", () => {
+  pullStartY = 0;
+  pullDistance = 0;
+  pullRefreshReady = false;
 }, { passive: true });
 
 })();
