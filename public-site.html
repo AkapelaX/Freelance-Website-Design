@@ -211,10 +211,19 @@
     grid.innerHTML = list.map((item) => {
       const isVideo = item.type.toLowerCase().startsWith("video") || /\.(mp4|webm|mov|m4v)(\?|#|$)/i.test(item.url);
       const media = isVideo
-        ? `<video src="${escapeAttr(item.url)}" autoplay muted loop controls preload="metadata" playsinline></video>`
+        ? `<video src="${escapeAttr(item.url)}" autoplay muted loop playsinline controls preload="auto"></video>`
         : `<img src="${escapeAttr(item.url)}" alt="${escapeAttr(item.description || item.title || "Website upload")}">`;
       return `<article class="${cardClass}">${media}${item.description ? `<p>${escapeHtml(item.description)}</p>` : ""}</article>`;
     }).join("");
+
+    grid.querySelectorAll("video").forEach((video) => {
+      video.muted = true;
+      video.defaultMuted = true;
+      video.autoplay = true;
+      video.loop = true;
+      video.playsInline = true;
+      video.play().catch(() => {});
+    });
   }
 
   function getProjectData(project) {
@@ -271,7 +280,11 @@
     const galleryNavButton = document.querySelector('[data-preview-target="previewGallerySection"]');
     if (galleryNavButton) {
       galleryNavButton.hidden = isStarterPlan;
-      galleryNavButton.style.display = isStarterPlan ? "none" : "";
+      galleryNavButton.style.setProperty(
+        "display",
+        isStarterPlan ? "none" : "",
+        isStarterPlan ? "important" : ""
+      );
     }
 
     document.title = d.businessName || "Website";

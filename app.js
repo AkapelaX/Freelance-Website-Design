@@ -1060,7 +1060,11 @@
 
     if (galleryNavButton) {
       galleryNavButton.hidden = isStarterPlan;
-      galleryNavButton.style.display = isStarterPlan ? "none" : "";
+      galleryNavButton.style.setProperty(
+        "display",
+        isStarterPlan ? "none" : "",
+        isStarterPlan ? "important" : ""
+      );
     }
 
     setText("previewBusinessName", d.businessName || "YOUR BUSINESS");
