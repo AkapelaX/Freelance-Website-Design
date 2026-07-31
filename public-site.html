@@ -211,7 +211,7 @@
     grid.innerHTML = list.map((item) => {
       const isVideo = item.type.toLowerCase().startsWith("video") || /\.(mp4|webm|mov|m4v)(\?|#|$)/i.test(item.url);
       const media = isVideo
-        ? `<video src="${escapeAttr(item.url)}" controls preload="metadata" playsinline></video>`
+        ? `<video src="${escapeAttr(item.url)}" autoplay muted loop controls preload="metadata" playsinline></video>`
         : `<img src="${escapeAttr(item.url)}" alt="${escapeAttr(item.description || item.title || "Website upload")}">`;
       return `<article class="${cardClass}">${media}${item.description ? `<p>${escapeHtml(item.description)}</p>` : ""}</article>`;
     }).join("");
