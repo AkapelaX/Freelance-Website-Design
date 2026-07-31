@@ -2156,4 +2156,24 @@
     save: saveProject,
     publish: publishProject
   };
+
+// Pull down to refresh (mobile)
+let pullStartY = 0;
+
+window.addEventListener("touchstart", (event) => {
+  if (window.scrollY === 0) {
+    pullStartY = event.touches[0].clientY;
+  }
+}, { passive: true });
+
+window.addEventListener("touchend", (event) => {
+  if (window.scrollY !== 0) return;
+
+  const pullDistance = event.changedTouches[0].clientY - pullStartY;
+
+  if (pullDistance > 120) {
+    location.reload();
+  }
+}, { passive: true });
+
 })();
