@@ -14,6 +14,8 @@ const {
   handleError
 } = require("./_utils");
 
+const FREE_TRIAL_DAYS = 7;
+
 async function rawBody(req) {
   const chunks = [];
 
@@ -76,9 +78,61 @@ async function ensureCustomer(stripe, user, profile) {
   return customer.id;
 }
 
-async function applyWebhook(event) {
+function customerIdFromObject(object) {
+  return typeof object?.customer === "string"
+    ? object.customer
+    : object?.customer?.id || null;
+}
+
+function subscriptionIdFromInvoice(object) {
+  if (typeof object?.subscription === "string") {
+    return object.subscription;
+  }
+
+  if (object?.subscription?.id) {
+    return object.subscription.id;
+  }
+
+  return null;
+}
+
+async function getSubscriptionStatus(stripe, subscriptionId) {
+  if (!subscriptionId) {
+    return null;
+  }
+
+  try {
+    const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+
+    return {
+      id: subscription.id,
+      status: subscription.status || null,
+      customerId:
+        typeof subscription.customer === "string"
+          ? subscription.customer
+          : subscription.customer?.id || null,
+      plan: subscription.metadata?.plan || null
+    };
+  } catch (error) {
+    console.error(
+      "Unable to retrieve Stripe subscription:",
+      subscriptionId,
+      error.message
+    );
+
+    return null;
+  }
+}
+
+async function applyWebhook(event, stripe) {
   const supabase = getAdmin();
   const object = event.data.object;
+
+  /*
+  =========================================================
+  CHECKOUT COMPLETED
+  =========================================================
+  */
 
   if (event.type === "checkout.session.completed") {
     const userId = object.metadata?.user_id;
@@ -87,13 +141,34 @@ async function applyWebhook(event) {
     const projectId = object.metadata?.project_id;
 
     if (checkoutType === "subscription" && userId) {
+      const subscriptionId =
+        typeof object.subscription === "string"
+          ? object.subscription
+          : object.subscription?.id || null;
+
+      const subscription = await getSubscriptionStatus(
+        stripe,
+        subscriptionId
+      );
+
       const { error } = await supabase
         .from("profiles")
         .update({
-          stripe_customer_id: object.customer || null,
-          stripe_subscription_id: object.subscription || null,
-          plan: plan || null,
-          subscription_status: "active",
+          stripe_customer_id:
+            customerIdFromObject(object) ||
+            subscription?.customerId ||
+            null,
+          stripe_subscription_id:
+            subscription?.id ||
+            subscriptionId ||
+            null,
+          plan:
+            subscription?.plan ||
+            plan ||
+            null,
+          subscription_status:
+            subscription?.status ||
+            "trialing",
           updated_at: new Date().toISOString()
         })
         .eq("id", userId);
@@ -126,15 +201,18 @@ async function applyWebhook(event) {
     return;
   }
 
+  /*
+  =========================================================
+  SUBSCRIPTION CREATED / UPDATED / DELETED
+  =========================================================
+  */
+
   if (
     event.type === "customer.subscription.created" ||
     event.type === "customer.subscription.updated" ||
     event.type === "customer.subscription.deleted"
   ) {
-    const customerId =
-      typeof object.customer === "string"
-        ? object.customer
-        : object.customer?.id;
+    const customerId = customerIdFromObject(object);
 
     if (!customerId) {
       return;
@@ -145,9 +223,7 @@ async function applyWebhook(event) {
         ? "canceled"
         : object.status;
 
-    const plan =
-      object.metadata?.plan ||
-      null;
+    const plan = object.metadata?.plan || null;
 
     const updateData = {
       subscription_status: subscriptionStatus,
@@ -171,14 +247,17 @@ async function applyWebhook(event) {
     return;
   }
 
+  /*
+  =========================================================
+  FAILED / ACTION REQUIRED INVOICE
+  =========================================================
+  */
+
   if (
     event.type === "invoice.payment_failed" ||
     event.type === "invoice.payment_action_required"
   ) {
-    const customerId =
-      typeof object.customer === "string"
-        ? object.customer
-        : object.customer?.id;
+    const customerId = customerIdFromObject(object);
 
     if (!customerId) {
       return;
@@ -202,22 +281,49 @@ async function applyWebhook(event) {
     return;
   }
 
-  if (event.type === "invoice.paid") {
-    const customerId =
-      typeof object.customer === "string"
-        ? object.customer
-        : object.customer?.id;
+  /*
+  =========================================================
+  PAID INVOICE
+  =========================================================
+  */
+
+  if (
+    event.type === "invoice.paid" ||
+    event.type === "invoice.payment_succeeded"
+  ) {
+    const customerId = customerIdFromObject(object);
 
     if (!customerId) {
       return;
     }
 
+    const subscriptionId = subscriptionIdFromInvoice(object);
+    const subscription = await getSubscriptionStatus(
+      stripe,
+      subscriptionId
+    );
+
+    const updateData = {
+      updated_at: new Date().toISOString()
+    };
+
+    if (subscription?.status) {
+      updateData.subscription_status = subscription.status;
+    } else if ((object.amount_paid || 0) > 0) {
+      updateData.subscription_status = "active";
+    }
+
+    if (subscription?.id) {
+      updateData.stripe_subscription_id = subscription.id;
+    }
+
+    if (subscription?.plan) {
+      updateData.plan = subscription.plan;
+    }
+
     const { error } = await supabase
       .from("profiles")
-      .update({
-        subscription_status: "active",
-        updated_at: new Date().toISOString()
-      })
+      .update(updateData)
       .eq("stripe_customer_id", customerId);
 
     if (error) {
@@ -279,7 +385,7 @@ module.exports = async function handler(req, res) {
         );
       }
 
-      await applyWebhook(event);
+      await applyWebhook(event, stripe);
 
       return ok(res, {
         received: true,
@@ -417,6 +523,7 @@ module.exports = async function handler(req, res) {
         sessionOptions.allow_promotion_codes = true;
 
         sessionOptions.subscription_data = {
+          trial_period_days: FREE_TRIAL_DAYS,
           metadata: {
             user_id: user.id,
             plan
