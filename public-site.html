@@ -204,6 +204,36 @@
     };
   }
 
+  function linkifyDescription(value) {
+    const raw = String(value ?? "");
+    if (!raw) return "";
+
+    const urlPattern = /(https?:\/\/[^\s<]+)/gi;
+    let result = "";
+    let lastIndex = 0;
+
+    raw.replace(urlPattern, (url, _match, offset) => {
+      result += escapeHtml(raw.slice(lastIndex, offset));
+
+      let cleanUrl = url;
+      let trailing = "";
+
+      while (/[.,!?;:)]$/.test(cleanUrl)) {
+        trailing = cleanUrl.slice(-1) + trailing;
+        cleanUrl = cleanUrl.slice(0, -1);
+      }
+
+      result += `<a href="${escapeAttr(cleanUrl)}" target="_blank" rel="noopener noreferrer" class="media-description-link">${escapeHtml(cleanUrl)}</a>`;
+      result += escapeHtml(trailing);
+
+      lastIndex = offset + url.length;
+      return url;
+    });
+
+    result += escapeHtml(raw.slice(lastIndex));
+    return result.replace(/\n/g, "<br>");
+  }
+
   function renderMediaGrid(id, items, cardClass) {
     const grid = $(id);
     if (!grid) return;
@@ -213,7 +243,7 @@
       const media = isVideo
         ? `<video src="${escapeAttr(item.url)}" autoplay muted loop playsinline controls preload="auto"></video>`
         : `<img src="${escapeAttr(item.url)}" alt="${escapeAttr(item.description || item.title || "Website upload")}">`;
-      return `<article class="${cardClass}">${media}${item.description ? `<p>${escapeHtml(item.description)}</p>` : ""}</article>`;
+      return `<article class="${cardClass}">${media}${item.description ? `<p>${linkifyDescription(item.description)}</p>` : ""}</article>`;
     }).join("");
 
     grid.querySelectorAll("video").forEach((video) => {
