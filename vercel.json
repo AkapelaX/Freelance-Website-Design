@@ -1,8 +1,22 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
   "functions": {
     "api/*.js": {
       "maxDuration": 30,
       "memory": 1024
     }
-  }
+  },
+  "rewrites": [
+    {
+      "source": "/",
+      "destination": "/social-preview.html",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*([Ff]acebookexternalhit|[Ff]acebot|Meta-ExternalAgent|meta-externalagent|Twitterbot|LinkedInBot|WhatsApp|Slackbot|Discordbot|TelegramBot|Pinterestbot).*"
+        }
+      ]
+    }
+  ]
 }
