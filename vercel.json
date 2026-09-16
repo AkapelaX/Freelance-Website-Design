@@ -10,6 +10,16 @@
     {
       "source": "/",
       "destination": "/social-preview.html",
+      "missing": [
+        {
+          "type": "header",
+          "key": "sec-fetch-mode"
+        }
+      ]
+    },
+    {
+      "source": "/",
+      "destination": "/social-preview.html",
       "has": [
         {
           "type": "header",
