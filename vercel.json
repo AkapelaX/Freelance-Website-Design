@@ -14,7 +14,7 @@
         {
           "type": "header",
           "key": "user-agent",
-          "value": ".*([Ff]acebookexternalhit|[Ff]acebot|Meta-ExternalAgent|meta-externalagent|Twitterbot|LinkedInBot|WhatsApp|Slackbot|Discordbot|TelegramBot|Pinterestbot).*"
+          "value": ".*([Ff]acebookexternalhit|[Ff]acebot|[Mm]eta-[Ee]xternal[Aa]gent|[Mm]eta-[Ee]xternal[Ff]etcher|Twitterbot|LinkedInBot|WhatsApp|Slackbot|Discordbot|TelegramBot|Pinterestbot).*"
         }
       ]
     }
