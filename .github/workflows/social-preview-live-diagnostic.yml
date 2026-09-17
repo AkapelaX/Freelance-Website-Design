@@ -8,7 +8,7 @@ jobs:
   probe:
     runs-on: ubuntu-latest
     steps:
-      - name: Probe live Bluvixa like Meta and a browser
+      - name: Probe live Bluvixa and compare working AkapelaX preview
         shell: bash
         run: |
           set -u
@@ -28,6 +28,8 @@ jobs:
             echo "BODY_BYTES=$(wc -c </tmp/b 2>/dev/null || echo 0)"
             echo '--- SOCIAL META ---'
             grep -Eio '<(meta|link)[^>]+(og:|twitter:|canonical)[^>]*>|<title[^>]*>[^<]*</title>' /tmp/b | head -100 || true
+            echo '--- FIRST IMAGES ---'
+            grep -Eio '<img[^>]+>' /tmp/b | head -20 || true
             echo
           }
 
@@ -48,15 +50,15 @@ jobs:
             echo "RANGE_BYTES=$(wc -c </tmp/range.bin 2>/dev/null || echo 0)"
           }
 
-          echo '===== DNS ====='
+          echo '===== DNS BLUVIXA ====='
           getent ahosts bluvixa.com || true
           getent ahosts www.bluvixa.com || true
 
-          probe_page 'https://bluvixa.com/' "$FB_UA" 'FACEBOOK APEX'
-          probe_page 'https://www.bluvixa.com/' "$FB_UA" 'FACEBOOK WWW'
-          probe_page 'https://www.bluvixa.com/' "$META_AGENT_UA" 'META EXTERNAL AGENT'
-          probe_page 'https://www.bluvixa.com/' "$META_FETCHER_UA" 'META EXTERNAL FETCHER PAGE'
-          probe_page 'https://www.bluvixa.com/' "$BROWSER_UA" 'NORMAL BROWSER'
+          probe_page 'https://bluvixa.com/' "$FB_UA" 'BLUVIXA FACEBOOK APEX'
+          probe_page 'https://www.bluvixa.com/' "$FB_UA" 'BLUVIXA FACEBOOK WWW'
+          probe_page 'https://www.bluvixa.com/' "$META_AGENT_UA" 'BLUVIXA META EXTERNAL AGENT'
+          probe_page 'https://www.bluvixa.com/' "$META_FETCHER_UA" 'BLUVIXA META EXTERNAL FETCHER PAGE'
+          probe_page 'https://www.bluvixa.com/' "$BROWSER_UA" 'BLUVIXA NORMAL BROWSER'
 
           probe_image "$FB_UA" 'FACEBOOKEXTERNALHIT'
           probe_image "$META_AGENT_UA" 'META-EXTERNALAGENT'
@@ -64,5 +66,13 @@ jobs:
           probe_image "$BROWSER_UA" 'BROWSER'
 
           echo
-          echo '===== ROBOTS ====='
+          echo '===== BLUVIXA ROBOTS ====='
           curl -sS -L --max-time 30 -A "$META_FETCHER_UA" -D - https://www.bluvixa.com/robots.txt | head -120 || true
+
+          echo
+          echo '===== WORKING SITE COMPARATOR: AKAPELAX.COM ====='
+          getent ahosts akapelax.com || true
+          getent ahosts www.akapelax.com || true
+          probe_page 'https://akapelax.com/' "$FB_UA" 'AKAPELAX FACEBOOK APEX'
+          probe_page 'https://www.akapelax.com/' "$FB_UA" 'AKAPELAX FACEBOOK WWW'
+          probe_page 'https://akapelax.com/' "$META_AGENT_UA" 'AKAPELAX META EXTERNAL AGENT'
