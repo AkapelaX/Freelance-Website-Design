@@ -9,12 +9,16 @@
   "rewrites": [
     {
       "source": "/",
-      "destination": "/social-preview.html",
-      "has": [
+      "destination": "/api/root"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/bluvixa-business-card-share-v6.jpg",
+      "headers": [
         {
-          "type": "header",
-          "key": "user-agent",
-          "value": ".*([Ff]acebookexternalhit|[Ff]acebot|[Mm]eta-[Ee]xternal[Aa]gent|[Mm]eta-[Ee]xternal[Ff]etcher|Twitterbot|LinkedInBot|WhatsApp|Slackbot|Discordbot|TelegramBot|Pinterestbot).*"
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
         }
       ]
     }
