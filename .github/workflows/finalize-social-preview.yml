@@ -1,0 +1,124 @@
+name: Finalize Bluvixa Social Preview
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  finalize:
+    if: ${{ github.actor != 'github-actions[bot]' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build final 1200x630 social image from shared source
+        shell: bash
+        run: |
+          set -euo pipefail
+          SHARE='https://chatgpt.com/s/m_6aab3fa3c1988191be87d747dd39bcdf'
+          curl -sS -L --max-time 45 -A 'Mozilla/5.0' -o /tmp/share.html "$SHARE"
+
+          python3 - <<'PY'
+          import html, re
+          page=open('/tmp/share.html',encoding='utf-8',errors='ignore').read()
+          m=re.search(r'<meta\s+property=["\']og:image["\']\s+content=["\']([^"\']+)', page, re.I)
+          if not m:
+              m=re.search(r'<meta\s+content=["\']([^"\']+)["\']\s+property=["\']og:image["\']', page, re.I)
+          if not m:
+              raise SystemExit('Could not locate og:image in shared page')
+          url=html.unescape(m.group(1))
+          open('/tmp/image-url.txt','w').write(url)
+          print('IMAGE_URL=' + url)
+          PY
+
+          IMG_URL="$(cat /tmp/image-url.txt)"
+          curl -sS -L --max-time 60 -A 'Mozilla/5.0' -o /tmp/source-image "$IMG_URL"
+
+          python3 -m pip install --quiet pillow
+          python3 - <<'PY'
+          from PIL import Image, ImageStat
+          src=Image.open('/tmp/source-image').convert('RGB')
+          src.load()
+          print('SOURCE_SIZE=', src.size)
+          print('SOURCE_FORMAT=', src.format)
+
+          target=src.resize((1200,630), Image.Resampling.LANCZOS)
+          out='bluvixa-social-card-v10.jpg'
+          target.save(out,'JPEG',quality=92,optimize=True,progressive=False,subsampling=0)
+
+          check=Image.open(out)
+          check.load()
+          assert check.format == 'JPEG'
+          assert check.size == (1200,630)
+          stat=ImageStat.Stat(check)
+          assert max(stat.stddev) > 20, stat.stddev
+          print('OUTPUT_SIZE=', check.size)
+          print('OUTPUT_BYTES=', __import__('os').path.getsize(out))
+          print('OUTPUT_STDDEV=', stat.stddev)
+          PY
+
+          test "$(head -c 2 bluvixa-social-card-v10.jpg | xxd -p)" = 'ffd8'
+
+      - name: Point root metadata directly at final static JPEG
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import re, pathlib
+          p=pathlib.Path('index.html')
+          s=p.read_text()
+          image='https://www.bluvixa.com/bluvixa-social-card-v10.jpg'
+          s=re.sub(r'https://www\.bluvixa\.com/bluvixa-[^"\']+\.(?:jpg|jpeg|png|webp)(?:\?[^"\']*)?', image, s)
+          s=re.sub(r'<meta property="og:image:width" content="[^"]*"/>', '<meta property="og:image:width" content="1200"/>', s)
+          s=re.sub(r'<meta property="og:image:height" content="[^"]*"/>', '<meta property="og:image:height" content="630"/>', s)
+          s=re.sub(r'<meta property="og:image:type" content="[^"]*"/>', '<meta property="og:image:type" content="image/jpeg"/>', s)
+          if image not in s:
+              raise SystemExit('index.html did not receive final OG image URL')
+          p.write_text(s)
+          PY
+
+          cat > vercel.json <<'JSON'
+          {
+            "$schema": "https://openapi.vercel.sh/vercel.json",
+            "functions": {
+              "api/*.js": {
+                "maxDuration": 30,
+                "memory": 1024
+              }
+            },
+            "headers": [
+              {
+                "source": "/bluvixa-social-card-v10.jpg",
+                "headers": [
+                  { "key": "Content-Type", "value": "image/jpeg" },
+                  { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+                ]
+              }
+            ]
+          }
+          JSON
+
+          rm -f api/og-image-v9.js
+          rm -f .github/workflows/finalize-social-preview.yml
+
+      - name: Validate final metadata before commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -F 'https://www.bluvixa.com/bluvixa-social-card-v10.jpg' index.html
+          grep -F '<meta property="og:image:width" content="1200"/>' index.html
+          grep -F '<meta property="og:image:height" content="630"/>' index.html
+          grep -F '<meta property="og:image:type" content="image/jpeg"/>' index.html
+          test -s bluvixa-social-card-v10.jpg
+
+      - name: Commit final production preview asset
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'Finalize Bluvixa 1200x630 social preview image'
+          git push origin main
