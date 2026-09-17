@@ -1,0 +1,25 @@
+name: Probe Shared Bluvixa Image Source
+on:
+  push:
+    branches: [verify-social-preview-v9]
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Inspect shared image page
+        shell: bash
+        run: |
+          set -u
+          URL='https://chatgpt.com/s/m_6aab3fa3c1988191be87d747dd39bcdf'
+          curl -sS -L --max-time 30 -A 'Mozilla/5.0' -D /tmp/h -o /tmp/page "$URL" || true
+          echo '--- headers ---'
+          cat /tmp/h || true
+          echo "bytes=$(wc -c </tmp/page 2>/dev/null || echo 0)"
+          echo '--- image-ish URLs ---'
+          grep -Eo 'https://[^"<> ]+\.(png|jpg|jpeg|webp)(\?[^"<> ]*)?' /tmp/page | head -40 || true
+          echo '--- og:image ---'
+          grep -Eio '<meta[^>]+(og:image|twitter:image)[^>]*>' /tmp/page | head -20 || true
+          echo '--- asset URLs ---'
+          grep -Eo 'https://[^"<> ]+(backend-api|files|oaiusercontent|usercontent|cdn)[^"<> ]+' /tmp/page | head -50 || true
