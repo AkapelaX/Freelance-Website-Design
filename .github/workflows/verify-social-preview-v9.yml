@@ -1,0 +1,44 @@
+name: Verify Bluvixa Social Preview V9
+on:
+  push:
+    branches: [verify-social-preview-v9]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Probe live social preview
+        shell: bash
+        run: |
+          set -euo pipefail
+          FB='facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)'
+          META='meta-externalfetcher/1.1 (+https://developers.facebook.com/docs/sharing/webmasters/crawler)'
+          for UA in "$FB" "$META"; do
+            echo "=== PAGE UA: $UA ==="
+            curl -sS -L --max-time 30 -A "$UA" -D /tmp/page.headers -o /tmp/page.html https://www.bluvixa.com/
+            cat /tmp/page.headers
+            grep -Eio '<meta[^>]+(og:image|og:image:width|og:image:height|og:image:type|og:title|og:description)[^>]*>' /tmp/page.html || true
+            grep -q 'https://www.bluvixa.com/bluvixa-og-v9.jpg' /tmp/page.html
+          done
+
+          echo '=== IMAGE GET ==='
+          curl -sS -L --max-time 30 -A "$META" -D /tmp/img.headers -o /tmp/og.jpg https://www.bluvixa.com/bluvixa-og-v9.jpg
+          cat /tmp/img.headers
+          test "$(head -c 2 /tmp/og.jpg | xxd -p)" = 'ffd8'
+          file /tmp/og.jpg
+          test "$(wc -c < /tmp/og.jpg)" -gt 30000
+
+          python3 -m pip install --quiet pillow
+          python3 - <<'PY'
+          from PIL import Image
+          im=Image.open('/tmp/og.jpg')
+          im.load()
+          print('FORMAT=', im.format)
+          print('SIZE=', im.size)
+          assert im.format == 'JPEG'
+          assert im.size == (1200, 630)
+          PY
+
+          grep -qi '^content-type: image/jpeg' /tmp/img.headers
+          echo 'LIVE_SOCIAL_PREVIEW_OK=1'
