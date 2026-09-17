@@ -12,80 +12,46 @@ jobs:
   probe:
     runs-on: ubuntu-latest
     steps:
-      - name: Deep probe live Bluvixa Facebook preview paths
+      - name: Verify final Facebook social object refresh
         shell: bash
         run: |
           set -euo pipefail
+          sleep 20
           FB='facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)'
-          FBCAT='facebookcatalog/1.0'
-          FACEBOT='Facebot'
-          META_AGENT='meta-externalagent/1.1 (+https://developers.facebook.com/docs/sharing/webmasters/crawler)'
-          META_FETCH='meta-externalfetcher/1.1 (+https://developers.facebook.com/docs/sharing/webmasters/crawler)'
-          BROWSER='Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Version/18.0 Mobile/15E148 Safari/604.1'
-          IMAGE='https://www.bluvixa.com/bluvixa-social-card-v10.jpg'
+          META='meta-externalfetcher/1.1 (+https://developers.facebook.com/docs/sharing/webmasters/crawler)'
+          PAGE='https://www.bluvixa.com/'
+          IMAGE='https://www.bluvixa.com/bluvixa-social-card-v10.jpg?v=11'
+          OBJECT='https://www.bluvixa.com/?fb_preview=v11'
 
-          probe_page() {
-            url="$1"; ua="$2"; label="$3"
-            echo
-            echo "===== $label ====="
-            rm -f /tmp/h /tmp/b
-            curl -sS -L --max-time 30 -A "$ua" -D /tmp/h -o /tmp/b "$url"
-            sed -n '1,160p' /tmp/h
-            echo "BODY_BYTES=$(wc -c </tmp/b)"
-            echo '--- META ---'
-            grep -Eio '<meta[^>]+(fb:app_id|og:image|og:image:url|og:image:secure_url|og:image:width|og:image:height|og:image:type|og:title|og:description|og:url|og:type)[^>]*>' /tmp/b || true
-            grep -Eio '<link[^>]+canonical[^>]*>' /tmp/b || true
-          }
-
-          echo '===== DNS ====='
-          getent ahosts bluvixa.com || true
-          getent ahosts www.bluvixa.com || true
-
-          for pair in \
-            "http://bluvixa.com/|$FB|FB HTTP APEX" \
-            "http://www.bluvixa.com/|$FB|FB HTTP WWW" \
-            "https://bluvixa.com/|$FB|FB HTTPS APEX" \
-            "https://www.bluvixa.com/|$FB|FB HTTPS WWW" \
-            "http://bluvixa.com/|$FBCAT|FBCATALOG HTTP APEX" \
-            "https://www.bluvixa.com/|$FBCAT|FBCATALOG HTTPS WWW" \
-            "https://www.bluvixa.com/|$FACEBOT|FACEBOT WWW" \
-            "https://www.bluvixa.com/|$META_AGENT|META AGENT WWW" \
-            "https://www.bluvixa.com/|$META_FETCH|META FETCHER WWW" \
-            "https://www.bluvixa.com/|$BROWSER|BROWSER WWW"
-          do
-            IFS='|' read -r url ua label <<< "$pair"
-            probe_page "$url" "$ua" "$label"
+          for UA in "$FB" "$META"; do
+            echo "===== PAGE $UA ====="
+            curl -sS -L --max-time 30 -A "$UA" -D /tmp/ph -o /tmp/page "$PAGE"
+            cat /tmp/ph
+            grep -F '<meta property="fb:app_id" content="966242223397117"/>' /tmp/page
+            grep -F "<meta property=\"og:url\" content=\"$OBJECT\"/>" /tmp/page
+            grep -F "<meta property=\"og:image\" content=\"$IMAGE\"/>" /tmp/page
+            grep -F '<meta property="og:image:width" content="1200"/>' /tmp/page
+            grep -F '<meta property="og:image:height" content="630"/>' /tmp/page
           done
 
-          echo
-          echo '===== RAW REDIRECTS ====='
-          for u in http://bluvixa.com/ http://www.bluvixa.com/ https://bluvixa.com/; do
-            echo "--- $u ---"
-            curl -sS --max-time 30 -A "$FB" -D - -o /dev/null "$u"
-          done
+          echo '===== VERSIONED OBJECT ====='
+          curl -sS -L --max-time 30 -A "$FB" -D /tmp/oh -o /tmp/object "$OBJECT"
+          cat /tmp/oh
+          grep -F '<meta property="fb:app_id" content="966242223397117"/>' /tmp/object
+          grep -F "<meta property=\"og:url\" content=\"$OBJECT\"/>" /tmp/object
 
-          echo
-          echo '===== IMAGE GET ====='
+          echo '===== IMAGE ====='
           curl -sS -L --max-time 30 -A "$FB" -D /tmp/ih -o /tmp/og.jpg "$IMAGE"
-          sed -n '1,120p' /tmp/ih
-          file /tmp/og.jpg
-          echo "IMAGE_BYTES=$(wc -c </tmp/og.jpg)"
+          cat /tmp/ih
           test "$(head -c 2 /tmp/og.jpg | xxd -p)" = 'ffd8'
+          file /tmp/og.jpg
+          test "$(wc -c </tmp/og.jpg)" -gt 100000
 
-          echo
-          echo '===== IMAGE HEAD ====='
-          curl -sS -I -L --max-time 30 -A "$FB" "$IMAGE"
-
-          echo
-          echo '===== IMAGE RANGE ====='
-          curl -sS -L --max-time 30 -A "$FB" -H 'Range: bytes=0-1023' -D /tmp/rh -o /tmp/range "$IMAGE"
-          sed -n '1,120p' /tmp/rh
-          echo "RANGE_BYTES=$(wc -c </tmp/range)"
-
-          echo
           echo '===== ROBOTS ====='
-          curl -sS -L --max-time 30 -A "$FB" -D - https://www.bluvixa.com/robots.txt | head -160 || true
+          curl -sS -L --max-time 30 -A "$FB" -D /tmp/rh -o /tmp/robots https://www.bluvixa.com/robots.txt
+          cat /tmp/rh
+          cat /tmp/robots
+          grep -qi 'facebookexternalhit' /tmp/robots
+          grep -qi 'meta-externalfetcher' /tmp/robots
 
-          echo
-          echo '===== RESULT ====='
-          echo SOCIAL_PREVIEW_DEEP_PROBE_OK=1
+          echo FACEBOOK_SOCIAL_OBJECT_V11_OK=1
