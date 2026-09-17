@@ -1,1 +1,0 @@
-Root requests will be routed through api/root.js so Open Graph metadata is present for normal browsers and social crawlers.
