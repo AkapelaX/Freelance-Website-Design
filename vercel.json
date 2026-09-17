@@ -6,17 +6,23 @@
       "memory": 1024
     }
   },
+  "rewrites": [
+    {
+      "source": "/bluvixa-og-v9.jpg",
+      "destination": "/api/og-image-v9"
+    }
+  ],
   "headers": [
     {
-      "source": "/bluvixa-business-card-og-v7.jpg",
+      "source": "/bluvixa-og-v9.jpg",
       "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        },
         {
           "key": "Content-Type",
           "value": "image/jpeg"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
         }
       ]
     }
