@@ -1,4 +1,4 @@
-name: Verify Bluvixa Social Preview V9
+name: Verify Final Bluvixa Social Preview
 on:
   push:
     branches: [verify-social-preview-v9]
@@ -12,18 +12,23 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          sleep 15
           FB='facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)'
           META='meta-externalfetcher/1.1 (+https://developers.facebook.com/docs/sharing/webmasters/crawler)'
+          IMAGE='https://www.bluvixa.com/bluvixa-social-card-v10.jpg'
+
           for UA in "$FB" "$META"; do
             echo "=== PAGE UA: $UA ==="
             curl -sS -L --max-time 30 -A "$UA" -D /tmp/page.headers -o /tmp/page.html https://www.bluvixa.com/
             cat /tmp/page.headers
             grep -Eio '<meta[^>]+(og:image|og:image:width|og:image:height|og:image:type|og:title|og:description)[^>]*>' /tmp/page.html || true
-            grep -q 'https://www.bluvixa.com/bluvixa-og-v9.jpg' /tmp/page.html
+            grep -q "$IMAGE" /tmp/page.html
+            grep -q '<meta property="og:image:width" content="1200"/>' /tmp/page.html
+            grep -q '<meta property="og:image:height" content="630"/>' /tmp/page.html
           done
 
           echo '=== IMAGE GET ==='
-          curl -sS -L --max-time 30 -A "$META" -D /tmp/img.headers -o /tmp/og.jpg https://www.bluvixa.com/bluvixa-og-v9.jpg
+          curl -sS -L --max-time 30 -A "$META" -D /tmp/img.headers -o /tmp/og.jpg "$IMAGE"
           cat /tmp/img.headers
           test "$(head -c 2 /tmp/og.jpg | xxd -p)" = 'ffd8'
           file /tmp/og.jpg
@@ -31,13 +36,15 @@ jobs:
 
           python3 -m pip install --quiet pillow
           python3 - <<'PY'
-          from PIL import Image
+          from PIL import Image, ImageStat
           im=Image.open('/tmp/og.jpg')
           im.load()
           print('FORMAT=', im.format)
           print('SIZE=', im.size)
+          print('STDDEV=', ImageStat.Stat(im.convert('RGB')).stddev)
           assert im.format == 'JPEG'
           assert im.size == (1200, 630)
+          assert max(ImageStat.Stat(im.convert('RGB')).stddev) > 20
           PY
 
           grep -qi '^content-type: image/jpeg' /tmp/img.headers
