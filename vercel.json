@@ -6,24 +6,12 @@
       "memory": 1024
     }
   },
-  "rewrites": [
-    {
-      "source": "/bluvixa-og-v9.jpg",
-      "destination": "/api/og-image-v9"
-    }
-  ],
   "headers": [
     {
-      "source": "/bluvixa-og-v9.jpg",
+      "source": "/bluvixa-social-card-v10.jpg",
       "headers": [
-        {
-          "key": "Content-Type",
-          "value": "image/jpeg"
-        },
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
+        { "key": "Content-Type", "value": "image/jpeg" },
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
       ]
     }
   ]
