@@ -30,7 +30,7 @@ jobs:
             echo "===== $label ====="
             rm -f /tmp/h /tmp/b
             curl -sS -L --max-time 30 -A "$ua" -D /tmp/h -o /tmp/b "$url"
-            sed -n '1,120p' /tmp/h
+            sed -n '1,160p' /tmp/h
             echo "BODY_BYTES=$(wc -c </tmp/b)"
             echo '--- META ---'
             grep -Eio '<meta[^>]+(fb:app_id|og:image|og:image:url|og:image:secure_url|og:image:width|og:image:height|og:image:type|og:title|og:description|og:url|og:type)[^>]*>' /tmp/b || true
@@ -42,10 +42,12 @@ jobs:
           getent ahosts www.bluvixa.com || true
 
           for pair in \
-            "https://bluvixa.com/|$FB|FB APEX" \
-            "https://www.bluvixa.com/|$FB|FB WWW" \
-            "https://bluvixa.com/|$FBCAT|FBCATALOG APEX" \
-            "https://www.bluvixa.com/|$FBCAT|FBCATALOG WWW" \
+            "http://bluvixa.com/|$FB|FB HTTP APEX" \
+            "http://www.bluvixa.com/|$FB|FB HTTP WWW" \
+            "https://bluvixa.com/|$FB|FB HTTPS APEX" \
+            "https://www.bluvixa.com/|$FB|FB HTTPS WWW" \
+            "http://bluvixa.com/|$FBCAT|FBCATALOG HTTP APEX" \
+            "https://www.bluvixa.com/|$FBCAT|FBCATALOG HTTPS WWW" \
             "https://www.bluvixa.com/|$FACEBOT|FACEBOT WWW" \
             "https://www.bluvixa.com/|$META_AGENT|META AGENT WWW" \
             "https://www.bluvixa.com/|$META_FETCH|META FETCHER WWW" \
@@ -56,8 +58,11 @@ jobs:
           done
 
           echo
-          echo '===== APEX NO-FOLLOW REDIRECT ====='
-          curl -sS --max-time 30 -A "$FB" -D - -o /dev/null https://bluvixa.com/
+          echo '===== RAW REDIRECTS ====='
+          for u in http://bluvixa.com/ http://www.bluvixa.com/ https://bluvixa.com/; do
+            echo "--- $u ---"
+            curl -sS --max-time 30 -A "$FB" -D - -o /dev/null "$u"
+          done
 
           echo
           echo '===== IMAGE GET ====='
