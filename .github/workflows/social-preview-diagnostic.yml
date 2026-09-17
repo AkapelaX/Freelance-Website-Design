@@ -5,81 +5,82 @@ on:
     branches:
       - diagnostic-social-preview
 
+permissions:
+  contents: read
+
 jobs:
   probe:
     runs-on: ubuntu-latest
     steps:
-      - name: Probe live Bluvixa social preview
+      - name: Deep probe live Bluvixa Facebook preview paths
         shell: bash
         run: |
-          set -u
-          FB_UA='facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)'
-          META_UA='meta-externalagent/1.1 (+https://developers.facebook.com/docs/sharing/webmasters/crawler)'
-          BROWSER_UA='Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Version/18.0 Mobile/15E148 Safari/604.1'
+          set -euo pipefail
+          FB='facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)'
+          FBCAT='facebookcatalog/1.0'
+          FACEBOT='Facebot'
+          META_AGENT='meta-externalagent/1.1 (+https://developers.facebook.com/docs/sharing/webmasters/crawler)'
+          META_FETCH='meta-externalfetcher/1.1 (+https://developers.facebook.com/docs/sharing/webmasters/crawler)'
+          BROWSER='Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Version/18.0 Mobile/15E148 Safari/604.1'
+          IMAGE='https://www.bluvixa.com/bluvixa-social-card-v10.jpg'
 
           probe_page() {
             url="$1"; ua="$2"; label="$3"
             echo
             echo "===== $label ====="
             rm -f /tmp/h /tmp/b
-            curl -sS -L --max-time 30 -A "$ua" -D /tmp/h -o /tmp/b "$url" || true
-            echo '--- HEADERS ---'
-            sed -n '1,80p' /tmp/h || true
-            echo "BODY_BYTES=$(wc -c </tmp/b 2>/dev/null || echo 0)"
-            echo '--- SOCIAL META ---'
-            tr '\n' ' ' </tmp/b | grep -Eo '<(meta|link|title)[^>]*(og:|twitter:|canonical|title)[^>]*>' | head -100 || true
-            echo '--- BODY PREFIX ---'
-            head -c 1800 /tmp/b || true
-            echo
+            curl -sS -L --max-time 30 -A "$ua" -D /tmp/h -o /tmp/b "$url"
+            sed -n '1,120p' /tmp/h
+            echo "BODY_BYTES=$(wc -c </tmp/b)"
+            echo '--- META ---'
+            grep -Eio '<meta[^>]+(fb:app_id|og:image|og:image:url|og:image:secure_url|og:image:width|og:image:height|og:image:type|og:title|og:description|og:url|og:type)[^>]*>' /tmp/b || true
+            grep -Eio '<link[^>]+canonical[^>]*>' /tmp/b || true
           }
 
           echo '===== DNS ====='
           getent ahosts bluvixa.com || true
           getent ahosts www.bluvixa.com || true
 
-          probe_page 'https://bluvixa.com/' "$FB_UA" 'FACEBOOK APEX'
-          probe_page 'https://www.bluvixa.com/' "$FB_UA" 'FACEBOOK WWW'
-          probe_page 'https://www.bluvixa.com/' "$META_UA" 'META EXTERNAL AGENT'
-          probe_page 'https://www.bluvixa.com/' "$BROWSER_UA" 'NORMAL BROWSER'
+          for pair in \
+            "https://bluvixa.com/|$FB|FB APEX" \
+            "https://www.bluvixa.com/|$FB|FB WWW" \
+            "https://bluvixa.com/|$FBCAT|FBCATALOG APEX" \
+            "https://www.bluvixa.com/|$FBCAT|FBCATALOG WWW" \
+            "https://www.bluvixa.com/|$FACEBOT|FACEBOT WWW" \
+            "https://www.bluvixa.com/|$META_AGENT|META AGENT WWW" \
+            "https://www.bluvixa.com/|$META_FETCH|META FETCHER WWW" \
+            "https://www.bluvixa.com/|$BROWSER|BROWSER WWW"
+          do
+            IFS='|' read -r url ua label <<< "$pair"
+            probe_page "$url" "$ua" "$label"
+          done
 
           echo
-          echo '===== OG IMAGE ====='
-          IMG='https://www.bluvixa.com/bluvixa-business-card-og-v7.jpg'
-          rm -f /tmp/ih /tmp/og.jpg
-          curl -sS -L --max-time 30 -A "$FB_UA" -D /tmp/ih -o /tmp/og.jpg "$IMG" || true
-          sed -n '1,100p' /tmp/ih || true
-          echo "IMAGE_BYTES=$(wc -c </tmp/og.jpg 2>/dev/null || echo 0)"
-          file /tmp/og.jpg || true
-          sha256sum /tmp/og.jpg || true
-          python3 - <<'PY'
-          p='/tmp/og.jpg'
-          try:
-              data=open(p,'rb').read()
-              print('MAGIC_HEX=', data[:16].hex())
-              print('JPEG_SOI=', data[:2] == b'\xff\xd8')
-              i=2
-              sof=set(list(range(0xc0,0xc4))+list(range(0xc5,0xc8))+list(range(0xc9,0xcc))+list(range(0xcd,0xd0)))
-              found=False
-              while i+9 < len(data):
-                  if data[i] != 0xff:
-                      i += 1; continue
-                  marker=data[i+1]; i += 2
-                  if marker in (0xd8,0xd9) or 0xd0 <= marker <= 0xd7:
-                      continue
-                  if i+2 > len(data): break
-                  n=int.from_bytes(data[i:i+2],'big')
-                  if marker in sof:
-                      h=int.from_bytes(data[i+3:i+5],'big'); w=int.from_bytes(data[i+5:i+7],'big')
-                      print('JPEG_DIMENSIONS=', f'{w}x{h}')
-                      found=True
-                      break
-                  i += max(n,2)
-              if not found:
-                  print('JPEG_DIMENSIONS=NOT_FOUND')
-          except Exception as e:
-              print('IMAGE_PARSE_ERROR=', repr(e))
-          PY
+          echo '===== APEX NO-FOLLOW REDIRECT ====='
+          curl -sS --max-time 30 -A "$FB" -D - -o /dev/null https://bluvixa.com/
+
+          echo
+          echo '===== IMAGE GET ====='
+          curl -sS -L --max-time 30 -A "$FB" -D /tmp/ih -o /tmp/og.jpg "$IMAGE"
+          sed -n '1,120p' /tmp/ih
+          file /tmp/og.jpg
+          echo "IMAGE_BYTES=$(wc -c </tmp/og.jpg)"
+          test "$(head -c 2 /tmp/og.jpg | xxd -p)" = 'ffd8'
+
+          echo
+          echo '===== IMAGE HEAD ====='
+          curl -sS -I -L --max-time 30 -A "$FB" "$IMAGE"
+
+          echo
+          echo '===== IMAGE RANGE ====='
+          curl -sS -L --max-time 30 -A "$FB" -H 'Range: bytes=0-1023' -D /tmp/rh -o /tmp/range "$IMAGE"
+          sed -n '1,120p' /tmp/rh
+          echo "RANGE_BYTES=$(wc -c </tmp/range)"
 
           echo
           echo '===== ROBOTS ====='
-          curl -sS -L --max-time 30 -A "$FB_UA" -D - https://www.bluvixa.com/robots.txt | head -120 || true
+          curl -sS -L --max-time 30 -A "$FB" -D - https://www.bluvixa.com/robots.txt | head -160 || true
+
+          echo
+          echo '===== RESULT ====='
+          echo SOCIAL_PREVIEW_DEEP_PROBE_OK=1
